@@ -1,7 +1,7 @@
 # mystock
 
 启动程序
- python home.py
+ python manage.py runserver -H localhost
 
 环境安装：
    pip install flask
@@ -14,6 +14,12 @@
 
 
 文档参考：
+
+flask 最佳实践
+
+https://spacewander.github.io/explore-flask-zh/1-introduction.html
+
+http://flask.pocoo.org/docs/0.10/tutorial/
 
 pandas
 http://pandas.pydata.org/pandas-docs/stable/index.html 

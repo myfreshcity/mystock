@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div>
+<table id="example" class="display" cellspacing="0" width="90%">
+        <thead>
+            <tr>
+                <th>数据项目</th>
+                <th>最近更新时间</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for d in dataItems %}
+            <tr>
+                <td>{{d.name|e}}</td>
+                <td>{{d.update_time|e}}</td>
+                <td>更新</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+</table>
+</div>
+
+{% endblock %}
