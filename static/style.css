@@ -1,0 +1,9 @@
+    .fig {
+      font-family:Arial;
+      font-size:10pt;
+      color:darkgray;
+    }
+
+    #chart svg {
+  		height: 400px;
+	}
