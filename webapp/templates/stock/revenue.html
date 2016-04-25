@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div id="container" style="min-width:800px;height:400px"></div>
+<script type="text/javascript">
+
+var yysrs = {'name':'营业收入','data':{{ yysr|safe}} };
+var jlrs = {'name':'净利润','data':{{ jlr|safe}} };
+var jyjxjls = {'name':'经营净现金流','data':{{ jyjxjl|safe}} };
+var mydate = {{ mydate|safe}};
+
+$(function () {
+    $('#container').highcharts({                   //图表展示容器，与div的id保持一致
+        chart: {
+            type: 'line'                         //指定图表的类型，默认是折线图（line）
+        },
+        title: {
+            text: '年度营收'      //指定图表标题
+        },
+        xAxis: {
+            categories: []   //指定x轴分组
+        },
+        yAxis: {
+            title: {
+                text: '营收'                  //指定y轴的标题
+            }
+        },
+        series: [yysrs,jlrs,jyjxjls]
+    });
+});
+
+</script>
+
+{% endblock %}

@@ -26,7 +26,7 @@ manager.add_command('shell', Shell(make_context=_make_context))
 def runserver(config, host, port):
     config_app(app, config)
     register_blueprints(app)
-    app.run(host=host, port=port)
+    app.run(host=host, port=port,debug=True)
 
 if __name__ == '__main__':
     manager.run()

@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import os
 from flask import Flask, render_template, abort, url_for, session
-from views import home, stock, setting
+from views import home, stock, setting,macro
 from services import db_service,db
 
 app = Flask(__name__)
@@ -48,4 +48,5 @@ def register_blueprints(app):
     app.register_blueprint(home.blueprint,   url_prefix='')
     app.register_blueprint(setting.blueprint,  url_prefix='/setting')
     app.register_blueprint(stock.blueprint, url_prefix='/stock')
+    app.register_blueprint(macro.blueprint, url_prefix='/macro')
 

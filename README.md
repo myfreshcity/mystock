@@ -35,3 +35,12 @@ https://datatables.net/manual/
 
 d3
 https://github.com/mbostock/d3/wiki/API-Reference
+
+http://v4.bootcss.com/examples/dashboard/
+
+highcharts
+
+http://www.hcharts.cn/demo/highcharts.php
+
+bootstrap
+http://www.runoob.com/bootstrap/bootstrap-tutorial.html
