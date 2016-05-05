@@ -20,6 +20,15 @@ def _make_context():
 
 manager.add_command('shell', Shell(make_context=_make_context))
 
+
+@manager.command
+def test():
+    """Run the unit tests."""
+    import unittest
+    tests = unittest.TestLoader().discover('tests')
+    unittest.TextTestRunner(verbosity=2).run(tests)
+
+
 @manager.option('-c', '--config', dest='config', help='Configuration file name', default='scriptfan.cfg')
 @manager.option('-H', '--host',   dest='host',   help='Host address', default='0.0.0.0')
 @manager.option('-p', '--port',   dest='port',   help='Application port', default=5000)
