@@ -5,9 +5,11 @@ import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db
-from webapp.models import MyStock,Stock,data_item
+from webapp.models import MyStock,Stock,data_item,Comment
 import tushare as ts
 import json
+from datetime import datetime
+import urllib2,re
 
 from pymongo import MongoClient
 client = MongoClient('127.0.0.1',27017)
@@ -108,13 +110,35 @@ def getStock(code):
     return stock
 
 def addMystock(code):
-    stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
-    market = stock.code[0:2]
-    code = stock.code[2:]
-    mystock = MyStock(code,stock.name,market)
+    #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
+    #stock = Stock.find_by_code(code)
+    url = "http://hq.sinajs.cn/list=" + code
+    req = urllib2.Request(url)
+    res_data = urllib2.urlopen(req).read()
+    match = re.search(r'".*"', res_data).group(0)
+    trade_data = match.split(',')
+    name =  unicode(trade_data[0],'gbk')[1:]
+    #trade_data[0].decode('gbk').encode('utf-8')
+
+    market = code[0:2].strip()
+    code = code[2:].strip()
+    mystock = MyStock(code,name,market)
     db.session.add(mystock)
-    return stock
+    return Stock(name,code)
 
 def removeMystock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
-    return db.session.delete(mystock)
+    mystock.flag = '1'
+    return db.session.flush()
+
+def addComment(code,content):
+    #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
+    #stock = Stock.find_by_code(code)
+    comment = Comment(code,content)
+    comment.created_time = datetime.now()
+    db.session.add(comment)
+    return comment
+
+def queryComment(code):
+    #mystock = db.session.query(MyStock).filter_by(code = code).first()
+    return Comment.find_by_code(code).all()

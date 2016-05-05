@@ -22,9 +22,13 @@ class Stock(db.Model):
 
     @property
     def current_price(self):
-        url = "http://hq.sinajs.cn/list="+self.code
+        data = self.query_trade_data()
+        return round(float(data[3]), 2)
+
+    def query_trade_data(self):
+        url = "http://hq.sinajs.cn/list=" + self.code
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req).read()
         match = re.search(r'".*"', res_data).group(0)
         trade_data = match.split(',')
-        return round(float(trade_data[3]), 2)
+        return trade_data

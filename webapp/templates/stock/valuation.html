@@ -1,3 +1,4 @@
+{% from "macro/comment.html" import comment with context %}
 {% extends "layout.html" %}
 {% block body %}
 
@@ -18,6 +19,8 @@
 
 
     <div id="revenue" style="min-width:600px;height:400px"></div>
+    {{ comment(code) }}
+
 </div>
 
 <script type="text/javascript">
@@ -105,6 +108,7 @@ function valuation(result){
     $('#example').DataTable( {
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
+        "paging": false,
         columns: [
             { title: "日期" },
             { title: "收盘价" },

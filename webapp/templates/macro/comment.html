@@ -1,0 +1,80 @@
+{% macro comment(code) %}
+
+<div class="container-fluid">
+
+    <div class="panel panel-info">
+        <!-- Default panel contents -->
+        <div class="panel-heading">投资日志</div>
+        <div class="panel-body" id="comment">
+            <input name="stock" type="hidden" value="{{ code }}"/>
+            <div class="form-group">
+                <textarea name="content" class="form-control" rows="3"></textarea>
+            </div>
+            <p class="text-right">
+                <button type="button" class="btn btn-primary" onclick="addComment()">提交</button>
+            </p>
+        </div>
+
+        <!-- List group -->
+        <ul class="list-group" id="comment-list">
+
+        </ul>
+    </div>
+
+</div>
+
+<script type=text/javascript>
+
+function addComment() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/addComment',
+    data:{
+             code : $("div#comment input[name='stock']").val(),
+             content : $("div#comment textarea[name='content']").val()
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+        if(result.msg =="true" ){
+            $("div#comment textarea[name='content']").val('');
+            $("#comment-list").prepend(makeCommentItem(result.data.date,result.data.content));
+        }
+     }
+    });
+  };
+
+
+function queryComment() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/queryComments',
+    data:{
+             code : $("div#comment input[name='stock']").val()
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+       for(var i=0,a;a=result.data[i++];){
+          $("#comment-list").prepend(makeCommentItem(a.date,a.content));
+       }
+     }
+    });
+  };
+
+function makeCommentItem(date,content){
+     return '<li class="list-group-item">\
+                <h6 class="list-group-item-text">'+content+'</h6>\
+                <p class="list-group-item-heading small text-right">'+date+'</p>\
+            </li>'
+}
+
+$(function(){
+
+queryComment();
+
+});
+
+</script>
+
+{% endmacro %}

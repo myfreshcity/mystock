@@ -94,3 +94,29 @@ def remove():
     code = request.form['code']
     ds.removeMystock(code)
     return jsonify(msg='true')
+
+@blueprint.route('/queryComments', methods=['GET', 'POST'])
+def queryComments():
+    code = request.form['code']
+    df = ds.queryComment(code)
+    data = []
+    for x in df:
+        data.append({
+            'date':x.created_time.strftime('%Y-%m-%d'),
+            'content':x.content
+        })
+    return jsonify(data=data)
+
+
+@blueprint.route('/addComment', methods=['GET', 'POST'])
+def addComment():
+    code = request.form['code']
+    content = request.form['content']
+    app.logger.debug('code:' + code)
+    try:
+        c = ds.addComment(code,content)
+        return jsonify(msg='true',
+                       data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content}
+                       )
+    except:
+        return jsonify(msg='false')
