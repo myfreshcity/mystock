@@ -18,7 +18,10 @@
     <table id="example" class="display" cellspacing="0" width="100%" style="display:none"></table>
 
 
-    <div id="revenue" style="min-width:600px;height:400px"></div>
+    <div id="revenue-1" class="col-md-6"></div>
+    <div id="revenue-2" class="col-md-6"></div>
+    <div id="revenue-3" class="col-md-6"></div>
+    <div id="revenue-4" class="col-md-6"></div>
     {{ comment(code) }}
 
 </div>
@@ -55,40 +58,35 @@ function getData(category) {
 //营收
 function revenue(result){
 
-var yysrs = {'name':'营业收入','data':result.data.yysr };
+var yysrs = {'data':result.data.yysr };
 var jlrs = {'name':'营业利润','data':result.data.jlr };
 var jyjxjls = {'name':'经营净现金流','data':result.data.jyjxjl };
-var drate = {'name':'负债率','type':'column','data':result.data.drate,'yAxis':1 };
+var drate = {'name':'负债率','data':result.data.drate};
 
 var mydate = {{ mydate|safe}};
 
-    $('#revenue').highcharts({                   //图表展示容器，与div的id保持一致
+    $('#revenue-1').highcharts({
+        chart: {type: 'column'},
+        title: {text: '营业收入'},
+        series: [yysrs]
+    });
+    $('#revenue-2').highcharts({
         chart: {
-            type: 'line'                         //指定图表的类型，默认是折线图（line）
+            type: 'column'
         },
-        title: {
-            text: '{{ title|safe}}年度营收'      //指定图表标题
+        series: [jlrs]
+    });
+    $('#revenue-3').highcharts({
+        chart: {
+            type: 'column'
         },
-        xAxis: {
-            categories: []   //指定x轴分组
+        series: [jyjxjls]
+    });
+    $('#revenue-4').highcharts({
+        chart: {
+            type: 'column'
         },
-        yAxis: [
-        {
-            title: {
-                text: '金额'
-            }
-        },
-        {
-            title: {
-                text: '比率'
-            },
-            labels: {
-                format: '{value}%'
-            },
-            opposite: true
-        }
-        ],
-        series: [yysrs,jlrs,jyjxjls,drate]
+        series: [drate]
     });
 }
 
@@ -109,6 +107,7 @@ function valuation(result){
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
         "paging": false,
+        searching: false,
         columns: [
             { title: "日期" },
             { title: "收盘价" },

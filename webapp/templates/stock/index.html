@@ -1,3 +1,60 @@
 {% extends "layout.html" %}
 {% block body %}
+
+<div class="container-fluid">
+    <a href="{{ url_for('stock.add') }}">添加股票</a>
+    <table id="example" class="display" cellspacing="0" width="90%">
+        <thead>
+        <tr>
+            <th>编码</th>
+            <th>名称</th>
+            <th>历史估值</th>
+            <th>财务分析</th>
+            <th>股价走势</th>
+            <th>日志</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in stocks %}
+        <tr>
+            <td>{{d.code|e}}</td>
+            <td>{{d.name|e}}</td>
+            <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">查看</a></td>
+            <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">查看</a></td>
+            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">查看</a></td>
+            <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
+            <td><a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script type=text/javascript>
+function sel(code) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/rollback',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+            window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
+
+//加载完毕自动执行
+$(function(){
+ $('#example').DataTable();
+});
+</script>
+
 {% endblock %}

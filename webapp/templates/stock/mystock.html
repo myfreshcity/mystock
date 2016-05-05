@@ -2,7 +2,6 @@
 {% block body %}
 
 <div class="container-fluid">
-    <a href="{{ url_for('stock.add') }}">添加自选股</a>
     <table id="example" class="display" cellspacing="0" width="90%">
         <thead>
         <tr>
@@ -10,8 +9,8 @@
             <th>名称</th>
             <th>历史估值</th>
             <th>财务分析</th>
-            <th>股本变化</th>
             <th>股价走势</th>
+            <th>日志</th>
             <th></th>
         </tr>
         </thead>
@@ -22,8 +21,8 @@
             <td>{{d.name|e}}</td>
             <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">查看</a></td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">查看</a></td>
-            <td><a href='http://quotes.money.163.com/f10/fhpg_{{d.code|e}}.html#01d05' target="_blank">查看</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">查看</a></td>
+            <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
             <td><a href="#" onclick="javascript:del('{{d.code|e}}');return false;">删除</a></td>
         </tr>
         {% endfor %}
@@ -50,6 +49,12 @@ function del(code) {
      }
     });
   };
+
+//加载完毕自动执行
+$(function(){
+ $('#example').DataTable({"paging": false});
+});
+
 </script>
 
 {% endblock %}

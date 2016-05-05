@@ -8,7 +8,7 @@ class MyStock(db.Model):
     code = db.Column(db.String(255))
     name = db.Column(db.String(255))
     market = db.Column(db.String(255))
-    flag = db.Column(db.String(255))
+    flag = db.Column(db.Integer,default=1)
     created_time = db.Column(db.DateTime, default=datetime.now)
     updated_time = db.Column(db.DateTime, default=datetime.now)
 

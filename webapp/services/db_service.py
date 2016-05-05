@@ -43,13 +43,13 @@ def getStocks():
     df = pd.read_sql_query("select code,name,zsz from stocks",db.engine,index_col='code')
     return df
 
-def getMyStocks():
-    items = MyStock.query.all()
+def getMyStocks(flag):
+    items = MyStock.query.filter_by(flag=flag).all()
     return items
 
 #年度营收
 def getStockRevenue(code):
-    df = pd.read_sql_query("select yysr,yylr as jlr,jyjxjl,zfz/zzc*100 as drate,report_type from stocks where year(report_type)>=2005 and month(report_type)= 12 and code=%(name)s",
+    df = pd.read_sql_query("select yysr,yylr as jlr,jyjxjl,zfz/zzc*100 as drate,report_type from stocks where year(report_type)>=2010 and month(report_type)= 12 and code=%(name)s",
                            db.engine,index_col='report_type',params={'name':code})
     #df.index = pd.to_datetime(df['report_type'])
     return df
@@ -110,25 +110,36 @@ def getStock(code):
     return stock
 
 def addMystock(code):
-    #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
-    #stock = Stock.find_by_code(code)
-    url = "http://hq.sinajs.cn/list=" + code
-    req = urllib2.Request(url)
-    res_data = urllib2.urlopen(req).read()
-    match = re.search(r'".*"', res_data).group(0)
-    trade_data = match.split(',')
-    name =  unicode(trade_data[0],'gbk')[1:]
-    #trade_data[0].decode('gbk').encode('utf-8')
-
-    market = code[0:2].strip()
-    code = code[2:].strip()
-    mystock = MyStock(code,name,market)
-    db.session.add(mystock)
-    return Stock(name,code)
+    if len(code) != 8:
+        return "'"+code+"'无效,长度应为8位,以sz/sh加数字标示"
+    mystock = db.session.query(MyStock).filter_by(code = code[2:].strip()).first()
+    if not mystock:
+        #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
+        #stock = Stock.find_by_code(code)
+        url = "http://hq.sinajs.cn/list=" + code
+        req = urllib2.Request(url)
+        res_data = urllib2.urlopen(req).read()
+        match = re.search(r'".*"', res_data).group(0)
+        trade_data = match.split(',')
+        name =  unicode(trade_data[0],'gbk')[1:]
+        #trade_data[0].decode('gbk').encode('utf-8')
+        if name:
+            market = code[0:2].strip()
+            code = code[2:].strip()
+            mystock = MyStock(code,name,market)
+            db.session.add(mystock)
+            return None
+    else:
+        return "'"+code+"'股票已存在"
 
 def removeMystock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
     mystock.flag = '1'
+    return db.session.flush()
+
+def rollbackStock(code):
+    mystock = db.session.query(MyStock).filter_by(code = code).first()
+    mystock.flag = '0'
     return db.session.flush()
 
 def addComment(code,content):

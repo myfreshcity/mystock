@@ -18,6 +18,8 @@ from views import home, stock, setting,macro
 from services import db_service,db
 
 app = Flask(__name__)
+app.secret_key = 'super secret key'
+app.config['SESSION_TYPE'] = 'filesystem'
 
 app.debug_log_format = '[%(levelname)s] %(message)s'
 app.debug = True

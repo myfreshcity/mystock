@@ -16,12 +16,13 @@ blueprint = Blueprint('stock', __name__)
 
 @blueprint.route('/', methods=['GET'])
 def index():
-    return render_template('stock/index.html', title='股票')
+    data = ds.getMyStocks('1')
+    return render_template('stock/index.html', title='备选', stocks=data)
 
 
 @blueprint.route('/mystock', methods=['GET'])
 def mystock():
-    data = ds.getMyStocks()
+    data = ds.getMyStocks('0')
     return render_template('stock/mystock.html', title='自选股', stocks=data)
 
 
@@ -33,6 +34,12 @@ def valuation(code):
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
     return render_template('stock/valuation.html', title=stock.name, mydate=date,code=code,price=price)
+
+@blueprint.route('/blog/<code>', methods=['GET'])
+def blog(code):
+    stock = ds.getStock(code)
+    #price = stock.current_price
+    return render_template('stock/blog.html', title=stock.name, code=code)
 
 
 @blueprint.route('/valuationJson', methods=['POST'])
@@ -83,16 +90,23 @@ def add():
     if request.method == 'POST':
         code = request.form['code']
         app.logger.debug('code:' + code)
-        ds.addMystock(code)
-        return redirect('stock/mystock')
+        msg = ds.addMystock(code)
+        if msg:
+            flash(msg)
+        return redirect('stock')
     else:
         return render_template('stock/add.html')
-
 
 @blueprint.route('/remove', methods=['POST'])
 def remove():
     code = request.form['code']
     ds.removeMystock(code)
+    return jsonify(msg='true')
+
+@blueprint.route('/rollback', methods=['POST'])
+def rollback():
+    code = request.form['code']
+    ds.rollbackStock(code)
     return jsonify(msg='true')
 
 @blueprint.route('/queryComments', methods=['GET', 'POST'])

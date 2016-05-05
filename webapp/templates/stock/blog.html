@@ -1,0 +1,7 @@
+{% from "macro/comment.html" import comment with context %}
+{% extends "layout.html" %}
+{% block body %}
+
+{{ comment(code) }}
+
+{% endblock %}
