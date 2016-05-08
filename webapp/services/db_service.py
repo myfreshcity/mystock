@@ -109,6 +109,10 @@ def getStock(code):
     stock = db.session.query(Stock).filter_by(code = code).first()
     return stock
 
+def getMyStock(code):
+    stock = db.session.query(MyStock).filter_by(code = code[2:].strip()).first()
+    return stock
+
 def addMystock(code):
     if len(code) != 8:
         return "'"+code+"'无效,长度应为8位,以sz/sh加数字标示"
@@ -148,6 +152,11 @@ def addComment(code,content):
     comment = Comment(code,content)
     comment.created_time = datetime.now()
     db.session.add(comment)
+    return comment
+
+def updateComment(cid,content):
+    comment = db.session.query(Comment).filter_by(id = cid).first()
+    comment.content = content
     return comment
 
 def queryComment(code):

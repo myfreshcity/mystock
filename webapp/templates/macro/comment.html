@@ -11,7 +11,7 @@
                 <textarea name="content" class="form-control" rows="3"></textarea>
             </div>
             <p class="text-right">
-                <button type="button" class="btn btn-primary" onclick="addComment()">提交</button>
+                <button type="button" class="btn btn-primary" id="comment-btn">提交</button>
             </p>
         </div>
 
@@ -25,53 +25,91 @@
 
 <script type=text/javascript>
 
+var stock_em = $("div#comment input[name='stock']");
+var content_em = $("div#comment textarea[name='content']");
+var submit_em = $("button#comment-btn");
+var cid;
+
 function addComment() {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/addComment',
     data:{
-             code : $("div#comment input[name='stock']").val(),
-             content : $("div#comment textarea[name='content']").val()
+             code : stock_em.val(),
+             content : content_em.val()
     },
     type:'post',
     cache:false,
     dataType:'json',
     success:function(result) {
         if(result.msg =="true" ){
-            $("div#comment textarea[name='content']").val('');
-            $("#comment-list").prepend(makeCommentItem(result.data.date,result.data.content));
+            content_em.val('');
+            $("#comment-list").prepend(makeCommentItem(result.data.id,result.data.date,result.data.content));
         }
      }
     });
   };
 
+function updateComment() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/updateComment',
+    data:{
+             code : stock_em.val(),
+             cid : cid,
+             content : content_em.val()
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+        if(result.msg =="true" ){
+            content_em.val('');
+            submit_em.unbind().click(addComment);
+            var content =  result.data.content.replace(/\n/g,'<br/>');
+            $("#"+result.data.id+" .list-group-item-text").html(content);
+        }
+     }
+    });
+  };
 
 function queryComment() {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/queryComments',
     data:{
-             code : $("div#comment input[name='stock']").val()
+             code : stock_em.val()
     },
     type:'post',
     cache:false,
     dataType:'json',
     success:function(result) {
        for(var i=0,a;a=result.data[i++];){
-          $("#comment-list").prepend(makeCommentItem(a.date,a.content));
+          $("#comment-list").prepend(makeCommentItem(a.id,a.date,a.content));
        }
      }
     });
   };
 
-function makeCommentItem(date,content){
-     return '<li class="list-group-item">\
+function makeCommentItem(id,date,content){
+    content =  content.replace(/\n/g,'<br/>');
+
+     return '<li class="list-group-item" id="'+id+'">\
                 <h6 class="list-group-item-text">'+content+'</h6>\
-                <p class="list-group-item-heading small text-right">'+date+'</p>\
+                <p class="list-group-item-heading small text-right">\
+                    '+date+'[<a href="javascript:onEdit('+id+')">编辑</a>]\
+                </p>\
             </li>'
+}
+
+function onEdit(id){
+    var c = $("#"+id+" .list-group-item-text").html().replace(/\<br\>/g,'\n')
+    content_em.val(c);
+    cid = id;
+    submit_em.unbind().click(updateComment);
 }
 
 $(function(){
 
 queryComment();
+submit_em.unbind().click(addComment);
 
 });
 

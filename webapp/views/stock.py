@@ -37,7 +37,7 @@ def valuation(code):
 
 @blueprint.route('/blog/<code>', methods=['GET'])
 def blog(code):
-    stock = ds.getStock(code)
+    stock = ds.getMyStock(code)
     #price = stock.current_price
     return render_template('stock/blog.html', title=stock.name, code=code)
 
@@ -116,6 +116,7 @@ def queryComments():
     data = []
     for x in df:
         data.append({
+            'id' : x.id,
             'date':x.created_time.strftime('%Y-%m-%d'),
             'content':x.content
         })
@@ -131,6 +132,18 @@ def addComment():
         c = ds.addComment(code,content)
         return jsonify(msg='true',
                        data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content}
+                       )
+    except:
+        return jsonify(msg='false')
+
+@blueprint.route('/updateComment', methods=['POST'])
+def updateComment():
+    cid = request.form['cid']
+    content = request.form['content']
+    try:
+        c = ds.updateComment(cid, content)
+        return jsonify(msg='true',
+                       data={'id': cid, 'content': c.content}
                        )
     except:
         return jsonify(msg='false')
