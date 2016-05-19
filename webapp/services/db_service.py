@@ -44,8 +44,48 @@ def getStocks():
     return df
 
 def getMyStocks(flag):
-    items = MyStock.query.filter_by(flag=flag).all()
-    return items
+    df = pd.read_sql_query("select code,name,market from my_stocks where flag=%(flag)s", db.engine, \
+                           index_col='code', params={'flag': flag})
+    df1 = getPerStockPrice(df)
+    df2 = getPerStockRevenue()
+    df3 = pd.concat([df1,df2],axis=1,join='inner')
+    df = df.reset_index()
+    df4 = pd.merge(df, df3, how='left')
+    return df4
+
+#获取当前股价
+def getPerStockPrice(df):
+    q_st_codes = []
+    for index, row in df.iterrows():
+        q_st_codes.append(row['market'] + index)
+
+    str = ','.join(q_st_codes)
+    url = "http://hq.sinajs.cn/list=" + str
+    req = urllib2.Request(url)
+    res_data = urllib2.urlopen(req).read()
+
+    st_valus = []
+    st_codes = []
+    for st in q_st_codes:
+        regex = r'var hq_str_' + st + '="(.*)".*'
+        match = re.search(regex, res_data, re.M).group(1)
+        trade_data = match.split(',')
+        st_valus.append(round(float(trade_data[3]), 2))
+        st_codes.append(st[2:])
+    return pd.DataFrame(st_valus, index=st_codes,columns=['price'])
+
+
+#获取每股收益,每股净资产,每股经营现金流
+def getPerStockRevenue():
+    df = pd.read_sql_query("select code,report_type,mgsy_ttm,mgjzc,mgjyxjl_ttm from stock_finance_basic", db.engine)
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df = df.set_index(i)
+    df = df.sort_index(ascending=False)
+
+    df = df.groupby([df['code']]).first()
+    df = df.reset_index()
+    return df.set_index(df['code'])
+
 
 #年度营收
 def getStockRevenue(code):
@@ -120,7 +160,9 @@ def addMystock(code):
     if not mystock:
         #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
         #stock = Stock.find_by_code(code)
-        url = "http://hq.sinajs.cn/list=" + code
+        market = code[0:2].strip().lower()
+        code = code[2:].strip()
+        url = "http://hq.sinajs.cn/list=" + market + code
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req).read()
         match = re.search(r'".*"', res_data).group(0)
@@ -128,8 +170,6 @@ def addMystock(code):
         name =  unicode(trade_data[0],'gbk')[1:]
         #trade_data[0].decode('gbk').encode('utf-8')
         if name:
-            market = code[0:2].strip()
-            code = code[2:].strip()
             mystock = MyStock(code,name,market)
             db.session.add(mystock)
             return None

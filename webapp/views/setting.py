@@ -8,22 +8,18 @@ from flask import json,jsonify,render_template
 
 import pandas as pd
 import time
-from webapp.services import db_service as ds
+from webapp.services import data_service as dts,db_service as dbs
 
 blueprint = Blueprint('setting', __name__)
 
 @blueprint.route('/', methods = ['GET'])
 def index():
-    data = ds.getItemDate()
+    data = dbs.getItemDate()
     return render_template('/setting/index.html', title='设置',dataItems=data)
 
-@blueprint.route('/update/<int:id>', methods = ['GET'])
-def update(id):
-    if id == 1:
-        #获取最新财务数据
-        ds.getLatestTradeData()
-    elif id == 2:
-        #获取最新交易数据
-        ds.getLatestFinaceData()
-        flash('You were logged out')
-    return redirect(url_for('setting'))
+@blueprint.route('/update/', methods = ['GET','POST'])
+def update():
+    code = request.form['code']
+    code = code[2:]
+    flag = dts.updateFinanceBasic(code)
+    return jsonify(msg=flag)

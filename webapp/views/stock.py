@@ -17,13 +17,38 @@ blueprint = Blueprint('stock', __name__)
 @blueprint.route('/', methods=['GET'])
 def index():
     data = ds.getMyStocks('1')
-    return render_template('stock/index.html', title='备选', stocks=data)
+    sdata = []
+    for index, row in data.iterrows():
+        sdata.append({
+            'name':row['name'],
+            'code':row.code,
+            'price':row.price,
+            'ncode':row['market']+row['code'],
+            'sxlv':round(row.price/row.mgjyxjl_ttm,2),
+            'sylv':round(row.price/row.mgsy_ttm,2),
+            'sjlv': round(row.price/row.mgjzc,2),
+            'report_type':row.report_type
+        })
+    return render_template('stock/index.html', title='备选', stocks=sdata)
 
 
 @blueprint.route('/mystock', methods=['GET'])
 def mystock():
     data = ds.getMyStocks('0')
-    return render_template('stock/mystock.html', title='自选股', stocks=data)
+    sdata = []
+    for index, row in data.iterrows():
+        sdata.append({
+            'name':row['name'],
+            'code':row.code,
+            'ncode': row['market'] + row['code'],
+            'price':row.price,
+            'sxlv':round(row.price/row.mgjyxjl_ttm,2),
+            'sylv':round(row.price/row.mgsy_ttm,2),
+            'sjlv': round(row.price/row.mgjzc,2),
+            'report_type':row.report_type
+        })
+
+    return render_template('stock/mystock.html', title='自选股', stocks=sdata)
 
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
@@ -131,12 +156,12 @@ def addComment():
     try:
         c = ds.addComment(code,content)
         return jsonify(msg='true',
-                       data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content}
+                       data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content,'id':c.id}
                        )
     except:
         return jsonify(msg='false')
 
-@blueprint.route('/updateComment', methods=['POST'])
+@blueprint.route('/updateComment', methods=['GET', 'POST'])
 def updateComment():
     cid = request.form['cid']
     content = request.form['content']

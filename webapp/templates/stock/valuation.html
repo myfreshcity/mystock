@@ -7,6 +7,13 @@
     <p class="text-left">市销率 = 收盘价/每股营业收入(TTM)</p>
     <p class="text-left">市现率 = 收盘价/每股经营现金流(TTM)</p>
 
+    <p>
+        <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code}}.shtml" target="_blank">股东人数变化</a>
+        &nbsp; | &nbsp;
+        <a href="#" onclick="updateData()">数据更新</a>
+    </p>
+
+
     <div class="btn-group" role="group" aria-label="...">
         <button type="button" class="btn btn-default" onclick="getData('year')">年度</button>
         <button type="button" class="btn btn-default" onclick="getData('quart')">季度</button>
@@ -27,6 +34,27 @@
 </div>
 
 <script type="text/javascript">
+
+function updateData(){
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/setting/update/',
+    data:{
+             code : '{{ code|safe }}'
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result){
+         if(result.msg == true){
+             alert('数据更新成功');
+         }else{
+            console.error(result.msg);
+         }
+        }
+    });
+
+}
+
 
 function getData(category) {
     var aj = $.ajax( {

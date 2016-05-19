@@ -8,6 +8,9 @@
         <tr>
             <th>编码</th>
             <th>名称</th>
+            <th>市盈率</th>
+            <th>市净率</th>
+            <th>市现率</th>
             <th>历史估值</th>
             <th>财务分析</th>
             <th>股价走势</th>
@@ -20,6 +23,9 @@
         <tr>
             <td>{{d.code|e}}</td>
             <td>{{d.name|e}}</td>
+            <td>{{d.sylv|e}}</td>
+            <td>{{d.sjlv|e}}</td>
+            <td>{{d.sxlv|e}}</td>
             <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">查看</a></td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">查看</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">查看</a></td>

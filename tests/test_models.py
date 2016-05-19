@@ -2,7 +2,7 @@ import unittest
 import time
 from datetime import datetime
 from webapp import app, db, config_app,register_blueprints
-from webapp.services import db_service
+from webapp.services import db_service,data_service
 from webapp.models import MyStock,Stock,data_item,Comment
 
 class ModelTestCase(unittest.TestCase):
@@ -25,5 +25,7 @@ class ModelTestCase(unittest.TestCase):
         #self.assertTrue(u.confirm(token))
 
     def test_service(self):
-        c = db_service.addComment('abc1','abc1')
-        print(c.created_time.strftime('%Y-%m-%d'))
+        #c = db_service.addComment('abc1','abc1')
+
+        #print(c.created_time.strftime('%Y-%m-%d'))
+        c = data_service.updateFinanceBasic('000418')
