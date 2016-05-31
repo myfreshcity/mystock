@@ -2,7 +2,11 @@
 {% block body %}
 
 <div class="container-fluid">
-    <a href="{{ url_for('stock.add') }}">添加股票</a>
+    <p>
+        <a href="{{ url_for('stock.add') }}">添加股票</a>
+        &nbsp; | &nbsp;
+        <a href="/stock/blog/sh000001">投资日志</a>
+    </p>
     <table id="example" class="display" cellspacing="0" width="90%">
         <thead>
         <tr>
@@ -11,7 +15,7 @@
             <th>市盈率</th>
             <th>市净率</th>
             <th>市现率</th>
-            <th>历史估值</th>
+            <th>每股收益</th>
             <th>财务分析</th>
             <th>股价走势</th>
             <th>日志</th>
@@ -22,15 +26,19 @@
         {% for d in stocks %}
         <tr>
             <td>{{d.code|e}}</td>
-            <td>{{d.name|e}}</td>
+            <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.sylv|e}}</td>
             <td>{{d.sjlv|e}}</td>
             <td>{{d.sxlv|e}}</td>
-            <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">查看</a></td>
-            <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">查看</a></td>
-            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">查看</a></td>
+            <td>{{d.mgsy|e}}</td>
+            <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.report_type|e}}</a></td>
+            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.price|e}}</a></td>
             <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
-            <td><a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a></td>
+            <td>
+                <a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a>
+                |
+                <a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a>
+            </td>
         </tr>
         {% endfor %}
         </tbody>
@@ -57,9 +65,29 @@ function sel(code) {
     });
   };
 
+function updateData(code){
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/setting/update/',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result){
+         if(result.msg == true){
+             alert('数据更新成功');
+         }else{
+            console.error(result.msg);
+         }
+        }
+    });
+
+}
+
 //加载完毕自动执行
 $(function(){
- $('#example').DataTable();
+ $('#example').DataTable({fixedHeader: true});
 });
 </script>
 

@@ -22,8 +22,11 @@ class Stock(db.Model):
 
     @property
     def current_price(self):
-        data = self.query_trade_data()
-        return round(float(data[3]), 2)
+        try:
+            data = self.query_trade_data()
+            return round(float(data[3]), 2)
+        except:
+            return None
 
     def query_trade_data(self):
         url = "http://hq.sinajs.cn/list=" + self.code

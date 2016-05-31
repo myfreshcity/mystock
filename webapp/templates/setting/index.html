@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block body %}
 
-<div>
+<div class="col-md-10">
 <table id="example" class="display" cellspacing="0" width="90%">
         <thead>
             <tr>
@@ -15,11 +15,13 @@
             <tr>
                 <td>{{d.name|e}}</td>
                 <td>{{d.update_time|e}}</td>
-                <td><a href='/setting/update/{{d.id|e}}'>更新</a></td>
+                <td><a href='/setting/updateAll/{{d.id|e}}'>更新</a></td>
             </tr>
         {% endfor %}
         </tbody>
 </table>
 </div>
-
+<script type="text/javascript">
+var mytable = $('#example').DataTable();
+</script>
 {% endblock %}

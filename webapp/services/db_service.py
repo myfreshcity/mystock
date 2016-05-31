@@ -5,25 +5,15 @@ import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db
-from webapp.models import MyStock,Stock,data_item,Comment
+from webapp.models import MyStock,Stock,DataItem,Comment
 import tushare as ts
 import json
+from pandas.tseries.offsets import *
 from datetime import datetime
 import urllib2,re
 
 from pymongo import MongoClient
 client = MongoClient('127.0.0.1',27017)
-
-def getUserBill(year,month):
-    df = pd.read_sql_query("select money,time from invest where status in ('还款中', '完成', '投标成功') and  year(time)="+year+" and month(time)="+month+"",db.engine,index_col='time')
-    gdf = df.groupby([pd.TimeGrouper(freq='M')])
-    agdf = gdf['money'].agg([np.sum, np.size])
-    return agdf
-
-def getUsers():
-    url = 'http://s3.amazonaws.com/assets.datacamp.com/course/dasi/present.txt'
-    df = pd.read_table(url, sep=' ')
-    return df
 
 def getLatestTradeData():
     #df = ts.get_tick_data('600848', date='2014-12-22')
@@ -39,12 +29,16 @@ def getLatestFinaceData():
     client.db.tickdata.insert(json.loads(df.to_json(orient='records')))
     return df
 
+def getItemDates():
+    items = DataItem.query.all()
+    return items
+
 def getStocks():
     df = pd.read_sql_query("select code,name,zsz from stocks",db.engine,index_col='code')
     return df
 
 def getMyStocks(flag):
-    df = pd.read_sql_query("select code,name,market from my_stocks where flag=%(flag)s", db.engine, \
+    df = pd.read_sql_query("select code,name,market from my_stocks where code != '000001' and flag=%(flag)s", db.engine, \
                            index_col='code', params={'flag': flag})
     df1 = getPerStockPrice(df)
     df2 = getPerStockRevenue()
@@ -60,17 +54,25 @@ def getPerStockPrice(df):
         q_st_codes.append(row['market'] + index)
 
     str = ','.join(q_st_codes)
-    url = "http://hq.sinajs.cn/list=" + str
-    req = urllib2.Request(url)
-    res_data = urllib2.urlopen(req).read()
+    try:
+        url = "http://hq.sinajs.cn/list=" + str
+        req = urllib2.Request(url)
+        res_data = urllib2.urlopen(req).read()
+    except:
+        res_data = ''
 
     st_valus = []
     st_codes = []
     for st in q_st_codes:
         regex = r'var hq_str_' + st + '="(.*)".*'
-        match = re.search(regex, res_data, re.M).group(1)
-        trade_data = match.split(',')
-        st_valus.append(round(float(trade_data[3]), 2))
+        match = re.search(regex, res_data, re.M)
+        if match:
+            match = match.group(1)
+            trade_data = match.split(',')
+            v = round(float(trade_data[3]), 2)
+        else:
+            v = None
+        st_valus.append(v)
         st_codes.append(st[2:])
     return pd.DataFrame(st_valus, index=st_codes,columns=['price'])
 
@@ -93,6 +95,50 @@ def getStockRevenue(code):
                            db.engine,index_col='report_type',params={'name':code})
     #df.index = pd.to_datetime(df['report_type'])
     return df
+
+#获取最近3年每季度营收
+def get_quart_stock_revenue(code):
+    df = get_revenue_df(code)
+    #获取最近的日期
+    latest_date = df.iat[0, 1]
+    now = pd.to_datetime(latest_date)
+    #最近
+    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
+    df1 = df.iloc[df.index.isin(in_df_date)]
+    #去年同期
+    now = now - DateOffset(months=12)
+    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
+    df2 = df.iloc[df.index.isin(in_df_date)]
+    #前年同期
+    now = now - DateOffset(months=24)
+    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
+    df3 = df.iloc[df.index.isin(in_df_date)]
+
+    return (df1,df2,df3)
+
+
+#获取最近5年营收
+def get_year_stock_revenue(code):
+    df = get_revenue_df(code)
+    #获取最近的日期
+    latest_date = df.iat[0, 1]
+    last_year_end = YearEnd().rollback(latest_date)
+    in_df_date = pd.date_range(end=last_year_end, periods=5, freq='12M')
+    df4 = df.iloc[df.index.isin(in_df_date)]
+    return df4
+
+#获取营收df
+def get_revenue_df(code):
+    df = pd.read_sql_query(
+        "select code,report_type,yysr,jlr,lrze,kjlr,zzc,gdqy,jyjxjl,mgsy,roe,mgjyxjl,mgjzc,mgsy_ttm,mgjyxjl_ttm \
+        from stock_finance_basic \
+        where code=%(name)s",
+        db.engine, params={'name': code})
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df3 = df.set_index(i)
+    df4 = df3.sort_index(ascending=False)
+    return df4
+
 
 #历史估值
 def getStockValuation(code, category):
@@ -129,22 +175,6 @@ def getStockData(code):
     pd.DataFrame(list(cursor))
     return df
 
-def getUsersdzc(year,month):
-    df = pd.read_sql_query("select id,register_time from user WHERE year(register_time)="+year+" and month(register_time)="+month+"",db.engine,index_col='register_time')
-    gdf = df.groupby([pd.TimeGrouper(freq='D')])
-    agdf = gdf['id'].agg([np.size])
-    return agdf
-
-def getUsersmzc(year,month):
-	df = pd.read_sql_query("select id,register_time from user WHERE year(register_time)="+year+" and month(register_time)="+month+"",db.engine,index_col='register_time')
-	gdf = df.groupby([pd.TimeGrouper(freq='M')])
-	agdf = gdf['id'].agg([np.size])
-	return agdf
-
-def getItemDates():
-    items = data_item.DataItem.query.all()
-    return items
-
 def getStock(code):
     stock = db.session.query(Stock).filter_by(code = code).first()
     return stock
@@ -154,9 +184,10 @@ def getMyStock(code):
     return stock
 
 def addMystock(code):
+    code = code.strip()
     if len(code) != 8:
         return "'"+code+"'无效,长度应为8位,以sz/sh加数字标示"
-    mystock = db.session.query(MyStock).filter_by(code = code[2:].strip()).first()
+    mystock = db.session.query(MyStock).filter_by(code = code[2:]).first()
     if not mystock:
         #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
         #stock = Stock.find_by_code(code)

@@ -39,12 +39,13 @@ def updateFinanceBasic(code):
 
         ndf = calculateTTMValue(df1,code)
         ndf.to_sql('stock_finance_basic', db.engine,if_exists='append', index=False, chunksize=1000)
-
+        app.logger.info(code + ' finance update done...')
         return True
     else:
         return False
 
 def findFinanceData(code,period):
+    app.logger.info('begin query finance data:'+code+'-'+period)
     period = re.sub('03.31', '03.15', period)
     url = "http://stockdata.stock.hexun.com/2008/zxcwzb.aspx?stockid="+code+"&accountdate="+period
     req = urllib2.Request(url =url,headers = headers)
@@ -87,7 +88,7 @@ def calculateTTMValue(in_df,code):
             lastYearEnd = YearEnd().rollback(index)
             # offset = offset.strftime('%Y-%m-%d')
             lastYearQuart = index - DateOffset(months=12)
-            print(index.strftime('%Y-%m-%d') + ':' + lastYearEnd.strftime('%Y-%m-%d') + ':' + lastYearQuart.strftime(
+            app.logger.debug(index.strftime('%Y-%m-%d') + ':' + lastYearEnd.strftime('%Y-%m-%d') + ':' + lastYearQuart.strftime(
                 '%Y-%m-%d'))
             try:
                 if index.quarter != 4:
@@ -105,5 +106,9 @@ def calculateTTMValue(in_df,code):
                 app.logger.error(ex)
                 df3.mgsy_ttm.loc[index] = float(row.mgsy)
                 df3.mgjyxjl_ttm.loc[index] = float(row.mgjyxjl)
+
+            #数据位截取
+            df3.mgsy_ttm.loc[index] = round(df3.mgsy_ttm.loc[index],2)
+            df3.mgjyxjl_ttm.loc[index] = round(df3.mgjyxjl_ttm.loc[index],2)
 
     return df3.iloc[df3.index.isin(in_df_date)]

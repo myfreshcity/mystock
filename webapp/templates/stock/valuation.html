@@ -3,37 +3,47 @@
 {% block body %}
 
 <div class="container-fluid">
-    <p class="text-left">市盈率 = 收盘价/每股收益(TTM)</p>
-    <p class="text-left">市销率 = 收盘价/每股营业收入(TTM)</p>
-    <p class="text-left">市现率 = 收盘价/每股经营现金流(TTM)</p>
-
     <p>
         <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code}}.shtml" target="_blank">股东人数变化</a>
         &nbsp; | &nbsp;
         <a href="#" onclick="updateData()">数据更新</a>
+        &nbsp; | &nbsp;
+        <a href="#valuation">历史估值</a>
     </p>
-
 
     <div class="btn-group" role="group" aria-label="...">
         <button type="button" class="btn btn-default" onclick="getData('year')">年度</button>
         <button type="button" class="btn btn-default" onclick="getData('quart')">季度</button>
     </div>
 
-    <div id="valuation" style="min-width:600px;height:400px"></div>
+    <p>
+        <div id="revenue-1" class="col-md-6"></div>
+        <div id="revenue-2" class="col-md-6"></div>
+        <div id="revenue-3" class="col-md-6"></div>
+        <div id="revenue-4" class="col-md-6"></div>
+        <div id="valuation" class="col-md-12"></div>
+    </p>
+    <p>
+        <table id="example" width="90%"></table>
+    </p>
 
-    <button type="button" id="toggleButton">列表显示</button>
-    <table id="example" class="display" cellspacing="0" width="100%" style="display:none"></table>
-
-
-    <div id="revenue-1" class="col-md-6"></div>
-    <div id="revenue-2" class="col-md-6"></div>
-    <div id="revenue-3" class="col-md-6"></div>
-    <div id="revenue-4" class="col-md-6"></div>
-    {{ comment(code) }}
 
 </div>
 
 <script type="text/javascript">
+
+var mytable = $('#example').DataTable({
+        columns: [
+            { title: "日期" },
+            { title: "收盘价" },
+            { title: "市盈率" },
+            { title: "市销率" },
+            { title: "市现率" },
+            { title: "每股收益TTM" },
+            { title: "每股营业收入TTM" },
+            { title: "每股经营现金流TTM" }
+        ]
+    });
 
 function updateData(){
     var aj = $.ajax( {
@@ -86,35 +96,64 @@ function getData(category) {
 //营收
 function revenue(result){
 
-var yysrs = {'data':result.data.yysr };
-var jlrs = {'name':'营业利润','data':result.data.jlr };
-var jyjxjls = {'name':'经营净现金流','data':result.data.jyjxjl };
-var drate = {'name':'负债率','data':result.data.drate};
+if(result.cat=='year'){
+    var yysrs = [{'name':'营业收入','data':result.data.yysr }];
+    var jlrs = [{'name':'营业利润','data':result.data.jlr }];
+    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl }];
+    var drate = [{'name':'股东权益','data':result.data.drate}];
+}else{
+    var yysrs = [
+        {'name':'最近','data':result.data.yysr[0]},
+        {'name':'去年同期','data':result.data.yysr[1]},
+        {'name':'前年同期','data':result.data.yysr[2]}
+        ];
+    var jlrs = [
+        {'name':'最近','data':result.data.jlr[0]},
+        {'name':'去年同期','data':result.data.jlr[1]},
+        {'name':'前年同期','data':result.data.jlr[2]}
+        ];
+    var jyjxjls = [
+        {'name':'最近','data':result.data.jyjxjl[0]},
+        {'name':'去年同期','data':result.data.jyjxjl[1]},
+        {'name':'前年同期','data':result.data.jyjxjl[2]}
+        ];
+    var drate = [
+        {'name':'最近','data':result.data.drate[0]},
+        {'name':'去年同期','data':result.data.drate[1]},
+        {'name':'前年同期','data':result.data.drate[2]}
+        ];
+}
+
 
 var mydate = {{ mydate|safe}};
 
     $('#revenue-1').highcharts({
         chart: {type: 'column'},
         title: {text: '营业收入'},
-        series: [yysrs]
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: yysrs
     });
     $('#revenue-2').highcharts({
-        chart: {
-            type: 'column'
-        },
-        series: [jlrs]
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '营业利润'},
+        credits: {enabled: false},
+        series: jlrs
     });
     $('#revenue-3').highcharts({
-        chart: {
-            type: 'column'
-        },
-        series: [jyjxjls]
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '经营净现金流'},
+        credits: {enabled: false},
+        series: jyjxjls
     });
     $('#revenue-4').highcharts({
-        chart: {
-            type: 'column'
-        },
-        series: [drate]
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '股东权益'},
+        credits: {enabled: false},
+        series: drate
     });
 }
 
@@ -131,10 +170,10 @@ function valuation(result){
     var mydate = {{ mydate|safe}};
 
     //显示数据
-    $('#example').DataTable( {
+    mytable.destroy();
+    mytable = $('#example').DataTable( {
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
-        "paging": false,
         searching: false,
         columns: [
             { title: "日期" },
@@ -149,15 +188,15 @@ function valuation(result){
     } );
 
 
-    $('#valuation').highcharts({                   //图表展示容器，与div的id保持一致
+    $('#valuation').highcharts({
         chart: {
             zoomType: 'xy'
         },
         title: {
-            text: '{{ title|safe}}历史估值(当前价格:{{ price|safe}})'      //指定图表标题
+            text: '{{ title|safe}}历史估值(当前价格:{{ price|safe}})'
         },
         xAxis: {
-            categories: []   //指定x轴分组
+            categories: []
         },
 
         yAxis: [{ // Primary yAxis
@@ -195,11 +234,7 @@ function valuation(result){
 //加载完毕自动执行
 
 $(function(){
-
 getData('year');
-  $("#toggleButton").click(function(){
-  $("#example").toggle();
-  });
 
 });
 

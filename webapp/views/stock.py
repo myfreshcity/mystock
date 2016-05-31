@@ -9,6 +9,7 @@ import time
 import urllib
 from webapp.services import db_service as ds
 from webapp.models import MyStock
+from webapp import functions as fn
 from flask import current_app as app
 
 blueprint = Blueprint('stock', __name__)
@@ -23,6 +24,7 @@ def index():
             'name':row['name'],
             'code':row.code,
             'price':row.price,
+            'mgsy': row.mgsy_ttm,
             'ncode':row['market']+row['code'],
             'sxlv':round(row.price/row.mgjyxjl_ttm,2),
             'sylv':round(row.price/row.mgsy_ttm,2),
@@ -42,6 +44,7 @@ def mystock():
             'code':row.code,
             'ncode': row['market'] + row['code'],
             'price':row.price,
+            'mgsy': row.mgsy_ttm,
             'sxlv':round(row.price/row.mgjyxjl_ttm,2),
             'sylv':round(row.price/row.mgsy_ttm,2),
             'sjlv': round(row.price/row.mgjzc,2),
@@ -99,15 +102,54 @@ def valuationJson():
 
 @blueprint.route('/revenueJson', methods=['POST'])
 def revenueJson():
-    code = request.form['code']
-    df = ds.getStockRevenue(code)
-    yysr = [[date.encode('utf-8'), round(val / 1000000, 2)] for date, val in zip(df.index, df['yysr'])]
-    jlr = [[date.encode('utf-8'), round(val / 1000000, 2)] for date, val in zip(df.index, df['jlr'])]
-    jyjxjl = [[date.encode('utf-8'), round(val / 1000000, 2)] for date, val in zip(df.index, df['jyjxjl'])]
-    drate = [[date.encode('utf-8'), round(val, 2)] for date, val in zip(df.index, df['drate'])]
-    dateTime = pd.date_range(start='20001231', periods=15, freq='12M').to_series()
-    date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'drate':drate})
+    yysr = [] #营业收入
+    jlr = [] #净利润
+    jyjxjl = [] #经营性净现金流
+    gdqy = [] #股东权益
+
+
+    code = request.form['code'][2:]
+    category = request.form['category']
+
+    if category=='year':
+        df = ds.get_year_stock_revenue(code)
+        for index, row in df.iterrows():
+            yysr.append(fn.get_data_array(row['report_type'], row['yysr']))
+            jlr.append(fn.get_data_array(row['report_type'], row['kjlr']))
+            jyjxjl.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
+            gdqy.append(fn.get_data_array(row['report_type'], row['gdqy']))
+    else:
+        yysr_1=[];jlr_1=[];jyjxjl_1=[];gdqy_1=[]
+        yysr_2=[];jlr_2=[];jyjxjl_2=[];gdqy_2=[]
+        yysr_3=[];jlr_3=[];jyjxjl_3=[];gdqy_3=[]
+
+        (df1,df2,df3) = ds.get_quart_stock_revenue(code)
+
+        for index, row in df1.iterrows():
+            yysr_1.append(fn.get_data_array(row['report_type'], row['yysr']))
+            jlr_1.append(fn.get_data_array(row['report_type'], row['kjlr']))
+            jyjxjl_1.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
+            gdqy_1.append(fn.get_data_array(row['report_type'], row['gdqy']))
+
+        for index, row in df2.iterrows():
+            yysr_2.append(fn.get_data_array(row['report_type'], row['yysr']))
+            jlr_2.append(fn.get_data_array(row['report_type'], row['kjlr']))
+            jyjxjl_2.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
+            gdqy_2.append(fn.get_data_array(row['report_type'], row['gdqy']))
+
+        for index, row in df3.iterrows():
+            yysr_3.append(fn.get_data_array(row['report_type'], row['yysr']))
+            jlr_3.append(fn.get_data_array(row['report_type'], row['kjlr']))
+            jyjxjl_3.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
+            gdqy_3.append(fn.get_data_array(row['report_type'], row['gdqy']))
+
+
+        yysr = [yysr_1,yysr_2,yysr_3]
+        jlr = [jlr_1, jlr_2, jlr_3]
+        jyjxjl = [yysr_1, yysr_2, yysr_3]
+        gdqy = [yysr_1, yysr_2, yysr_3]
+
+    return jsonify(cat=category,data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'drate':gdqy})
 
 
 @blueprint.route('/add', methods=['GET', 'POST'])
