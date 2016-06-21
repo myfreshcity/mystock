@@ -15,7 +15,6 @@
             <th>市盈率</th>
             <th>市净率</th>
             <th>市现率</th>
-            <th>每股收益</th>
             <th>财务分析</th>
             <th>股价走势</th>
             <th>日志</th>
@@ -30,7 +29,6 @@
             <td>{{d.sylv|e}}</td>
             <td>{{d.sjlv|e}}</td>
             <td>{{d.sxlv|e}}</td>
-            <td>{{d.mgsy|e}}</td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.report_type|e}}</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.price|e}}</a></td>
             <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
@@ -38,6 +36,8 @@
                 <a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a>
                 |
                 <a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a>
+                |
+                <a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">删除</a>
             </td>
         </tr>
         {% endfor %}
@@ -46,6 +46,9 @@
 </div>
 
 <script type=text/javascript>
+
+var mytable;
+
 function sel(code) {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/rollback',
@@ -58,6 +61,26 @@ function sel(code) {
     success:function(data) {
         if(data.msg =="true" ){
             window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
+
+function del(code,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/del',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+        mytable.row($(el).parents('tr')).remove().draw(false);
+            //window.location.reload();
         }else{
             console.warn("server result is:"+data.msg);
         }
@@ -87,7 +110,7 @@ function updateData(code){
 
 //加载完毕自动执行
 $(function(){
- $('#example').DataTable({fixedHeader: true});
+  mytable = $('#example').DataTable({fixedHeader: true});
 });
 </script>
 

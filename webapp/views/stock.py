@@ -176,6 +176,12 @@ def rollback():
     ds.rollbackStock(code)
     return jsonify(msg='true')
 
+@blueprint.route('/del', methods=['POST'])
+def hardRemove():
+    code = request.form['code']
+    ds.hardRemoveMystock(code)
+    return jsonify(msg='true')
+
 @blueprint.route('/queryComments', methods=['GET', 'POST'])
 def queryComments():
     code = request.form['code']

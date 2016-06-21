@@ -9,6 +9,12 @@
         <a href="#" onclick="updateData()">数据更新</a>
         &nbsp; | &nbsp;
         <a href="#valuation">历史估值</a>
+        &nbsp; | &nbsp;
+        {% if code[:2]=='sz' %}
+        <a href="http://disclosure.szse.cn/m/drgg_search.htm?secode={{code[2:]}}" target="_blank">财务报告</a>
+        {% else %}
+        <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}" target="_blank">财务报告</a>
+        {% endif %}
     </p>
 
     <div class="btn-group" role="group" aria-label="...">
@@ -21,10 +27,12 @@
         <div id="revenue-2" class="col-md-6"></div>
         <div id="revenue-3" class="col-md-6"></div>
         <div id="revenue-4" class="col-md-6"></div>
-        <div id="valuation" class="col-md-12"></div>
     </p>
     <p>
         <table id="example" width="90%"></table>
+    </p>
+    <p>
+        <div id="valuation" class="col-md-12"></div>
     </p>
 
 

@@ -212,6 +212,11 @@ def removeMystock(code):
     mystock.flag = '1'
     return db.session.flush()
 
+def hardRemoveMystock(code):
+    mystock = db.session.query(MyStock).filter_by(code = code).first()
+    db.session.delete(mystock)
+    return db.session.flush()
+
 def rollbackStock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
     mystock.flag = '0'

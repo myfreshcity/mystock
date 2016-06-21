@@ -7,7 +7,7 @@ import numpy as np
 from flask import current_app as app
 from webapp.services import db
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
-import json
+import json,random,time
 from pandas.tseries.offsets import *
 from datetime import datetime
 import urllib2,re,html5lib
@@ -19,10 +19,21 @@ def updateFinanceBasic(code):
     index = pd.date_range('2000-1-1', datetime.today(), freq='Q')
     periods = [x.strftime('%Y.%m.%d') for x in index]
 
+    #为避免网络访问频繁,分2年为一个阶段分别读取数据取值
+    l = len(periods)
+    i = 0
+    while (i <= l):
+        ri = random.randint(3, 8)
+        time.sleep(ri) #延迟执行
+        updateFinanceBasicByPeriod(periods[i:i+8],code)
+        i = i + 8
+
+
+def updateFinanceBasicByPeriod(periods,code):
     df = pd.DataFrame()
     for x in periods:
-        fb = db.session.query(FinanceBasic).filter_by(code=code,report_type=x).first()
-        if(not fb):
+        fb = db.session.query(FinanceBasic).filter_by(code=code, report_type=x).first()
+        if (not fb):
             fd = findFinanceData(code, x)
             if not fd.empty:
                 df = df.append(fd)
@@ -36,13 +47,13 @@ def updateFinanceBasic(code):
         }, index=df.index)
 
         df1 = pd.concat([df, tpd], axis=1)
-
-        ndf = calculateTTMValue(df1,code)
-        ndf.to_sql('stock_finance_basic', db.engine,if_exists='append', index=False, chunksize=1000)
+        ndf = calculateTTMValue(df1, code)
+        ndf.to_sql('stock_finance_basic', db.engine, if_exists='append', index=False, chunksize=1000)
         app.logger.info(code + ' finance update done...')
         return True
     else:
         return False
+
 
 def findFinanceData(code,period):
     app.logger.info('begin query finance data:'+code+'-'+period)
