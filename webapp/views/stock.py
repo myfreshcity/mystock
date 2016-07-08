@@ -31,7 +31,7 @@ def index():
             'sjlv': round(row.price/row.mgjzc,2),
             'report_type':row.report_type
         })
-    return render_template('stock/index.html', title='备选', stocks=sdata)
+    return render_template('stock/index.html', title='备选股', stocks=sdata)
 
 
 @blueprint.route('/mystock', methods=['GET'])
@@ -54,14 +54,14 @@ def mystock():
     return render_template('stock/mystock.html', title='自选股', stocks=sdata)
 
 
-@blueprint.route('/valuation/<code>', methods=['GET'])
-def valuation(code):
+@blueprint.route('/<code>', methods=['GET'])
+def home(code):
     stock = ds.getStock(code)
     price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return render_template('stock/valuation.html', title=stock.name, mydate=date,code=code,price=price)
+    return render_template('stock/home.html', title=stock.name, mydate=date,code=code,price=price)
 
 @blueprint.route('/blog/<code>', methods=['GET'])
 def blog(code):
@@ -69,6 +69,11 @@ def blog(code):
     #price = stock.current_price
     return render_template('stock/blog.html', title=stock.name, code=code)
 
+@blueprint.route('/valuation/<code>', methods=['GET'])
+def valuation(code):
+    stock = ds.getMyStock(code)
+    #price = stock.current_price
+    return render_template('stock/valuation.html', title=stock.name, code=code)
 
 @blueprint.route('/valuationJson', methods=['POST'])
 def valuationJson():

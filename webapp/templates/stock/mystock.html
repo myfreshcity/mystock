@@ -20,7 +20,7 @@
         {% for d in stocks: %}
         <tr>
             <td>{{d.code|e}}</td>
-            <td><a href='/stock/valuation/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
+            <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.sylv|e}}</td>
             <td>{{d.sjlv|e}}</td>
             <td>{{d.sxlv|e}}</td>
