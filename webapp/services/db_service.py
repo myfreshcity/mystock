@@ -117,6 +117,13 @@ def get_quart_stock_revenue(code):
     return (df1,df2,df3)
 
 
+#获取每季度营收
+def get_quarter_stock_revenue(code,quarter):
+    df = get_revenue_df(code)
+    tdate = df.index[df.index.quarter == quarter]
+    df4 = df.iloc[df.index.isin(tdate)]
+    return df4
+
 #获取最近5年营收
 def get_year_stock_revenue(code):
     df = get_revenue_df(code)
@@ -136,26 +143,50 @@ def get_revenue_df(code):
         db.engine, params={'name': code})
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df3 = df.set_index(i)
-    df4 = df3.sort_index(ascending=False)
+    df4 = df3.sort_index()
     return df4
 
 
 #历史估值
-def getStockValuation(code, category):
-    if category == 'quart':
-        df = pd.read_sql_query("select "
-                               "close,mgsy_ttm,mgyysr_ttm,mgjyxjl_ttm,close/mgsy_ttm as pe,close/mgyysr_ttm as ps,close/mgjyxjl_ttm as pcf,report_type "
-                               "from stocks "
-                               "where year(report_type)>=2005 and code=%(name)s",
-                               db.engine, index_col='report_type', params={'name': code}).dropna(axis=0)
-    else:
-        df = pd.read_sql_query("select "
-                               "close,mgsy_ttm,mgyysr_ttm,mgjyxjl_ttm,close/mgsy_ttm as pe,close/mgyysr_ttm as ps,close/mgjyxjl_ttm as pcf,report_type "
-                               "from stocks "
-                               "where year(report_type)>=2005 and month(report_type)= 12 and code=%(name)s",
-                               db.engine, index_col='report_type', params={'name': code}).dropna(axis=0)
-    return df
+def getStockValuation(code):
+    sdf = get_revenue_df(code) #获取收益数据
+    #获取交易数据
+    tdf = pd.read_sql_query("select "
+                            "trade_date,close,volume,adj_close "
+                            "from stock_trade_basic "
+                            "where code=%(name)s order by trade_date",
+                            db.engine, params={'name': code}).dropna(axis=0)
 
+    def getRevence(x, attri):
+        dt = pd.to_datetime(x)
+        sdate = dt + QuarterEnd()
+        mg_val = sdf[sdf.index == sdate].get(attri)
+        if (len(mg_val.values) == 0):  # 如果没数值，取上一季度
+            sdate = dt - QuarterEnd()
+            mg_val = sdf[sdf.index == sdate].get(attri)
+            # 如果缺少值
+            if (len(mg_val.values) == 0):
+                mg_val = pd.Series([10000])  # 作为坏数据沉没
+        return 10000 if mg_val.values[0]==0 else mg_val.values[0]
+
+    def getReportType(x):
+        dt = pd.to_datetime(x)
+        sdate = dt + QuarterEnd()
+        return sdate
+
+    df = pd.DataFrame({
+        'trade_date': tdf['trade_date'],
+        'close': tdf['close'],
+        'volume': tdf['volume'],
+        'adj_close': tdf['adj_close'],
+        'report_type': tdf['trade_date'].apply(getReportType),
+        'mgsy_ttm': tdf['trade_date'].apply(getRevence, args=('mgsy_ttm',)),
+        'mgjzc': tdf['trade_date'].apply(getRevence, args=('mgjzc',)),
+        'mgjyxjl_ttm': tdf['trade_date'].apply(getRevence, args=('mgjyxjl_ttm',)),
+        'code': code
+    })
+    #df.set_index('trade_date')
+    return df
 
 def getStockData(code):
     cursor = client.mystock.hisdata.find({"cd": '002337'}, ["date", "close", "volume"])

@@ -1,195 +1,62 @@
-{% from "macro/comment.html" import comment with context %}
 {% extends "layout.html" %}
-{% block body %}
-
-<div class="container-fluid">
-    <p>
+{% block nav %}
+    <li>
         <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code}}.shtml" target="_blank">股东人数变化</a>
-        &nbsp; | &nbsp;
-        <a href="#" onclick="updateData()">数据更新</a>
-        &nbsp; | &nbsp;
+    </li>
+    <li>
+        <a href="#" onclick="updateData('{{code|e}}')">数据更新</a>
+    </li>
+    <li>
         <a href='/stock/valuation/{{code|e}}' target="_blank">历史估值</a>
-        &nbsp; | &nbsp;
+    </li>
+    <li>
         {% if code[:2]=='sz' %}
         <a href="http://disclosure.szse.cn/m/drgg_search.htm?secode={{code[2:]}}" target="_blank">财务报告</a>
         {% else %}
-        <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}" target="_blank">财务报告</a>
+        <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}"
+           target="_blank">财务报告</a>
         {% endif %}
+    </li>
+{% endblock %}
+
+{% block body %}
+
+<p class="container-fluid">
+    <p class="row">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle"
+                    data-toggle="dropdown">
+                选择统计周期 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#" onclick="getData(1,'{{ code|safe }}')">第一季度</a></li>
+                <li><a href="#" onclick="getData(2,'{{ code|safe }}')">第二季度</a></li>
+                <li><a href="#" onclick="getData(3,'{{ code|safe }}')">第三季度</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="getData(4,'{{ code|safe }}')">年度(第四季度)</a></li>
+            </ul>
+        </div>
     </p>
 
-    <div class="btn-group" role="group" aria-label="...">
-        <button type="button" class="btn btn-default" onclick="getData('year')">年度</button>
-        <button type="button" class="btn btn-default" onclick="getData('quart')">季度</button>
-    </div>
-
-    <p>
-        <div id="revenue-1" class="col-md-6"></div>
-        <div id="revenue-2" class="col-md-6"></div>
-        <div id="revenue-3" class="col-md-6"></div>
-        <div id="revenue-4" class="col-md-6"></div>
+    <p class="row">
+        <div id="revenue_0"></div>
+        <div id="revenue_1"></div>
+        <div id="revenue_2"></div>
+        <div id="revenue_3"></div>
+        <div id="revenue_4"></div>
     </p>
-    <p>
-        <table id="example" width="90%"></table>
+
+    <p class="row">
+        <table id="example" class="display" cellspacing="0" width="90%"></table>
     </p>
 
 
 </div>
-
+<script type="text/javascript" src="{{ url_for('static', filename='stock/home.js') }}"></script>
 <script type="text/javascript">
-
-var mytable = $('#example').DataTable({
-        columns: [
-            { title: "日期" },
-            { title: "收盘价" },
-            { title: "市盈率" },
-            { title: "市销率" },
-            { title: "市现率" },
-            { title: "每股收益TTM" },
-            { title: "每股营业收入TTM" },
-            { title: "每股经营现金流TTM" }
-        ]
-
-});
-
-function updateData(){
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/setting/update/',
-    data:{
-             code : '{{ code|safe }}'
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:function(result){
-         if(result.msg == true){
-             alert('数据更新成功');
-         }else{
-            console.error(result.msg);
-         }
-        }
-    });
-
-}
-
-
-function getData(category) {
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/stock/revenueJson',
-    data:{
-             category : category,
-             code : '{{ code|safe }}'
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:revenue
-    });
-  };
-
-//营收
-function revenue(result){
-
-if(result.cat=='year'){
-    var yysrs = [{'name':'营业收入','data':result.data.yysr }];
-    var jlrs = [{'name':'营业利润','data':result.data.jlr }];
-    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl }];
-    var drate = [{'name':'股东权益','data':result.data.drate}];
-}else{
-    var yysrs = [
-        {'name':'最近','data':result.data.yysr[0]},
-        {'name':'去年同期','data':result.data.yysr[1]},
-        {'name':'前年同期','data':result.data.yysr[2]}
-        ];
-    var jlrs = [
-        {'name':'最近','data':result.data.jlr[0]},
-        {'name':'去年同期','data':result.data.jlr[1]},
-        {'name':'前年同期','data':result.data.jlr[2]}
-        ];
-    var jyjxjls = [
-        {'name':'最近','data':result.data.jyjxjl[0]},
-        {'name':'去年同期','data':result.data.jyjxjl[1]},
-        {'name':'前年同期','data':result.data.jyjxjl[2]}
-        ];
-    var drate = [
-        {'name':'最近','data':result.data.drate[0]},
-        {'name':'去年同期','data':result.data.drate[1]},
-        {'name':'前年同期','data':result.data.drate[2]}
-        ];
-}
-
-
-var mydate = {{ mydate|safe}};
-
-    $('#revenue-1').highcharts({
-        chart: {type: 'column'},
-        title: {text: '营业收入'},
-        xAxis: {categories: []},
-        credits: {enabled: false},
-        series: yysrs
-    });
-    $('#revenue-2').highcharts({
-        chart: {type: 'column'},
-        xAxis: {categories: []},
-        title: {text: '营业利润'},
-        credits: {enabled: false},
-        series: jlrs
-    });
-    $('#revenue-3').highcharts({
-        chart: {type: 'column'},
-        xAxis: {categories: []},
-        title: {text: '经营净现金流'},
-        credits: {enabled: false},
-        series: jyjxjls
-    });
-    $('#revenue-4').highcharts({
-        chart: {type: 'column'},
-        xAxis: {categories: []},
-        title: {text: '股东权益'},
-        credits: {enabled: false},
-        series: drate
-    });
-}
-
-//估值
-function valuation(result){
-    var pe = {'name':'市盈率'};
-    pe['data'] = result.data.pe;
-    var ps = {'name':'市销率'};
-    ps['data'] = result.data.ps;
-    var pcf = {'name':'市现率'};
-    pcf['data'] = result.data.pcf;
-    var close = {'name':'股价','type':'spline','yAxis':1 };
-    close['data'] = result.data.close;
-    var mydate = {{ mydate|safe}};
-
-    //显示数据
-    mytable.destroy();
-    mytable = $('#example').DataTable( {
-        data: result.data.tableData,
-        "order": [[ 0, "desc" ]],
-        searching: false,
-        columns: [
-            { title: "日期" },
-            { title: "收盘价" },
-            { title: "市盈率" },
-            { title: "市销率" },
-            { title: "市现率" },
-            { title: "每股收益TTM" },
-            { title: "每股营业收入TTM" },
-            { title: "每股经营现金流TTM" }
-        ]
-    } );
-
-}
-
-//加载完毕自动执行
-
 $(function(){
-getData('year');
-
+getData(4,'{{ code|safe }}');
 });
-
-
 </script>
 
 {% endblock %}

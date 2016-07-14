@@ -31,7 +31,7 @@ def index():
             'sjlv': round(row.price/row.mgjzc,2),
             'report_type':row.report_type
         })
-    return render_template('stock/index.html', title='备选股', stocks=sdata)
+    return render_template('stock/stock_list.html', title='备选股', stocks=sdata)
 
 
 @blueprint.route('/mystock', methods=['GET'])
@@ -51,7 +51,7 @@ def mystock():
             'report_type':row.report_type
         })
 
-    return render_template('stock/mystock.html', title='自选股', stocks=sdata)
+    return render_template('stock/mystock_list.html', title='自选股', stocks=sdata)
 
 
 @blueprint.route('/<code>', methods=['GET'])
@@ -80,24 +80,34 @@ def valuationJson():
     code = request.form['code']
     category = request.form['category']
     price = request.form['price']
-    df = ds.getStockValuation(code,category)
+    df = ds.getStockValuation(code[2:])
 
-    close = [[date.encode('utf-8'), round(val, 2)] for date, val in zip(df.index, df['close'])]
-
-    pe = [[date.encode('utf-8'), round(val, 2)] for date, val in zip(df.index, df['pe'])]
-    ps = [[date.encode('utf-8'), round(val, 2)] for date, val in zip(df.index, df['ps'])]
-    pcf = [[date.encode('utf-8'), round(val, 2)] for date, val in zip(df.index, df['pcf'])]
-
+    close = []
+    pe = []
+    ps = []
+    pcf = []
     tableData = []
+
     for index, row in df.iterrows():
+
+        spe = round(row['close']/row['mgsy_ttm'],2)
+        sps = round(row['close']/row['mgjzc'],2)
+        spcf = round(row['close']/row['mgjyxjl_ttm'],2)
+        tdate = row['trade_date'].strftime('%Y-%m-%d')
+
+        close.append([tdate,row['close']]);
+        pe.append([tdate,spe]);
+        ps.append([tdate, sps]);
+        pcf.append([tdate, spcf]);
+
         tableData.append(
-            [index.encode('utf-8'),
+            [tdate,
              row['close'],
-             round(row['pe'],2),
-             round(row['ps'],2),
-             round(row['pcf'],2),
+             spe,
+             sps,
+             spcf,
              round(row['mgsy_ttm'],2),
-             round(row['mgyysr_ttm'],2),
+             round(row['mgjzc'],2),
              round(row['mgjyxjl_ttm'],2)
              ]
         )
@@ -110,51 +120,19 @@ def revenueJson():
     yysr = [] #营业收入
     jlr = [] #净利润
     jyjxjl = [] #经营性净现金流
-    gdqy = [] #股东权益
-
+    roe = [] #净资产收益率
 
     code = request.form['code'][2:]
-    category = request.form['category']
+    quarter = int(request.form['quarter'])
+    df = ds.get_quarter_stock_revenue(code, quarter)
 
-    if category=='year':
-        df = ds.get_year_stock_revenue(code)
-        for index, row in df.iterrows():
-            yysr.append(fn.get_data_array(row['report_type'], row['yysr']))
-            jlr.append(fn.get_data_array(row['report_type'], row['kjlr']))
-            jyjxjl.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
-            gdqy.append(fn.get_data_array(row['report_type'], row['gdqy']))
-    else:
-        yysr_1=[];jlr_1=[];jyjxjl_1=[];gdqy_1=[]
-        yysr_2=[];jlr_2=[];jyjxjl_2=[];gdqy_2=[]
-        yysr_3=[];jlr_3=[];jyjxjl_3=[];gdqy_3=[]
+    for index, row in df.iterrows():
+        yysr.append(fn.get_data_array(row['report_type'], row['yysr']))
+        jlr.append(fn.get_data_array(row['report_type'], row['kjlr']))
+        jyjxjl.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
+        roe.append([row['report_type'].encode('utf-8'), round(row['roe'], 2)])
 
-        (df1,df2,df3) = ds.get_quart_stock_revenue(code)
-
-        for index, row in df1.iterrows():
-            yysr_1.append(fn.get_data_array(row['report_type'], row['yysr']))
-            jlr_1.append(fn.get_data_array(row['report_type'], row['kjlr']))
-            jyjxjl_1.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
-            gdqy_1.append(fn.get_data_array(row['report_type'], row['gdqy']))
-
-        for index, row in df2.iterrows():
-            yysr_2.append(fn.get_data_array(row['report_type'], row['yysr']))
-            jlr_2.append(fn.get_data_array(row['report_type'], row['kjlr']))
-            jyjxjl_2.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
-            gdqy_2.append(fn.get_data_array(row['report_type'], row['gdqy']))
-
-        for index, row in df3.iterrows():
-            yysr_3.append(fn.get_data_array(row['report_type'], row['yysr']))
-            jlr_3.append(fn.get_data_array(row['report_type'], row['kjlr']))
-            jyjxjl_3.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
-            gdqy_3.append(fn.get_data_array(row['report_type'], row['gdqy']))
-
-
-        yysr = [yysr_1,yysr_2,yysr_3]
-        jlr = [jlr_1, jlr_2, jlr_3]
-        jyjxjl = [yysr_1, yysr_2, yysr_3]
-        gdqy = [yysr_1, yysr_2, yysr_3]
-
-    return jsonify(cat=category,data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'drate':gdqy})
+    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'roe':roe},tableData=json.loads(df.to_json(orient="records")))
 
 
 @blueprint.route('/add', methods=['GET', 'POST'])

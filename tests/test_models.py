@@ -28,4 +28,5 @@ class ModelTestCase(unittest.TestCase):
         #c = db_service.addComment('abc1','abc1')
 
         #print(c.created_time.strftime('%Y-%m-%d'))
-        c = data_service.updateFinanceBasic('000418')
+        #c = data_service.updateFinanceBasic('000418')
+        c = data_service.updateTradeBasic('600000','sh')

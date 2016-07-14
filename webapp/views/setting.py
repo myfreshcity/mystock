@@ -23,8 +23,8 @@ def index():
 @blueprint.route('/update/', methods = ['GET','POST'])
 def update():
     code = request.form['code']
-    code = code[2:]
-    flag = dts.updateFinanceBasic(code)
+    flag = dts.updateFinanceBasic(code[2:]) #更新财务数据
+    dts.updateTradeBasic(code[2:],code[:2]) #更新交易数据
     return jsonify(msg=flag)
 
 @blueprint.route('/updateAll/<int:cat>', methods = ['GET','POST'])

@@ -1,16 +1,4 @@
-var mytable = $('#example').DataTable({
-            columns: [
-            { title: "日期" },
-            { title: "收盘价" },
-            { title: "市盈率" },
-            { title: "市销率" },
-            { title: "市现率" },
-            { title: "每股收益TTM" },
-            { title: "每股营业收入TTM" },
-            { title: "每股经营现金流TTM" }
-        ]
-
-});
+var mytable;
 
 function getData(category,price,code) {
     var aj = $.ajax( {
@@ -32,7 +20,7 @@ function getData(category,price,code) {
 function valuation(result){
     var pe = {'name':'市盈率'};
     pe['data'] = result.data.pe;
-    var ps = {'name':'市销率'};
+    var ps = {'name':'市净率'};
     ps['data'] = result.data.ps;
     var pcf = {'name':'市现率'};
     pcf['data'] = result.data.pcf;
@@ -40,8 +28,10 @@ function valuation(result){
     close['data'] = result.data.close;
 
     //显示数据
-    mytable.destroy();
+    if(mytable)mytable.destroy();
     mytable = $('#example').DataTable( {
+        scrollY: 300,
+        paging: false,
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
         searching: false,
@@ -49,10 +39,10 @@ function valuation(result){
             { title: "日期" },
             { title: "收盘价" },
             { title: "市盈率" },
-            { title: "市销率" },
+            { title: "市净率" },
             { title: "市现率" },
             { title: "每股收益TTM" },
-            { title: "每股营业收入TTM" },
+            { title: "每股净资产" },
             { title: "每股经营现金流TTM" }
         ]
     } );
@@ -68,7 +58,7 @@ function valuation(result){
         xAxis: {
             categories: []
         },
-
+        credits: {enabled: false},
         yAxis: [{ // Primary yAxis
             title: {
                 text: '估值',
@@ -97,9 +87,7 @@ function valuation(result){
             },
             opposite: true
         }],
-        series: [pe,ps,pcf,close]
+        series: [pe,ps,pcf]
     });
 }
-
-//加载完毕自动执行
 
