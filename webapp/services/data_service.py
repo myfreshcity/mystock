@@ -23,13 +23,19 @@ def updateTradeBasic(code,market):
         st_year = '2000'
         st_month = '00' #yahoo月份的特殊处理
         st_day = "01"
+        s_date = pd.to_datetime('2000-01-01').date()
     else:
         st_year = s_date.strftime("%Y")
         st_month = "%02d" % (s_date.month)  # yahoo月份的特殊处理,从下一月开始
         st_day = "%02d" % (s_date.day)
 
     #获得结束日期.当前日期上月最后一天
-    e_date = datetime.now() - MonthEnd()
+    e_date = (datetime.now() - MonthEnd()).date()
+    #日期间隔在一个月内,跳过.因为取的是月线数据
+    if((s_date - e_date).days<30):
+        app.logger.info('interval date less than 30 days, skip...')
+        return
+
     ed_year = e_date.strftime("%Y")
     ed_month = "%02d" % (e_date.month-1) #yahoo月份的特殊处理
     ed_day = "%02d" % (e_date.day)
@@ -54,8 +60,13 @@ def updateTradeBasic(code,market):
 
 
 def updateFinanceBasic(code):
-    #获得2000年以来的所有会计年度
-    index = pd.date_range('2000-1-1', datetime.today(), freq='Q')
+    sql = "select max(report_type) from stock_finance_basic where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    s_date = resultProxy.scalar()
+    if (s_date == None):
+        s_date = '2000.01.01' #获得2000年以来的所有会计年度
+
+    index = pd.date_range(s_date, datetime.today(), freq='Q')
     periods = [x.strftime('%Y.%m.%d') for x in index]
 
     #为避免网络访问频繁,分2年为一个阶段分别读取数据取值
