@@ -60,7 +60,7 @@ def mystock():
 
 @blueprint.route('/<code>', methods=['GET'])
 def home(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()

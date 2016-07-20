@@ -3,7 +3,7 @@ from datetime import datetime
 import urllib2,re
 
 class Stock(db.Model):
-    __tablename__ = 'stocks'
+    __tablename__ = 'stock_basic'
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(255))

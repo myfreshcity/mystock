@@ -34,7 +34,7 @@ def getItemDates():
     return items
 
 def getStocks():
-    df = pd.read_sql_query("select code,name,zsz from stocks",db.engine,index_col='code')
+    df = pd.read_sql_query("select code,name from stock_basic",db.engine,index_col='code')
     return df
 
 def getMyStocks(flag):
