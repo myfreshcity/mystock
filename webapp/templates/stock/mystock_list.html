@@ -11,7 +11,7 @@
             <th>市净率</th>
             <th>市现率</th>
             <th>财务分析</th>
-            <th>股价走势</th>
+            <th>市值(亿)</th>
             <th>日志</th>
             <th></th>
         </tr>
@@ -25,7 +25,7 @@
             <td>{{d.sjlv|e}}</td>
             <td>{{d.sxlv|e}}</td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.report_type|e}}</a></td>
-            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.price|e}}</a></td>
+            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
             <td><a href="#" onclick="javascript:del('{{d.code|e}}');return false;">删除</a></td>
         </tr>

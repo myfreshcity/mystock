@@ -21,14 +21,17 @@ def index():
     sdata = []
     for index, row in data.iterrows():
         sdata.append({
+            'id':row['id'],
             'name':row['name'],
             'code':row.code,
             'price':row.price,
+            'mvalue': round((row.price*row['zgb'])/(10000*10000),2),
             'mgsy': row.mgsy_ttm,
             'ncode':row['market']+row['code'],
             'sxlv':round(row.price/row.mgjyxjl_ttm,2),
             'sylv':round(row.price/row.mgsy_ttm,2),
             'sjlv': round(row.price/row.mgjzc,2),
+            'launch_date': row['launch_date'],
             'report_type':row.report_type
         })
     return render_template('stock/stock_list.html', title='备选股', stocks=sdata)
@@ -44,6 +47,7 @@ def mystock():
             'code':row.code,
             'ncode': row['market'] + row['code'],
             'price':row.price,
+            'mvalue': round((row.price * row['zgb']) / (10000 * 10000), 2),
             'mgsy': row.mgsy_ttm,
             'sxlv':round(row.price/row.mgjyxjl_ttm,2),
             'sylv':round(row.price/row.mgsy_ttm,2),
@@ -78,9 +82,8 @@ def valuation(code):
 @blueprint.route('/valuationJson', methods=['POST'])
 def valuationJson():
     code = request.form['code']
-    category = request.form['category']
-    price = request.form['price']
-    df = ds.getStockValuation(code[2:])
+    period = int(request.form['period'])
+    df = ds.getStockValuation(code[2:],period)
 
     close = []
     pe = []
@@ -112,7 +115,7 @@ def valuationJson():
              ]
         )
 
-    return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'tableData':tableData})
+    return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'tableData':tableData},period=period)
 
 
 @blueprint.route('/revenueJson', methods=['POST'])

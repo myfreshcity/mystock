@@ -37,10 +37,10 @@ function getData(quarter,code) {
 
 //营收
 function revenue(result){
-    var yysrs = [{'name':'营业收入','data':result.data.yysr,type:'column'}];
-    var jlrs = [{'name':'营业利润','data':result.data.jlr }];
-    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl }];
-    var roe = [{'name':'净资产收益率','data':result.data.roe}];
+    var yysrs = [{'name':'营业收入','data':result.data.yysr,type:'column',marker: {enabled: false}}];
+    var jlrs = [{'name':'营业利润','data':result.data.jlr ,marker: {enabled: false}}];
+    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl,marker: {enabled: false} }];
+    var roe = [{'name':'净资产收益率','data':result.data.roe,marker: {enabled: false}}];
 
 
     $('#revenue_0').highcharts({
@@ -49,6 +49,8 @@ function revenue(result){
         credits: {enabled: false},
         series: yysrs.concat(jlrs).concat(jyjxjls),
         tooltip:{
+           crosshairs: true,
+           shared: true,
            formatter:function(){
               return Highcharts.numberFormat(this.y,0,".", ",")+' 百万';
            }

@@ -39,6 +39,11 @@ def updateAll(cat):
         item.update_time = datetime.now()
         db.session.save(item)
     elif cat == 2:
-        pass
+        for st in stocks:
+            app.logger.info('checking trade data for:' + st.code)
+            dts.updateTradeBasic(st.code,st.market)
+        item = db.session.query(DataItem).filter_by(id=2).first()
+        item.update_time = datetime.now()
+        db.session.save(item)
 
     return render_template('/setting/index.html')

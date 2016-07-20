@@ -38,7 +38,8 @@ def getStocks():
     return df
 
 def getMyStocks(flag):
-    df = pd.read_sql_query("select code,name,market from my_stocks where code != '000001' and flag=%(flag)s", db.engine, \
+    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date from my_stocks ms,stock_basic sb " \
+                           "where ms.code=sb.code and ms.code != '000001' and ms.flag=%(flag)s ", db.engine, \
                            index_col='code', params={'flag': flag})
     df1 = getPerStockPrice(df)
     df2 = getPerStockRevenue()
@@ -143,18 +144,18 @@ def get_revenue_df(code):
         db.engine, params={'name': code})
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df3 = df.set_index(i)
-    df4 = df3.sort_index()
+    df4 = df3.sort_index(ascending=False)
     return df4
 
 
 #历史估值
-def getStockValuation(code):
+def getStockValuation(code,peroid):
     sdf = get_revenue_df(code) #获取收益数据
     #获取交易数据
     tdf = pd.read_sql_query("select "
                             "trade_date,close,volume,adj_close "
                             "from stock_trade_basic "
-                            "where code=%(name)s order by trade_date",
+                            "where code=%(name)s",
                             db.engine, params={'name': code}).dropna(axis=0)
 
     def getRevence(x, attri):
@@ -186,6 +187,8 @@ def getStockValuation(code):
         'code': code
     })
     #df.set_index('trade_date')
+    if peroid>0:
+        df = df.head(peroid*12)
     return df
 
 def getStockData(code):

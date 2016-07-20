@@ -32,7 +32,7 @@ def updateTradeBasic(code,market):
     #获得结束日期.当前日期上月最后一天
     e_date = (datetime.now() - MonthEnd()).date()
     #日期间隔在一个月内,跳过.因为取的是月线数据
-    if((s_date - e_date).days<30):
+    if((e_date - s_date).days<30):
         app.logger.info('interval date less than 30 days, skip...')
         return
 

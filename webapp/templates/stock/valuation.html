@@ -2,19 +2,34 @@
 {% block body %}
 
 <div class="container-fluid">
-    <p>
+    <div class="row">
+        <div class="btn-group">
+            <button type="button" class="btn btn-primary dropdown-toggle"
+                    data-toggle="dropdown">
+                选择统计周期 <span class="caret"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#" onclick="getData(3,'{{ code|safe }}')">最近三年</a></li>
+                <li><a href="#" onclick="getData(5,'{{ code|safe }}')">最近五年</a></li>
+                <li><a href="#" onclick="getData(10,'{{ code|safe }}')">最近十年</a></li>
+                <li class="divider"></li>
+                <li><a href="#" onclick="getData(0,'{{ code|safe }}')">全部</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
         <div id="valuation" class="col-md-12"></div>
-    </p>
-    <p>
+    </div>
+    <div class="row">
         <table id="example" class="display" cellspacing="0" width="90%"></table>
-    </p>
+    </div>
 </div>
 
 <script type="text/javascript" src="{{ url_for('static', filename='stock/valuation.js') }}"></script>
 
 <script type="text/javascript">
     $(function(){
-    getData('year','{{ price|safe }}','{{ code|safe }}');
+    getData(3,'{{ code|safe }}');
     });
 </script>
 
