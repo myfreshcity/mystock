@@ -9,6 +9,11 @@
    export PATH=$PATH:/usr/local/mysql/bin
    pip install MySQL-python 
 
+安装依赖
+pip install -r requirements.txt
+
+
+
 调试工具
    ipython notebook
 
