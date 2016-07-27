@@ -4,9 +4,8 @@ from sqlalchemy import create_engine
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db
+from webapp.services import db,data_service as dts
 from webapp.models import MyStock,Stock,DataItem,Comment
-import tushare as ts
 import json
 from pandas.tseries.offsets import *
 from datetime import datetime
@@ -14,20 +13,6 @@ import urllib2,re
 
 from pymongo import MongoClient
 client = MongoClient('127.0.0.1',27017)
-
-def getLatestTradeData():
-    #df = ts.get_tick_data('600848', date='2014-12-22')
-    #df.to_sql('tick_data', db.engine, if_exists='append')
-    df = ts.get_h_data('002337', autype='hfq')
-    df['code'] = '002337'
-    df['date'] = df.index
-    client.mystock.hisdata.insert_many(json.loads(df.to_json(orient='records',date_unit='s')))
-    return df
-
-def getLatestFinaceData():
-    df = ts.get_tick_data('600848', date='2014-12-22')
-    client.db.tickdata.insert(json.loads(df.to_json(orient='records')))
-    return df
 
 def getItemDates():
     items = DataItem.query.all()
@@ -38,12 +23,17 @@ def getStocks():
     return df
 
 def getMyStocks(flag):
-    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date from my_stocks ms,stock_basic sb " \
+    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date from my_stocks ms,stock_basic sb " \
                            "where ms.code=sb.code and ms.code != '000001' and ms.flag=%(flag)s ", db.engine, \
                            index_col='code', params={'flag': flag})
     df1 = getPerStockPrice(df)
     df2 = getPerStockRevenue()
-    df3 = pd.concat([df1,df2],axis=1,join='inner')
+    if flag == '0':
+        df11 = getPerStockHighPrice(df)
+        df3 = pd.concat([df1, df11, df2], axis=1, join='inner')
+    else:
+        df3 = pd.concat([df1, df2], axis=1, join='inner')
+
     df = df.reset_index()
     df4 = pd.merge(df, df3, how='left')
     return df4
@@ -76,6 +66,17 @@ def getPerStockPrice(df):
         st_valus.append(v)
         st_codes.append(st[2:])
     return pd.DataFrame(st_valus, index=st_codes,columns=['price'])
+
+#获取指定日期的最高收盘价
+def getPerStockHighPrice(df):
+    st_valus = []
+    st_codes = []
+    for index, row in df.iterrows():
+        trade_data = dts.getStockHighPrice(index, row['market'])
+        v = round(trade_data, 2)
+        st_valus.append(v)
+        st_codes.append(index)
+    return pd.DataFrame(st_valus, index=st_codes,columns=['mprice'])
 
 
 #获取每股收益,每股净资产,每股经营现金流
@@ -254,6 +255,12 @@ def hardRemoveMystock(code):
 def rollbackStock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
     mystock.flag = '0'
+    return db.session.flush()
+
+def updateStockInPrice(code,price,in_date):
+    mystock = db.session.query(MyStock).filter_by(code = code).first()
+    mystock.in_price = price
+    mystock.in_date = in_date
     return db.session.flush()
 
 def addComment(code,content):

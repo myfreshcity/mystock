@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% block nav %}
     <li>
-        <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code}}.shtml" target="_blank">股东人数变化</a>
+        <a href='/stock/blog/{{code|e}}' target="_blank">日志</a>
     </li>
     <li>
-        <a href="#" onclick="updateData('{{code|e}}')">数据更新</a>
+        <a href='http://quotes.money.163.com/f10/zycwzb_{{code[2:]|e}},year.html' target="_blank">财务指标</a>
     </li>
     <li>
         <a href='/stock/valuation/{{code|e}}' target="_blank">历史估值</a>
@@ -16,6 +16,12 @@
         <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}"
            target="_blank">财务报告</a>
         {% endif %}
+    </li>
+    <li>
+        <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code}}.shtml" target="_blank">股东人数变化</a>
+    </li>
+    <li>
+        <a href="#" onclick="updateData('{{code|e}}')">数据更新</a>
     </li>
 {% endblock %}
 

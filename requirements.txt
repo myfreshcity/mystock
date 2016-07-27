@@ -1,4 +1,10 @@
+--index-url https://pypi.mirrors.ustc.edu.cn/simple/
+--extra-index-url https://pypi.python.org/pypi
+
 Flask==0.10.1
+Flask-Script==2.0.5
+Flask-SQLAlchemy==2.1
+
 html5lib==0.9999999
 pandas==0.17.1
 pymongo==3.2.2
@@ -6,3 +12,5 @@ SQLAlchemy==1.0.12
 tushare==0.4.8
 beautifulsoup4==4.5.0
 numpy==1.11.1
+
+

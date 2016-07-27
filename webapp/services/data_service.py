@@ -58,6 +58,39 @@ def updateTradeBasic(code,market):
     except Exception, ex:
         app.logger.error(ex)
 
+def getStockHighPrice(code,market):
+    #获取从最近买入到现在的股价
+    sql = "select in_date from my_stocks where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    s_date = resultProxy.scalar()
+    if (s_date == None):
+        return 0
+    else:
+        st_year = s_date.strftime("%Y")
+        st_month = "%02d" % (s_date.month-1)  # yahoo月份的特殊处理,从下一月开始
+        st_day = "%02d" % (s_date.day)
+
+    #获得结束日期.当前日期
+    e_date = datetime.now().date()
+    ed_year = e_date.strftime("%Y")
+    ed_month = "%02d" % (e_date.month-1) #yahoo月份的特殊处理
+    ed_day = "%02d" % (e_date.day)
+    # 日期间隔短，跳过.
+    if ((e_date - s_date).days < 1):
+        app.logger.info('interval date less than 1 days, skip...')
+        return 0
+
+    #根据类型获取市场代码
+    mc = '.SS' if market=='sh' else '.SZ'
+    url = 'http://ichart.yahoo.com/table.csv?s=' + code + mc + '&a=' + st_month + '&b=' + st_day + '&c=' + st_year +\
+            '&d=' + ed_month + '&e=' + ed_day + '&f=' + ed_year + '&g=d'
+    app.logger.info('query stock('+code+') trade data url is:'+url)
+    try:
+        df = pd.read_csv(url)
+        return df['Close'].max()
+
+    except Exception, ex:
+        app.logger.error(ex)
 
 def updateFinanceBasic(code):
     sql = "select max(report_type) from stock_finance_basic where code=:code";

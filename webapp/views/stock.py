@@ -47,6 +47,11 @@ def mystock():
             'code':row.code,
             'ncode': row['market'] + row['code'],
             'price':row.price,
+            'in_price': row['in_price'],
+            'in_date': row['in_date'],
+            'mprice': row['mprice'],
+            'p1': 0 if row.in_price==0 else round((row.price-row.in_price)*100/row.in_price, 2),
+            'p2': 0 if row.mprice==0 else round((row.price-row.mprice)*100/row.mprice, 2),
             'mvalue': round((row.price * row['zgb']) / (10000 * 10000), 2),
             'mgsy': row.mgsy_ttm,
             'sxlv':round(row.price/row.mgjyxjl_ttm,2),
@@ -149,6 +154,15 @@ def add():
         return redirect('stock')
     else:
         return render_template('stock/add.html')
+
+
+@blueprint.route('/saveInPrice', methods=['POST'])
+def saveInPrice():
+    code = request.form['code']
+    price = request.form['price']
+    in_date = request.form['date']
+    ds.updateStockInPrice(code,price,in_date)
+    return jsonify(msg='true')
 
 @blueprint.route('/remove', methods=['POST'])
 def remove():
