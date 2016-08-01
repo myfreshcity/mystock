@@ -9,6 +9,7 @@ from flask import Flask, render_template, abort, url_for, session
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.script import Manager, Shell
 from webapp import app, db, config_app,register_blueprints
+from webapp.services import db_service as ds,data_service as dts
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -20,13 +21,20 @@ def _make_context():
 
 manager.add_command('shell', Shell(make_context=_make_context))
 
-
 @manager.command
 def test():
     """Run the unit tests."""
     import unittest
     tests = unittest.TestLoader().discover('tests')
     unittest.TextTestRunner(verbosity=2).run(tests)
+
+@manager.command
+def refresh():
+    config_app(app, 'scriptfan.cfg')
+    ctx = app.app_context()
+    #ctx.push()
+    dts.refreshStockHolder()
+    print "hello"
 
 
 @manager.option('-c', '--config', dest='config', help='Configuration file name', default='scriptfan.cfg')

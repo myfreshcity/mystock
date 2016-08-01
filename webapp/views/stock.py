@@ -45,6 +45,7 @@ def mystock():
         sdata.append({
             'name':row['name'],
             'code':row.code,
+            'grow_type': row.grow_type,
             'ncode': row['market'] + row['code'],
             'price':row.price,
             'in_price': row['in_price'],
@@ -155,6 +156,22 @@ def add():
     else:
         return render_template('stock/add.html')
 
+@blueprint.route('/get_basic', methods=['GET'])
+def get_basic():
+    code = request.args.get('code')
+    st = ds.getStock(code[2:])
+    return jsonify(msg='true',stock={
+        'desc':st.desc,
+        'grow_type':st.grow_type
+        })
+
+@blueprint.route('/update_basic', methods=['POST'])
+def update_basic():
+    code = request.form['code']
+    desc = request.form['desc']
+    grow_type = request.form['growType']
+    ds.updateStock(code[2:],desc,grow_type)
+    return jsonify(msg='true')
 
 @blueprint.route('/saveInPrice', methods=['POST'])
 def saveInPrice():

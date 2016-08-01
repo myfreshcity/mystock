@@ -8,6 +8,12 @@ class Stock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(255))
     name = db.Column(db.String(255))
+    zgb = db.Column(db.Numeric)
+    ltgb = db.Column(db.Numeric)
+    launch_date = db.Column(db.Date)
+    latest_report = db.Column(db.Date)
+    desc = db.Column(db.String(500))
+    grow_type = db.Column(db.String(3))
 
     def __init__(self, name, code):
         self.name = name

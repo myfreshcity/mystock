@@ -23,7 +23,7 @@ def getStocks():
     return df
 
 def getMyStocks(flag):
-    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date from my_stocks ms,stock_basic sb " \
+    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
                            "where ms.code=sb.code and ms.code != '000001' and ms.flag=%(flag)s ", db.engine, \
                            index_col='code', params={'flag': flag})
     df1 = getPerStockPrice(df)
@@ -47,6 +47,7 @@ def getPerStockPrice(df):
     str = ','.join(q_st_codes)
     try:
         url = "http://hq.sinajs.cn/list=" + str
+        app.logger.info('query latest stock bill url is:' + url)
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req).read()
     except:
@@ -261,6 +262,12 @@ def updateStockInPrice(code,price,in_date):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
     mystock.in_price = price
     mystock.in_date = in_date
+    return db.session.flush()
+
+def updateStock(code,desc,grow_type):
+    st = db.session.query(Stock).filter_by(code=code).first()
+    st.desc = desc
+    st.grow_type = grow_type
     return db.session.flush()
 
 def addComment(code,content):

@@ -20,6 +20,39 @@ function updateData(code){
 
 }
 
+function getStockData(code) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/get_basic',
+    data:{
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        $("#desc").val(data.desc);
+        $("#growType").val(data.grow_type);
+        //$("#growType  option[value='s2'] ").attr("selected",true);
+     }
+    });
+  };
+
+ function updateStockData(code) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/update_basic',
+    data:{
+             code : code,
+             desc : $("#desc").val(),
+             growType :  $("#growType").val()
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        alert('更新成功');
+     }
+    });
+  };
 
 function getData(quarter,code) {
     var aj = $.ajax( {
@@ -50,10 +83,7 @@ function revenue(result){
         series: yysrs.concat(jlrs).concat(jyjxjls),
         tooltip:{
            crosshairs: true,
-           shared: true,
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 百万';
-           }
+           shared: true
         }
     });
     $('#revenue_1').highcharts({

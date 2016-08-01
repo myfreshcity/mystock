@@ -58,6 +58,56 @@ def updateTradeBasic(code,market):
     except Exception, ex:
         app.logger.error(ex)
 
+def updateStockHolder(code):
+    latest_val = ''
+    url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(feeddata, "html5lib")
+    paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
+
+    report_date = []
+    holder_name = []
+    amount = []
+    rate = []
+    holder_type = []
+    holder_parent = []
+    rdate = ''
+    i = 0
+    for e in paper_name:
+        t = e.find_all('td')
+        s = e.find_all('strong')
+        if len(s) > 0:
+            if s[0].string == '截止日期':
+                rdate = t[1].string
+                i += 1
+                if i ==1:
+                    latest_val = rdate
+
+        if t[0].div:
+            if t[0].div.string:
+                if t[0].div.string.isdigit():
+                    hname = t[1].div.text
+                    report_date.append(rdate)
+                    holder_name.append(hname)
+                    amount.append(t[2].div.string)
+                    rate.append(t[3].div.string)
+                    holder_type.append(t[4].div.string)
+                    holder_parent.append(hname.split('-')[0])
+    df1 = pd.DataFrame({
+        'code': code,
+        'report_date': report_date,
+        'holder_name': holder_name,
+        'amount': amount,
+        'rate': rate,
+        'holder_type': holder_type,
+        'holder_parent': holder_parent
+
+    })
+    df1.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
+    return latest_val
+
+
 def getStockHighPrice(code,market):
     #获取从最近买入到现在的股价
     sql = "select in_date from my_stocks where code=:code";
@@ -139,16 +189,17 @@ def updateFinanceBasicByPeriod(periods,code):
 
 
 def findFinanceData(code,period):
-    app.logger.info('begin query finance data:'+code+'-'+period)
     period = re.sub('03.31', '03.15', period)
     url = "http://stockdata.stock.hexun.com/2008/zxcwzb.aspx?stockid="+code+"&accountdate="+period
+    app.logger.info('query stock(' + code + ') finance data url is:' + url)
     req = urllib2.Request(url =url,headers = headers)
     feeddata = urllib2.urlopen(req).read()
-    soup = BeautifulSoup(feeddata, "lxml")
-    paper_name = soup.html.body.find(id="zaiyaocontent").table.find_all('tr')
-    if paper_name == []:
+    soup = BeautifulSoup(feeddata, "html5lib")
+    paper_name = soup.html.body.find(id="zaiyaocontent").table.tbody
+    if paper_name is None:
         return pd.DataFrame()
     else:
+        paper_name = paper_name.find_all('tr')
         data = [code]
         for e in paper_name:
             s = e.find_all('td')
@@ -197,12 +248,28 @@ def calculateTTMValue(in_df,code):
                 df3.mgjyxjl_ttm.loc[index] = n_mgjyxjl
 
             except Exception, ex:
-                app.logger.error(ex)
+                app.logger.warn(ex)
                 df3.mgsy_ttm.loc[index] = float(row.mgsy)
                 df3.mgjyxjl_ttm.loc[index] = float(row.mgjyxjl)
 
             #数据位截取
-            df3.mgsy_ttm.loc[index] = round(df3.mgsy_ttm.loc[index],2)
-            df3.mgjyxjl_ttm.loc[index] = round(df3.mgjyxjl_ttm.loc[index],2)
+            v_mgsy_ttm = round(df3.mgsy_ttm.loc[index],2)
+            v_mgjyxjl_ttm = round(df3.mgjyxjl_ttm.loc[index],2)
+            #零值处理
+            v_mgsy_ttm = 0.01 if v_mgsy_ttm==0 else v_mgsy_ttm
+            v_mgjyxjl_ttm = 0.01 if v_mgjyxjl_ttm == 0 else v_mgjyxjl_ttm
+
+            df3.mgsy_ttm.loc[index] = v_mgsy_ttm
+            df3.mgjyxjl_ttm.loc[index] = v_mgjyxjl_ttm
 
     return df3.iloc[df3.index.isin(in_df_date)]
+
+def refreshStockHolder():
+    #获得所有股票代码列表
+    stocks = db.session.query(Stock).filter(and_(Stock.latest_report < '2016-03-31',Stock.launch_date < '2016-03-31')).limit(200).all()
+    #stocks = db.session.query(Stock).all()
+    for st in stocks:
+        app.logger.info('checking stock holder for:' + st.code)
+        latest_report = updateStockHolder(st.code)
+        st.latest_report = latest_report
+        db.session.flush()
