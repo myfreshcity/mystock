@@ -121,6 +121,65 @@ def get_revenue_df(code):
     df4 = df3.sort_index(ascending=False)
     return df4
 
+#历史估值(新)
+def getStockValuationN(code,peroid):
+    #获取收益数据
+    df = pd.read_sql_query(
+        "select code,report_type,zyysr,zyysr_ttm,kjlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
+        from stock_finance_data \
+        where code=%(name)s",
+        db.engine, params={'name': code})
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df3 = df.set_index(i)
+    sdf = df3.sort_index(ascending=False)
+
+    # 获取交易数据
+    tdf = pd.read_sql_query("select "
+                            "trade_date,close,volume,t_cap,m_cap "
+                            "from stock_trade_data "
+                            "where code=%(name)s",
+                            db.engine, params={'name': code}).dropna(axis=0)
+    i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
+    tdf = tdf.set_index(i)
+    gdf = tdf.groupby([pd.TimeGrouper(freq='M')])
+    agdf = gdf['trade_date'].agg({'max': np.max})
+    tdf = tdf.iloc[tdf.index.isin(agdf['max'])]
+
+    def getRevence(x, attri):
+        dt = x
+        sdate = dt - DateOffset(days=1) + QuarterEnd() #返回所在日期的季度数据
+        mg_val = sdf[sdf.index == sdate].get(attri)
+        if (mg_val.empty):  # 如果没数值，取上一季度
+            sdate = dt - DateOffset(days=1) - QuarterEnd()
+            mg_val = sdf[sdf.index == sdate].get(attri)
+        return pd.NaT if mg_val.empty else mg_val.values[0] * 10000
+
+    def getReportType(x):
+        dt = pd.to_datetime(x)
+        sdate = dt + QuarterEnd()
+        return sdate
+
+    df = pd.DataFrame({
+        'trade_date': tdf['trade_date'],
+        'close': tdf['close'],
+        't_cap': tdf['t_cap'],
+        'm_cap': tdf['m_cap'],
+        'zyysr': tdf['trade_date'].apply(getRevence, args=('zyysr',)),
+        'zyysr_ttm': tdf['trade_date'].apply(getRevence, args=('zyysr_ttm',)),
+        'kjlr': tdf['trade_date'].apply(getRevence, args=('kjlr',)),
+        'jlr': tdf['trade_date'].apply(getRevence, args=('jlr',)),
+        'jlr_ttm': tdf['trade_date'].apply(getRevence, args=('jlr_ttm',)),
+        'jyjxjl': tdf['trade_date'].apply(getRevence, args=('jyjxjl',)),
+        'jyjxjl_ttm': tdf['trade_date'].apply(getRevence, args=('jyjxjl_ttm',)),
+        'gdqy':tdf['trade_date'].apply(getRevence, args=('gdqy',)),
+        'code': code
+    })
+    df = df.fillna(method='bfill')
+
+    #df.set_index('trade_date')
+    if peroid>0:
+        df = df.head(peroid*12)
+    return df
 
 #历史估值
 def getStockValuation(code,peroid):

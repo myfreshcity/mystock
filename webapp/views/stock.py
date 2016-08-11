@@ -90,25 +90,29 @@ def valuation(code):
 def valuationJson():
     code = request.form['code']
     period = int(request.form['period'])
-    df = ds.getStockValuation(code[2:],period)
+    df = ds.getStockValuationN(code[2:],period)
 
     close = []
     pe = []
     ps = []
     pcf = []
+    pb = []
     tableData = []
 
     for index, row in df.iterrows():
+        tcp = row['t_cap']
         rclose = row['close']
-        spe = round(rclose/row['mgsy_ttm'],2)
-        sps = round(rclose/row['mgjzc'],2)
-        spcf = round(rclose/row['mgjyxjl_ttm'],2)
+        spe = 0 if row['jlr_ttm']== 0 else round(tcp/row['jlr_ttm'],2)
+        sps = 0 if row['zyysr_ttm']== 0 else round(tcp/row['zyysr_ttm'],2)
+        spcf = 0 if row['jyjxjl_ttm']== 0 else round(tcp/row['jyjxjl_ttm'],2)
+        spb = 0 if row['gdqy'] == 0 else round(tcp / row['gdqy'], 2)
         tdate = row['trade_date'].strftime('%Y-%m-%d')
 
-        close.append([tdate,rclose]);
-        pe.append([tdate,spe]);
-        ps.append([tdate, sps]);
-        pcf.append([tdate, spcf]);
+        close.append([tdate,rclose])
+        pe.append([tdate,spe])
+        ps.append([tdate, sps])
+        pcf.append([tdate, spcf])
+        pb.append([tdate, spb])
 
         tableData.append(
             [tdate,
@@ -116,13 +120,19 @@ def valuationJson():
              spe,
              sps,
              spcf,
-             round(row['mgsy_ttm'],2),
-             round(row['mgjzc'],2),
-             round(row['mgjyxjl_ttm'],2)
+             spb,
+             tcp,
+             row['gdqy'],
+             row['jlr'],
+             row['jlr_ttm'],
+             row['zyysr'],
+             row['zyysr_ttm'],
+             row['jyjxjl'],
+             row['jyjxjl_ttm']
              ]
         )
 
-    return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'tableData':tableData},period=period)
+    return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'pb':pb,'tableData':tableData},period=period)
 
 
 @blueprint.route('/revenueJson', methods=['POST'])

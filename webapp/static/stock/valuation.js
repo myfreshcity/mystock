@@ -19,10 +19,13 @@ function getData(period,code) {
 function valuation(result){
     var pe = {'name':'市盈率',marker: {enabled: false}};
     pe['data'] = result.data.pe;
-    var ps = {'name':'市净率',marker: {enabled: false}};
+    var ps = {'name':'市销率',marker: {enabled: false}};
     ps['data'] = result.data.ps;
     var pcf = {'name':'市现率',marker: {enabled: false}};
     pcf['data'] = result.data.pcf;
+    var pb = {'name':'市净率',marker: {enabled: false}};
+    pb['data'] = result.data.pb;
+
     var close = {'name':'股价','type':'area','yAxis':1 };
     close['data'] = result.data.close;
 
@@ -38,81 +41,56 @@ function valuation(result){
             { title: "日期" },
             { title: "收盘价" },
             { title: "市盈率" },
-            { title: "市净率" },
+            { title: "市销率" },
             { title: "市现率" },
-            { title: "每股收益TTM" },
-            { title: "每股净资产" },
-            { title: "每股经营现金流TTM" }
+            { title: "市净率" },
+            { title: "总股本" },
+            { title: "股东权益" },
+            { title: "" },
+            { title: "净利润TTM" }
         ]
     } );
 
-
-    $('#valuation').highcharts({
-        chart: {
-            zoomType: 'xy'
-        },
-        title: {
-            text: '最近'+result.period+'年历史估值'
-        },
-        xAxis: {
-            categories: []
-        },
+    $('#pe').highcharts({
+        title: {text:  '最近'+result.period+'年市盈率'},
+        xAxis: {categories: []},
         credits: {enabled: false},
-        yAxis: [{ // Primary yAxis
-            title: {
-                text: '估值',
-                style: {
-                    color: Highcharts.getOptions().colors[1]
-                }
-            },
-            labels: {
-                format: '{value}',
-                style: {
-                    color: Highcharts.getOptions().colors[1]
-                }
-            }
-        }, { // Secondary yAxis
-            title: {
-                text: '股价',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            labels: {
-                format: '{value} ',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            opposite: true
-        }],
-        tooltip: {
-            crosshairs: true,
-            shared: true
-        },
-        plotOptions: {
-            area: {
-                fillColor: {
-                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1},
-                    stops: [
-                        [0, Highcharts.getOptions().colors[0]],
-                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get('rgba')]
-                    ]
-                },
-                lineWidth: 1,
-                marker: {
-                    enabled: false
-                },
-                shadow: false,
-                states: {
-                    hover: {
-                        lineWidth: 1
-                    }
-                },
-                threshold: null
-            }
-        },
-        series: [pe,ps,pcf,close]
+        series: [pe],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
     });
+    $('#ps').highcharts({
+        title: {text:  '最近'+result.period+'年市销率'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [ps],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    $('#pcf').highcharts({
+        title: {text:  '最近'+result.period+'年市现率'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [pcf],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    $('#pb').highcharts({
+        title: {text:  '最近'+result.period+'年市净率'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [pb],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+净利润
 }
 
