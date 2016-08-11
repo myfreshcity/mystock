@@ -7,7 +7,7 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
-from webapp.services import db_service as ds
+from webapp.services import db_service as ds,data_service as dts
 from webapp.models import MyStock
 from webapp import functions as fn
 from flask import current_app as app
@@ -17,7 +17,7 @@ blueprint = Blueprint('stock', __name__)
 
 @blueprint.route('/', methods=['GET'])
 def index():
-    data = ds.getMyStocks('1')
+    data = dts.getMyStocks('1')
     sdata = []
     for index, row in data.iterrows():
         sdata.append({
@@ -25,6 +25,7 @@ def index():
             'name':row['name'],
             'code':row.code,
             'price':row.price,
+            'grow_type': row.grow_type,
             'mvalue': round((row.price*row['zgb'])/(10000*10000),2),
             'mgsy': row.mgsy_ttm,
             'ncode':row['market']+row['code'],
@@ -39,7 +40,7 @@ def index():
 
 @blueprint.route('/mystock', methods=['GET'])
 def mystock():
-    data = ds.getMyStocks('0')
+    data = dts.getMyStocks('0')
     sdata = []
     for index, row in data.iterrows():
         sdata.append({
@@ -98,20 +99,20 @@ def valuationJson():
     tableData = []
 
     for index, row in df.iterrows():
-
-        spe = round(row['close']/row['mgsy_ttm'],2)
-        sps = round(row['close']/row['mgjzc'],2)
-        spcf = round(row['close']/row['mgjyxjl_ttm'],2)
+        rclose = row['close']
+        spe = round(rclose/row['mgsy_ttm'],2)
+        sps = round(rclose/row['mgjzc'],2)
+        spcf = round(rclose/row['mgjyxjl_ttm'],2)
         tdate = row['trade_date'].strftime('%Y-%m-%d')
 
-        close.append([tdate,row['close']]);
+        close.append([tdate,rclose]);
         pe.append([tdate,spe]);
         ps.append([tdate, sps]);
         pcf.append([tdate, spcf]);
 
         tableData.append(
             [tdate,
-             row['close'],
+             rclose,
              spe,
              sps,
              spcf,

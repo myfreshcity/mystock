@@ -5,7 +5,7 @@ from sqlalchemy import *
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db
+from webapp.services import db,db_service as dbs
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 from pandas.tseries.offsets import *
@@ -55,6 +55,36 @@ def updateTradeBasic(code,market):
             'code': code
         })
         df1.to_sql('stock_trade_basic', db.engine, if_exists='append', index=False, chunksize=1000)
+    except Exception, ex:
+        app.logger.error(ex)
+
+def updateTradeData(code,market):
+    #获得开始日期
+    sql = "select max(trade_date) from stock_trade_data where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    s_date = resultProxy.scalar()
+    if (s_date == None):
+        s_date = dbs.getStock(code).launch_date #取上市日期
+    e_date = datetime.now().date()
+
+    #根据类型获取市场代码
+    mc = '0' if market=='sh' else '1'
+    url = 'http://quotes.money.163.com/service/chddata.html?code=' + mc  + code +\
+          '&start=' + s_date.strftime("%Y%m%d") + '&end=' + e_date.strftime("%Y%m%d") + '&fields=TCLOSE;VATURNOVER;TCAP;MCAP'
+    app.logger.info('query stock('+code+') trade data url is:'+url)
+    try:
+        tdf = pd.read_csv(url,names=['trade_date','code','name','close','volume','t_cap','m_cap'],header=0)
+        df1 = pd.DataFrame({
+            'trade_date': tdf['trade_date'],
+            'close': tdf['close'],
+            'volume': tdf['volume'],
+            't_cap': tdf['t_cap'],
+            'm_cap': tdf['m_cap'],
+            'code': code
+        })
+        if not df1.empty:
+            if df1['trade_date'].max() > s_date.strftime("%Y%m%d"):
+                df1.to_sql('stock_trade_data', db.engine, if_exists='append', index=False, chunksize=1000)
     except Exception, ex:
         app.logger.error(ex)
 
@@ -142,6 +172,76 @@ def getStockHighPrice(code,market):
     except Exception, ex:
         app.logger.error(ex)
 
+def updateFinanceData(code):
+    # 获得开始日期
+    sql = "select max(report_type) from stock_finance_data where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    s_date = resultProxy.scalar()
+    if (s_date == None):
+        s_date = dbs.getStock(code).launch_date  # 取上市日期
+
+    url = 'http://quotes.money.163.com/service/zycwzb_' + code + '.html?type=report'
+    tdf = pd.read_csv(url)
+    tdf = tdf.iloc[:, 1:].dropna(axis=1).T.reset_index()
+
+    def fixNaN(x):
+        return 0 if x == '--' else x
+
+    def getRevence(x, attri):
+        dt = pd.to_datetime(x)
+        s_dt = tdf[tdf['index'] == dt.strftime('%Y-%m-%d')]
+        lastYearEnd = YearEnd().rollback(dt)  # 去年年底
+        s_lye = tdf[tdf['index'] == lastYearEnd.strftime('%Y-%m-%d')]
+        lastYearQuart = dt - DateOffset(months=12)  # 去年同期
+        s_lyq = tdf[tdf['index'] == lastYearQuart.strftime('%Y-%m-%d')]
+        app.logger.debug(
+            dt.strftime('%Y-%m-%d') + ':' + lastYearEnd.strftime('%Y-%m-%d') + ':' + lastYearQuart.strftime(
+                '%Y-%m-%d'))
+        v1 = s_dt.get(attri)
+
+        if dt.quarter != 4:
+            v2 = s_lye.get(attri)
+            v3 = s_lyq.get(attri)
+            if v2.empty or v3.empty:
+                v2 = 0
+                v3 = 0
+        else:
+            v2 = 0
+            v3 = 0
+        try:
+            return int(v1) + (int(v2) - int(v3))
+        except Exception, ex:
+            app.logger.error(ex)
+            return 0
+
+    if tdf['index'].max() > s_date.strftime("%Y%m%d"):
+        df = pd.DataFrame({
+            'report_type': tdf['index'],
+            'zyysr': tdf[3].apply(fixNaN),
+            'zyysr_ttm': tdf['index'].apply(getRevence, args=(3,)),
+            'zyylr': tdf[4].apply(fixNaN),
+            'yylr': tdf[5].apply(fixNaN),
+            'jlr': tdf[9].apply(fixNaN),
+            'jlr_ttm': tdf['index'].apply(getRevence, args=(9,)),
+            'kjlr': tdf[10].apply(fixNaN),
+            'jyjxjl': tdf[11].apply(fixNaN),
+            'jyjxjl_ttm': tdf['index'].apply(getRevence, args=(11,)),
+            'xjjze': tdf[12].apply(fixNaN),
+            'zzc': tdf[13].apply(fixNaN),
+            'ldzc': tdf[14].apply(fixNaN),
+            'zfz': tdf[15].apply(fixNaN),
+            'ldfz': tdf[16].apply(fixNaN),
+            'gdqy': tdf[17].apply(fixNaN),
+            'roe': tdf[18].apply(fixNaN),
+            'code': code
+        })
+        # insert new data to database
+        df = df.set_index('report_type')
+        sd = df.index.max()
+        ed = (s_date + DateOffset(days=1)).date().strftime('%Y-%m-%d') #排除掉之前插入的数据
+        edf = df.loc[sd:ed].reset_index()
+        edf.to_sql('stock_finance_data', db.engine, if_exists='append', index=False, chunksize=1000)
+
 def updateFinanceBasic(code):
     sql = "select max(report_type) from stock_finance_basic where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
@@ -156,10 +256,10 @@ def updateFinanceBasic(code):
     l = len(periods)
     i = 0
     while (i <= l):
-        ri = random.randint(3, 8)
+        ri = random.randint(2, 5)
         time.sleep(ri) #延迟执行
-        updateFinanceBasicByPeriod(periods[i:i+8],code)
-        i = i + 8
+        updateFinanceBasicByPeriod(periods[i:i+16],code)
+        i = i + 16
 
 
 def updateFinanceBasicByPeriod(periods,code):
@@ -273,3 +373,31 @@ def refreshStockHolder():
         latest_report = updateStockHolder(st.code)
         st.latest_report = latest_report
         db.session.flush()
+
+#获取指定日期的最高收盘价
+def getPerStockHighPrice(df):
+    st_valus = []
+    st_codes = []
+    for index, row in df.iterrows():
+        trade_data = getStockHighPrice(index, row['market'])
+        v = round(trade_data, 2)
+        st_valus.append(v)
+        st_codes.append(index)
+    return pd.DataFrame(st_valus, index=st_codes,columns=['mprice'])
+
+def getMyStocks(flag):
+    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+                           "where ms.code=sb.code and ms.code != '000001' and ms.flag=%(flag)s ", db.engine, \
+                           index_col='code', params={'flag': flag})
+    df1 = dbs.getPerStockPrice(df)
+    df2 = dbs.getPerStockRevenue()
+    if flag == '0':
+        df11 = getPerStockHighPrice(df)
+        df3 = pd.concat([df1, df11, df2], axis=1, join='inner')
+    else:
+        df3 = pd.concat([df1, df2], axis=1, join='inner')
+
+    df = df.reset_index()
+    df4 = pd.merge(df, df3, how='left')
+    return df4
+
