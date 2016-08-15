@@ -52,6 +52,12 @@ def getPerStockPrice(df):
         st_codes.append(st[2:])
     return pd.DataFrame(st_valus, index=st_codes,columns=['price'])
 
+def getPerStockPriceV2():
+    tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
+                                from stock_trade_data", db.engine)
+    df = tdf.groupby([tdf['code']]).first()
+    return df
+
 #获取每股收益,每股净资产,每股经营现金流
 def getPerStockRevenue():
     df = pd.read_sql_query("select code,report_type,mgsy_ttm,mgjzc,mgjyxjl_ttm from stock_finance_basic", db.engine)
@@ -137,7 +143,7 @@ def getStockValuationN(code,peroid):
     tdf = pd.read_sql_query("select "
                             "trade_date,close,volume,t_cap,m_cap "
                             "from stock_trade_data "
-                            "where code=%(name)s",
+                            "where code=%(name)s order by trade_date desc",
                             db.engine, params={'name': code}).dropna(axis=0)
     i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
     tdf = tdf.set_index(i)
@@ -149,10 +155,7 @@ def getStockValuationN(code,peroid):
         dt = x
         sdate = dt - DateOffset(days=1) + QuarterEnd() #返回所在日期的季度数据
         mg_val = sdf[sdf.index == sdate].get(attri)
-        if (mg_val.empty):  # 如果没数值，取上一季度
-            sdate = dt - DateOffset(days=1) - QuarterEnd()
-            mg_val = sdf[sdf.index == sdate].get(attri)
-        return pd.NaT if mg_val.empty else mg_val.values[0] * 10000
+        return None if mg_val.empty else mg_val.values[0] * 10000
 
     def getReportType(x):
         dt = pd.to_datetime(x)

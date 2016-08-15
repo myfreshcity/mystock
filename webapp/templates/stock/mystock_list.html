@@ -2,18 +2,20 @@
 {% block body %}
 
 <div class="container-fluid">
-    <table id="example" class="display" cellspacing="0" width="90%">
+    <table id="example" class="display" cellspacing="0" width="98%">
         <thead>
         <tr>
             <th>编码</th>
             <th>名称</th>
             <th>类型</th>
             <th>市盈率</th>
-            <th>市净率</th>
+            <th>收益率</th>
+            <th>负债率</th>
+            <th width="40">机构持股</th>
+            <th>市销率</th>
             <th>市现率</th>
-            <th>股价</th>
+            <th>市净率</th>
             <th>盈亏（%）</th>
-            <th>回撤（%）</th>
             <th>市值(亿)</th>
             <th></th>
         </tr>
@@ -24,16 +26,27 @@
             <td>{{d.code|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
-            <td>{{d.sylv|e}}</td>
-            <td>{{d.sjlv|e}}</td>
-            <td>{{d.sxlv|e}}</td>
-            <td>{{d.price|e}}</td>
+            <td>{{d.pe|e}}</td>
+            <td>{{d.roe|e}}</td>
+            <td>{{d.dar|e}}</td>
+            <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sh_rate|e}}</a></td>
+            <td>{{d.ps|e}}</td>
+            <td>{{d.pcf|e}}</td>
+            <td>{{d.pb|e}}</td>
             <td>{{d.p1|e}}({{d.in_price|e}})</td>
-            <td>{{d.p2|e}}({{d.mprice|e}})</td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td>
-                <a href="#" onclick="javascript:del('{{d.code|e}}');return false;">删除</a> |
-                <a href="#exampleModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default　btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        Action <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="javascript:del('{{d.code|e}}');return false;">删除</a></li>
+                        <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
+                        <li><a href="#exampleModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
+                    </ul>
+                </div>
             </td>
         </tr>
         {% endfor %}
@@ -110,6 +123,26 @@ function del(code) {
      }
     });
   };
+
+function updateData(code){
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/setting/update/',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result){
+         if(result.msg == true){
+             alert('数据更新成功');
+         }else{
+            console.error(result.msg);
+         }
+        }
+    });
+
+};
 
 //加载完毕自动执行
 $(function(){

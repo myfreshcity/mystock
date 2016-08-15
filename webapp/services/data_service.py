@@ -2,6 +2,7 @@
 import sys
 from bs4 import  BeautifulSoup,BeautifulStoneSoup
 from sqlalchemy import *
+from flask import g
 import pandas as pd
 import numpy as np
 from flask import current_app as app
@@ -13,6 +14,17 @@ from datetime import datetime
 import urllib2,re,html5lib
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+group_stockholder_rate = None
+
+def getLatestStockHolder():
+    global group_stockholder_rate
+    if group_stockholder_rate is None:
+        hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate\
+                                   from stock_holder order by report_date desc", db.engine)
+        group_stockholder_rate = hdf.groupby(['code']).head(10)
+        #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
+
+    return group_stockholder_rate
 
 def updateTradeBasic(code,market):
     #获得开始日期.数据库的最大时间或者2000.1.1
@@ -137,9 +149,14 @@ def updateStockHolder(code):
     df1.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
     return latest_val
 
+def getStockHighPriceV2(code,market):
+    #获取最近20交易日最高市值
+    tdf = pd.read_sql_query("select t_cap from stock_trade_data where code=%(name)s order by trade_date desc limit 20",
+                            db.engine,params={'name': code})
+    return tdf['t_cap'].max()
 
 def getStockHighPrice(code,market):
-    #获取从最近买入到现在的股价
+    #获取从最近买入股价
     sql = "select in_date from my_stocks where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
     s_date = resultProxy.scalar()
@@ -379,25 +396,77 @@ def getPerStockHighPrice(df):
     st_valus = []
     st_codes = []
     for index, row in df.iterrows():
-        trade_data = getStockHighPrice(index, row['market'])
-        v = round(trade_data, 2)
-        st_valus.append(v)
+        tcp = getStockHighPriceV2(index, row['market'])
+        st_valus.append(tcp)
         st_codes.append(index)
-    return pd.DataFrame(st_valus, index=st_codes,columns=['mprice'])
+    index = pd.Index(st_codes, name='code')
+    return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
 
 def getMyStocks(flag):
-    df = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+    bdf = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
                            "where ms.code=sb.code and ms.code != '000001' and ms.flag=%(flag)s ", db.engine, \
                            index_col='code', params={'flag': flag})
-    df1 = dbs.getPerStockPrice(df)
-    df2 = dbs.getPerStockRevenue()
+    #获取交易数据
+    tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
+                                from stock_trade_data order by trade_date desc", db.engine)
+    df1 = tdf.groupby([tdf['code']]).first()
+
+    # 获取财务数据
+    fdf = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kjlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz\
+                            from stock_finance_data order by report_type desc", db.engine)
+    df2 = fdf.groupby([fdf['code']]).first()
+
     if flag == '0':
-        df11 = getPerStockHighPrice(df)
+        df11 = getPerStockHighPrice(bdf)
         df3 = pd.concat([df1, df11, df2], axis=1, join='inner')
     else:
         df3 = pd.concat([df1, df2], axis=1, join='inner')
 
-    df = df.reset_index()
-    df4 = pd.merge(df, df3, how='left')
-    return df4
+    bdf = bdf.reset_index()
+    df3 = df3.reset_index()
+    df4 = pd.merge(bdf, df3, how='left')
+
+    #加入买入时的市值
+    in_df = pd.read_sql_query(
+        "select ms.code,st.t_cap as in_cap from my_stocks ms,stock_trade_data st " \
+        "where ms.code=st.code and ms.in_date=st.trade_date ", db.engine)
+    df5 = pd.merge(df4, in_df, how='left')
+
+    #加入机构持股比例
+    gdf = getGroupStockHolderRate()
+    df6 = pd.merge(df5, gdf, how='left')
+    return df6
+
+#获得机构持股比例
+def getGroupStockHolderRate():
+    gdf  = getLatestStockHolder()
+    agdf = gdf[gdf['holder_type'] != '自然人股']
+    a1gdf = agdf.groupby(['code'])
+    a2gdf = a1gdf['rate'].agg({'sh_rate': np.size})
+    return a2gdf.reset_index()
+
+#获得自然人持股排行榜
+def getStockHolderRank():
+    gdf = getLatestStockHolder()
+    agdf = gdf[gdf['holder_type'] == '自然人股']
+    a1gdf = agdf.groupby(['code'])
+
+    t2_gdf = a1gdf['rate'].agg({'sum': np.sum}) #比例
+    t3_gdf = a1gdf['rate'].agg({'size': np.size}) #个数
+
+    t4_df = pd.concat([t2_gdf, t3_gdf], axis=1, join='inner')
+    t41_df = pd.DataFrame({
+        'sum': t4_df['sum'],
+        'count': t4_df['size'],
+        'avg': t4_df['sum'] / t4_df['size']
+    })
+
+    t5_df = t41_df.sort_index(by='avg', ascending=True).head(100)
+    t6_df = t5_df.reset_index()
+
+    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
+    t7_df = pd.merge(t6_df, bdf, on='code')
+    return t7_df
+
+
 

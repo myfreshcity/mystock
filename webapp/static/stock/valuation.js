@@ -46,7 +46,7 @@ function valuation(result){
             { title: "市净率" },
             { title: "总股本" },
             { title: "股东权益" },
-            { title: "" },
+            { title: "净利润" },
             { title: "净利润TTM" }
         ]
     } );
@@ -91,6 +91,6 @@ function valuation(result){
            shared: true
         }
     });
-净利润
+
 }
 

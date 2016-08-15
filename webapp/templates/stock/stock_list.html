@@ -7,7 +7,7 @@
 {% block body %}
 
 <div class="container-fluid">
-    <table id="example" class="display" cellspacing="0" width="90%">
+    <table id="example" class="display" cellspacing="0" width="98%">
         <thead>
         <tr>
             <th></th>
@@ -15,11 +15,14 @@
             <th>名称</th>
             <th>类型</th>
             <th>市盈率</th>
-            <th>市净率</th>
+            <th>收益率</th>
+            <th>负债率</th>
+            <th width="40">机构持股</th>
+            <th>市销率</th>
             <th>市现率</th>
+            <th>市净率</th>
             <th>财务分析</th>
             <th>市值(亿)</th>
-            <th>日志</th>
             <th>上市日期</th>
             <th></th>
         </tr>
@@ -31,19 +34,28 @@
             <td>{{d.code|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
-            <td>{{d.sylv|e}}</td>
-            <td>{{d.sjlv|e}}</td>
-            <td>{{d.sxlv|e}}</td>
+            <td>{{d.pe|e}}</td>
+            <td>{{d.roe|e}}</td>
+            <td>{{d.dar|e}}</td>
+            <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sh_rate|e}}</a></td>
+            <td>{{d.ps|e}}</td>
+            <td>{{d.pcf|e}}</td>
+            <td>{{d.pb|e}}</td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.report_type|e}}</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
-            <td><a href='/stock/blog/{{d.ncode|e}}' target="_blank">查看</a></td>
             <td>{{d.launch_date|e}}</td>
             <td>
-                <a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a>
-                |
-                <a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a>
-                |
-                <a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">删除</a>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default　btn-sm dropdown-toggle" data-toggle="dropdown"
+                            aria-haspopup="true" aria-expanded="false">
+                        Action <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a></li>
+                        <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
+                        <li><a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">删除</a></li>
+                    </ul>
+                </div>
             </td>
         </tr>
         {% endfor %}

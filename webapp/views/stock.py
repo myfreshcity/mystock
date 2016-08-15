@@ -24,14 +24,17 @@ def index():
             'id':row['id'],
             'name':row['name'],
             'code':row.code,
-            'price':row.price,
+            'price':row.close,
             'grow_type': row.grow_type,
-            'mvalue': round((row.price*row['zgb'])/(10000*10000),2),
-            'mgsy': row.mgsy_ttm,
             'ncode':row['market']+row['code'],
-            'sxlv':round(row.price/row.mgjyxjl_ttm,2),
-            'sylv':round(row.price/row.mgsy_ttm,2),
-            'sjlv': round(row.price/row.mgjzc,2),
+            'mvalue': round(row.t_cap / (10000*10000), 2),
+            'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
+            'ps':round(row.t_cap/(row.zyysr_ttm*10000),2),
+            'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
+            'pb': round(row.t_cap/(row.gdqy*10000),2),
+            'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
+            'dar': round(row.zfz * 100.0 / row.zzc, 2),
+            'sh_rate': row.sh_rate,
             'launch_date': row['launch_date'],
             'report_type':row.report_type
         })
@@ -48,22 +51,40 @@ def mystock():
             'code':row.code,
             'grow_type': row.grow_type,
             'ncode': row['market'] + row['code'],
-            'price':row.price,
+            'price':row.close,
             'in_price': row['in_price'],
             'in_date': row['in_date'],
-            'mprice': row['mprice'],
-            'p1': 0 if row.in_price==0 else round((row.price-row.in_price)*100/row.in_price, 2),
-            'p2': 0 if row.mprice==0 else round((row.price-row.mprice)*100/row.mprice, 2),
-            'mvalue': round((row.price * row['zgb']) / (10000 * 10000), 2),
-            'mgsy': row.mgsy_ttm,
-            'sxlv':round(row.price/row.mgjyxjl_ttm,2),
-            'sylv':round(row.price/row.mgsy_ttm,2),
-            'sjlv': round(row.price/row.mgjzc,2),
+            'h_price': round(row.close*(row.h_cap/row.t_cap),2),
+            'p1': 0 if row.in_price==0 else round((row.t_cap-row.in_cap)*100/row.in_cap, 2),
+            'p2': round((row.t_cap-row.h_cap)*100/row.h_cap, 2),
+            'mvalue': round(row.t_cap / (10000*10000), 2),
+            'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
+            'ps':round(row.t_cap/(row.zyysr_ttm*10000),2),
+            'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
+            'pb': round(row.t_cap/(row.gdqy*10000),2),
+            'roe': round(row.jlr_ttm*100.0/row.gdqy,2),
+            'dar': round(row.zfz*100.0 / row.zzc, 2),
+            'sh_rate': row.sh_rate,
+            'trade_date': row.trade_date,
             'report_type':row.report_type
         })
 
     return render_template('stock/mystock_list.html', title='自选股', stocks=sdata)
 
+@blueprint.route('/person_stockholder_rank', methods=['GET'])
+def person_stockholder_rank():
+    data = dts.getStockHolderRank()
+    sdata = []
+    for index, row in data.iterrows():
+        sdata.append({
+            'name': row['name'],
+            'code': row.code,
+            'sum': row['sum'],
+            'size': int(row['count']),
+            'avg': round(row['avg'],3),
+            'launch_date': row.launch_date
+        })
+    return render_template('stock/stockholder_rank.html', title='自然人持股排行', stocks=sdata)
 
 @blueprint.route('/<code>', methods=['GET'])
 def home(code):
@@ -100,13 +121,18 @@ def valuationJson():
     tableData = []
 
     for index, row in df.iterrows():
-        tcp = row['t_cap']
-        rclose = row['close']
-        spe = 0 if row['jlr_ttm']== 0 else round(tcp/row['jlr_ttm'],2)
-        sps = 0 if row['zyysr_ttm']== 0 else round(tcp/row['zyysr_ttm'],2)
-        spcf = 0 if row['jyjxjl_ttm']== 0 else round(tcp/row['jyjxjl_ttm'],2)
-        spb = 0 if row['gdqy'] == 0 else round(tcp / row['gdqy'], 2)
-        tdate = row['trade_date'].strftime('%Y-%m-%d')
+        try:
+            tcp = row['t_cap']
+            rclose = row['close']
+            spe = 0 if row['jlr_ttm']== 0 else round(tcp/row['jlr_ttm'],2)
+            sps = 0 if row['zyysr_ttm']== 0 else round(tcp/row['zyysr_ttm'],2)
+            spcf = 0 if row['jyjxjl_ttm']== 0 else round(tcp/row['jyjxjl_ttm'],2)
+            spb = 0 if row['gdqy'] == 0 else round(tcp / row['gdqy'], 2)
+            tdate = row['trade_date'].strftime('%Y-%m-%d')
+        except Exception, ex:
+            app.logger.error(tcp)
+            app.logger.error(row['jlr_ttm'])
+            app.logger.error(ex)
 
         close.append([tdate,rclose])
         pe.append([tdate,spe])

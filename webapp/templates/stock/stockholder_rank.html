@@ -1,0 +1,46 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div class="container-fluid">
+    <table id="example" class="display" cellspacing="0" width="98%">
+        <thead>
+        <tr>
+            <th>编码</th>
+            <th>名称</th>
+            <th>平均持股</th>
+            <th>持股比率</th>
+            <th>持股人数</th>
+            <th>上市时间</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in stocks: %}
+        <tr>
+            <td>{{d.code|e}}</td>
+            <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.name|e}}</a></td>
+            <td>{{d.avg|e}}</td>
+            <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sum|e}}</a></td>
+            <td>{{d.size|e}}</td>
+            <td>{{d.launch_date|e}}</td>
+            <td>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+<script type=text/javascript>
+$(function(){
+ $('#example').DataTable({
+ "paging": false,
+ scrollY: 400,
+ "order": [[ 2, 'desc' ]],
+ });
+});
+
+</script>
+
+{% endblock %}
