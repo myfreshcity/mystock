@@ -202,7 +202,7 @@ def updateFinanceData(code):
     tdf = tdf.iloc[:, 1:].dropna(axis=1).T.reset_index()
 
     def fixNaN(x):
-        return 0 if x == '--' else x
+        return 1 if (x == '--' or x == '0') else x
 
     def getRevence(x, attri):
         dt = pd.to_datetime(x)
@@ -226,10 +226,11 @@ def updateFinanceData(code):
             v2 = 0
             v3 = 0
         try:
-            return int(v1) + (int(v2) - int(v3))
+            v4 = int(v1) + (int(v2) - int(v3))
+            return 1 if v4==0 else v4
         except Exception, ex:
             app.logger.error(ex)
-            return 0
+            return 1
 
     if tdf['index'].max() > s_date.strftime("%Y%m%d"):
         df = pd.DataFrame({

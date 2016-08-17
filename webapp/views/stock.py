@@ -160,7 +160,7 @@ def valuationJson():
 
     return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'pb':pb,'tableData':tableData},period=period)
 
-@blueprint.route('/revenueJson', methods=['POST'])
+@blueprint.route('/revenueJson', methods=['GET'])
 def revenueJson():
     tableData = []
     yysr = [] #营业收入
@@ -168,8 +168,8 @@ def revenueJson():
     jyjxjl = [] #经营性净现金流
     roe = [] #净资产收益率
 
-    code = request.form['code'][2:]
-    quarter = int(request.form['quarter'])
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
     df = ds.get_quarter_stock_revenue(code, quarter)
 
     for index, row in df.iterrows():

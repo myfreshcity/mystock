@@ -61,7 +61,7 @@ function getData(quarter,code) {
              quarter : quarter,
              code : code
     },
-    type:'post',
+    type:'get',
     cache:false,
     dataType:'json',
     success:revenue
