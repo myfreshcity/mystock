@@ -94,19 +94,19 @@ function revenue(result){
         series: yysrs,
         tooltip:{
            formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 百万';
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
            }
         }
     });
     $('#revenue_2').highcharts({
         chart: {type: 'column'},
         xAxis: {categories: []},
-        title: {text: '营业利润'},
+        title: {text: '净利润'},
         credits: {enabled: false},
         series: jlrs,
         tooltip:{
            formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 百万';
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
            }
         }
     });
@@ -118,7 +118,7 @@ function revenue(result){
         series: jyjxjls,
         tooltip:{
            formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 百万';
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
            }
         }
     });
@@ -139,37 +139,14 @@ function revenue(result){
         "order": [[ 0, "desc" ]],
         searching: false,
         columns: [
-            { title: "日期","data": "report_type" },
-            { title: "每股收益","data": "mgsy" },
-            { title: "每股收益(TTM)" ,"data": "mgsy_ttm" },
-            { title: "每股净资产" ,"data": "mgjzc" },
-            { title: "每股经营现金流" ,"data": "mgjyxjl" },
-            { title: "每股经营现金流(TTM)","data": "mgjyxjl_ttm"  },
-            { title: "营业收入(百万)","data": "yysr"  },
-            { title: "净利润(百万)" ,"data": "kjlr" },
-            { title: "经营现金流(百万)" ,"data": "jyjxjl" },
-            { title: "净资产收益率(ROE)","data": "roe"  }
-        ],
-        "columnDefs": [
-                  {
-                      "targets": [6],
-                      "render": function(data, type, full) {
-                          return formatRevenceVal(data);
-                      }
-                  },
-                  {
-                      "targets": [7],
-                      "render": function(data, type, full) {
-                          return formatRevenceVal(data);
-                      }
-                  },
-                  {
-                      "targets": [8],
-                      "render": function(data, type, full) {
-                          return formatRevenceVal(data);
-                      }
-                  }
-            ]
+            { title: "日期" },
+            { title: "主营收入" },
+            { title: "净利润" },
+            { title: "经营性现金流" },
+            { title: "营收增长率" },
+            { title: "净利润增长率" },
+            { title: "经营性现金流增长率" }
+        ]
     } );
 }
 

@@ -160,9 +160,9 @@ def valuationJson():
 
     return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'pb':pb,'tableData':tableData},period=period)
 
-
 @blueprint.route('/revenueJson', methods=['POST'])
 def revenueJson():
+    tableData = []
     yysr = [] #营业收入
     jlr = [] #净利润
     jyjxjl = [] #经营性净现金流
@@ -173,12 +173,24 @@ def revenueJson():
     df = ds.get_quarter_stock_revenue(code, quarter)
 
     for index, row in df.iterrows():
-        yysr.append(fn.get_data_array(row['report_type'], row['yysr']))
-        jlr.append(fn.get_data_array(row['report_type'], row['kjlr']))
-        jyjxjl.append(fn.get_data_array(row['report_type'], row['jyjxjl']))
-        roe.append([row['report_type'].encode('utf-8'), round(row['roe'], 2)])
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+        yysr.append([report_type, row['zyysr']])
+        jlr.append([report_type, row['jlr']])
+        jyjxjl.append([report_type, row['jyjxjl']])
+        roe.append([report_type.encode('utf-8'), round(row['roe'], 2)])
 
-    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'roe':roe},tableData=json.loads(df.to_json(orient="records")))
+        tableData.append(
+            [report_type,
+             format(row['zyysr'], ','),
+             format(row['jlr'], ','),
+             format(row['jyjxjl'], ','),
+             round(row['zyysr_grow_rate'] * 100, 2),
+             round(row['jlr_grow_rate'] * 100, 2),
+             round(row['jyjxjl_grow_rate'] * 100, 2)
+             ]
+        )
+
+    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'roe':roe},tableData=tableData)
 
 
 @blueprint.route('/add', methods=['GET', 'POST'])

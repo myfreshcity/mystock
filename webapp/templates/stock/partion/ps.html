@@ -1,0 +1,132 @@
+<div class="modal fade" id="psModal" tabindex="-1" role="dialog" aria-labelledby="psModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="psModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="valuation_chart" class="col-md-12"></div>
+          </div>
+          <div class="row">
+            <div id="value_chart" class="col-md-12"></div>
+            <div class="row">
+              <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+  $('#psModal').on('show.bs.modal', function (event) {
+
+    var button = $(event.relatedTarget)
+    var code = button.data('stock') // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+    var modal = $(this)
+    modal.find('.modal-title').text('主营收入 ' + button.data('name')+'-'+code );
+    var valuation_chart = modal.find('.modal-body #valuation_chart');
+    var value_chart = modal.find('.modal-body #value_chart');
+    var data_table = modal.find('.modal-body #data_table');
+
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/detail/psJson',
+    data:{
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:valuation
+    });
+
+  function valuation(result){
+    var valuation_data = {'name':'估值',marker: {enabled: false}};
+    valuation_data['data'] = result.data.valuation;
+
+    var actual_rate_data = {'name':'增长率',yAxis: 1,marker: {enabled: false}};
+    actual_rate_data['data'] = result.data.actualRate;
+
+    var actual_data = {'name':'主营收入',type: 'column',marker: {enabled: false}};
+    actual_data['data'] = result.data.actual;
+
+    //显示数据
+    modal.find('.modal-body').show();
+    if(modal_datatable)modal_datatable.destroy();
+    modal_datatable = data_table.DataTable( {
+        scrollY: 300,
+        paging: false,
+        data: result.data.tableData,
+        "order": [[ 0, "desc" ]],
+        searching: false,
+        columns: [
+            { title: "日期" },
+            { title: "主营收入" },
+            { title: "净利润" },
+            { title: "经营性现金流" },
+            { title: "营收增长率(%)" },
+            { title: "净利润增长率(%)" },
+            { title: "经营性现金流增长率(%)" }
+        ]
+    } );
+
+    valuation_chart.highcharts({
+        title: {text:  '估值'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [valuation_data],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    value_chart.highcharts({
+        title: {text:  '成长'},
+        xAxis: [{categories: []}],
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '数值'}
+        },
+        {// Secondary yAxis
+        title: {text: '成长率'},
+        labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
+        credits: {enabled: false},
+        series: [actual_data,actual_rate_data],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+
+  }
+
+    });
+
+  // 关闭按钮后隐藏
+  $('#psModal').on('shown.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find('.modal-body').hide();
+  });
+});
+</script>

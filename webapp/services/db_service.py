@@ -70,33 +70,17 @@ def getPerStockRevenue():
     return df.set_index(df['code'])
 
 
-#年度营收
+#获取年度营收
 def getStockRevenue(code):
-    df = pd.read_sql_query("select yysr,yylr as jlr,jyjxjl,zfz/zzc*100 as drate,report_type from stocks where year(report_type)>=2010 and month(report_type)= 12 and code=%(name)s",
+    df = pd.read_sql_query("select * from stock_finance_data where code=%(name)s",
                            db.engine,index_col='report_type',params={'name':code})
-    #df.index = pd.to_datetime(df['report_type'])
-    return df
+    zyysr_ttm = pd.Series(df['zyysr_ttm'].pct_change(periods=4), name='zyysr_grow_rate')
+    jlr_ttm = pd.Series(df['jlr_ttm'].pct_change(periods=4), name='jlr_grow_rate')
+    jyjxjl_ttm = pd.Series(df['jyjxjl_ttm'].pct_change(periods=4), name='jyjxjl_grow_rate')
 
-#获取最近3年每季度营收
-def get_quart_stock_revenue(code):
-    df = get_revenue_df(code)
-    #获取最近的日期
-    latest_date = df.iat[0, 1]
-    now = pd.to_datetime(latest_date)
-    #最近
-    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
-    df1 = df.iloc[df.index.isin(in_df_date)]
-    #去年同期
-    now = now - DateOffset(months=12)
-    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
-    df2 = df.iloc[df.index.isin(in_df_date)]
-    #前年同期
-    now = now - DateOffset(months=24)
-    in_df_date = pd.date_range(end=now.strftime('%Y-%m-%d'), periods=4, freq='Q')
-    df3 = df.iloc[df.index.isin(in_df_date)]
-
-    return (df1,df2,df3)
-
+    df1 = pd.concat([df, zyysr_ttm, jlr_ttm, jyjxjl_ttm], axis=1)
+    df2 = df1.reset_index()
+    return df2.sort_values(by='report_type',ascending=False)
 
 #获取每季度营收
 def get_quarter_stock_revenue(code,quarter):
@@ -105,27 +89,19 @@ def get_quarter_stock_revenue(code,quarter):
     df4 = df.iloc[df.index.isin(tdate)]
     return df4
 
-#获取最近5年营收
-def get_year_stock_revenue(code):
-    df = get_revenue_df(code)
-    #获取最近的日期
-    latest_date = df.iat[0, 1]
-    last_year_end = YearEnd().rollback(latest_date)
-    in_df_date = pd.date_range(end=last_year_end, periods=5, freq='12M')
-    df4 = df.iloc[df.index.isin(in_df_date)]
-    return df4
-
 #获取营收df
 def get_revenue_df(code):
-    df = pd.read_sql_query(
-        "select code,report_type,yysr,jlr,lrze,kjlr,zzc,gdqy,jyjxjl,mgsy,roe,mgjyxjl,mgjzc,mgsy_ttm,mgjyxjl_ttm \
-        from stock_finance_basic \
-        where code=%(name)s",
-        db.engine, params={'name': code})
+    df = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
+                           db.engine, params={'name': code})
+    zyysr_ttm = pd.Series(df['zyysr'].pct_change(periods=4), name='zyysr_grow_rate')
+    jlr_ttm = pd.Series(df['jlr'].pct_change(periods=4), name='jlr_grow_rate')
+    jyjxjl_ttm = pd.Series(df['jyjxjl'].pct_change(periods=4), name='jyjxjl_grow_rate')
+    df1 = pd.concat([df, zyysr_ttm, jlr_ttm, jyjxjl_ttm], axis=1)
+
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
-    df3 = df.set_index(i)
-    df4 = df3.sort_index(ascending=False)
-    return df4
+    df2 = df1.set_index(i)
+    df2 = df2.sort_index(ascending=False).fillna(0)
+    return df2
 
 #历史估值(新)
 def getStockValuationN(code,peroid):
@@ -143,10 +119,11 @@ def getStockValuationN(code,peroid):
     tdf = pd.read_sql_query("select "
                             "trade_date,close,volume,t_cap,m_cap "
                             "from stock_trade_data "
-                            "where code=%(name)s order by trade_date desc",
+                            "where code=%(name)s ",
                             db.engine, params={'name': code}).dropna(axis=0)
     i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
     tdf = tdf.set_index(i)
+    tdf = tdf.sort_index(ascending=False)
     gdf = tdf.groupby([pd.TimeGrouper(freq='M')])
     agdf = gdf['trade_date'].agg({'max': np.max})
     tdf = tdf.iloc[tdf.index.isin(agdf['max'])]
@@ -179,49 +156,6 @@ def getStockValuationN(code,peroid):
     })
     df = df.fillna(method='bfill')
 
-    #df.set_index('trade_date')
-    if peroid>0:
-        df = df.head(peroid*12)
-    return df
-
-#历史估值
-def getStockValuation(code,peroid):
-    sdf = get_revenue_df(code) #获取收益数据
-    #获取交易数据
-    tdf = pd.read_sql_query("select "
-                            "trade_date,close,volume,adj_close "
-                            "from stock_trade_basic "
-                            "where code=%(name)s",
-                            db.engine, params={'name': code}).dropna(axis=0)
-
-    def getRevence(x, attri):
-        dt = pd.to_datetime(x)
-        sdate = dt + QuarterEnd()
-        mg_val = sdf[sdf.index == sdate].get(attri)
-        if (len(mg_val.values) == 0):  # 如果没数值，取上一季度
-            sdate = dt - QuarterEnd()
-            mg_val = sdf[sdf.index == sdate].get(attri)
-            # 如果缺少值
-            if (len(mg_val.values) == 0):
-                mg_val = pd.Series([10000])  # 作为坏数据沉没
-        return 10000 if mg_val.values[0]==0 else mg_val.values[0]
-
-    def getReportType(x):
-        dt = pd.to_datetime(x)
-        sdate = dt + QuarterEnd()
-        return sdate
-
-    df = pd.DataFrame({
-        'trade_date': tdf['trade_date'],
-        'close': tdf['close'],
-        'volume': tdf['volume'],
-        'adj_close': tdf['adj_close'],
-        'report_type': tdf['trade_date'].apply(getReportType),
-        'mgsy_ttm': tdf['trade_date'].apply(getRevence, args=('mgsy_ttm',)),
-        'mgjzc': tdf['trade_date'].apply(getRevence, args=('mgjzc',)),
-        'mgjyxjl_ttm': tdf['trade_date'].apply(getRevence, args=('mgjyxjl_ttm',)),
-        'code': code
-    })
     #df.set_index('trade_date')
     if peroid>0:
         df = df.head(peroid*12)

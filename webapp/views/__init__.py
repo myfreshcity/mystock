@@ -1,1 +1,1 @@
-import setting, stock, home
+import setting, stock, home,detail

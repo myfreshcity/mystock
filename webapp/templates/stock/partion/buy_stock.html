@@ -1,0 +1,65 @@
+<div class="modal fade" id="buyStockModal" tabindex="-1" role="dialog" aria-labelledby="buyStockModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="buyStockModalLabel">设置基准价</h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="in-price" class="control-label">买入价（最近）</label>
+            <input type="number" class="form-control" id="in-price">
+          </div>
+          <div class="form-group">
+            <label for="in-date" class="control-label">买入日期（最近）</label>
+            <input type="date" class="form-control" id="in-date">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary" onclick="saveInPrice()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+function saveInPrice() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/saveInPrice',
+    data:{
+             code : $('#sel-code').val(),
+             price: $('#in-price').val(),
+             date: $('#in-date').val()
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+            window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  }
+
+//加载完毕自动执行
+$(function(){
+     $('#buyStockModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget)
+      var recipient = button.data('stock') // Extract info from data-* attributes
+      // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+      // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+      var modal = $(this)
+      modal.find('.modal-title').text('设置股票 ' + recipient);
+      modal.find('.modal-body #in-price').val(button.data('inprice'));
+      modal.find('#sel-code').val(recipient);
+      var indate = button.data('indate');
+      modal.find('.modal-body #in-date').val(indate);
+    });
+});
+</script>
