@@ -34,7 +34,7 @@ def index():
             'pb': round(row.t_cap/(row.gdqy*10000),2),
             'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
             'dar': round(row.zfz * 100.0 / row.zzc, 2),
-            'sh_rate': row.sh_rate,
+            'sh_rate': row['count'],
             'launch_date': row['launch_date'],
             'report_type':row.report_type
         })
@@ -64,7 +64,7 @@ def mystock():
             'pb': round(row.t_cap/(row.gdqy*10000),2),
             'roe': round(row.jlr_ttm*100.0/row.gdqy,2),
             'dar': round(row.zfz*100.0 / row.zzc, 2),
-            'sh_rate': row.sh_rate,
+            'sh_rate': row['count'],
             'trade_date': row.trade_date,
             'report_type':row.report_type
         })
@@ -73,7 +73,7 @@ def mystock():
 
 @blueprint.route('/person_stockholder_rank', methods=['GET'])
 def person_stockholder_rank():
-    data = dts.getStockHolderRank()
+    data = hs.getStockHolderRank()
     sdata = []
     for index, row in data.iterrows():
         sdata.append({

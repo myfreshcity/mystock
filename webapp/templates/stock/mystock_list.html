@@ -26,10 +26,10 @@
             <td>{{d.code|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
-            <td><a href="#peModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
+            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
             <td>{{d.roe|e}}</td>
-            <td><a href="#debetModal" data-stock="{{d.code|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
-            <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sh_rate|e}}</a></td>
+            <td><a href="#debetModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
+            <td><a href="#holderModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.sh_rate|e}}</a></td>
             <td><a href="#psModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.ps|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
             <td>{{d.pb|e}}</td>
@@ -45,6 +45,8 @@
                         <li><a href="#" onclick="javascript:del('{{d.code|e}}');return false;">删除</a></li>
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
                         <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
+                        <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
+                        <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
                     </ul>
                 </div>
             </td>
@@ -108,5 +110,6 @@ $(function(){
 {% include 'stock/partion/ps.html' %}
 {% include 'stock/partion/pcf.html' %}
 {% include 'stock/partion/debet.html' %}
+{% include 'stock/partion/holder.html' %}
 
 {% endblock %}

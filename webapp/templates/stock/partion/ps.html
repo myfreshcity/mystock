@@ -124,7 +124,7 @@ $(function(){
     });
 
   // 关闭按钮后隐藏
-  $('#psModal').on('shown.bs.modal', function (event) {
+  $('#psModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
     modal.find('.modal-body').hide();
   });

@@ -6,7 +6,7 @@ from flask import g
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db,db_service as dbs
+from webapp.services import db,db_service as dbs,holder_service as hs
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 from pandas.tseries.offsets import *
@@ -14,17 +14,6 @@ from datetime import datetime
 import urllib2,re,html5lib
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
-group_stockholder_rate = None
-
-def getLatestStockHolder():
-    global group_stockholder_rate
-    if group_stockholder_rate is None:
-        hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate\
-                                   from stock_holder order by report_date desc", db.engine)
-        group_stockholder_rate = hdf.groupby(['code']).head(10)
-        #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
-
-    return group_stockholder_rate
 
 def updateTradeBasic(code,market):
     #获得开始日期.数据库的最大时间或者2000.1.1
@@ -99,55 +88,6 @@ def updateTradeData(code,market):
                 df1.to_sql('stock_trade_data', db.engine, if_exists='append', index=False, chunksize=1000)
     except Exception, ex:
         app.logger.error(ex)
-
-def updateStockHolder(code):
-    latest_val = ''
-    url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
-    req = urllib2.Request(url=url, headers=headers)
-    feeddata = urllib2.urlopen(req).read()
-    soup = BeautifulSoup(feeddata, "html5lib")
-    paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
-
-    report_date = []
-    holder_name = []
-    amount = []
-    rate = []
-    holder_type = []
-    holder_parent = []
-    rdate = ''
-    i = 0
-    for e in paper_name:
-        t = e.find_all('td')
-        s = e.find_all('strong')
-        if len(s) > 0:
-            if s[0].string == '截止日期':
-                rdate = t[1].string
-                i += 1
-                if i ==1:
-                    latest_val = rdate
-
-        if t[0].div:
-            if t[0].div.string:
-                if t[0].div.string.isdigit():
-                    hname = t[1].div.text
-                    report_date.append(rdate)
-                    holder_name.append(hname)
-                    amount.append(t[2].div.string)
-                    rate.append(t[3].div.string)
-                    holder_type.append(t[4].div.string)
-                    holder_parent.append(hname.split('-')[0])
-    df1 = pd.DataFrame({
-        'code': code,
-        'report_date': report_date,
-        'holder_name': holder_name,
-        'amount': amount,
-        'rate': rate,
-        'holder_type': holder_type,
-        'holder_parent': holder_parent
-
-    })
-    df1.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
-    return latest_val
 
 def getStockHighPriceV2(code,market):
     #获取最近20交易日最高市值
@@ -382,16 +322,6 @@ def calculateTTMValue(in_df,code):
 
     return df3.iloc[df3.index.isin(in_df_date)]
 
-def refreshStockHolder():
-    #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(and_(Stock.latest_report < '2016-03-31',Stock.launch_date < '2016-03-31')).limit(200).all()
-    #stocks = db.session.query(Stock).all()
-    for st in stocks:
-        app.logger.info('checking stock holder for:' + st.code)
-        latest_report = updateStockHolder(st.code)
-        st.latest_report = latest_report
-        db.session.flush()
-
 #获取指定日期的最高收盘价
 def getPerStockHighPrice(df):
     st_valus = []
@@ -425,7 +355,7 @@ def getMyStocks(flag):
 
     bdf = bdf.reset_index()
     df3 = df3.reset_index()
-    df4 = pd.merge(bdf, df3, how='left')
+    df4 = pd.merge(bdf, df3, how='left',on='code')
 
     #加入买入时的市值
     in_df = pd.read_sql_query(
@@ -434,40 +364,8 @@ def getMyStocks(flag):
     df5 = pd.merge(df4, in_df, how='left')
 
     #加入机构持股比例
-    gdf = getGroupStockHolderRate()
-    df6 = pd.merge(df5, gdf, how='left')
+    gdf = hs.getGroupStockHolderRate()
+    df6 = pd.merge(df5, gdf, how='left',on='code')
     return df6
-
-#获得机构持股比例
-def getGroupStockHolderRate():
-    gdf  = getLatestStockHolder()
-    agdf = gdf[gdf['holder_type'] != '自然人股']
-    a1gdf = agdf.groupby(['code'])
-    a2gdf = a1gdf['rate'].agg({'sh_rate': np.size})
-    return a2gdf.reset_index()
-
-#获得自然人持股排行榜
-def getStockHolderRank():
-    gdf = getLatestStockHolder()
-    agdf = gdf[gdf['holder_type'] == '自然人股']
-    a1gdf = agdf.groupby(['code'])
-
-    t2_gdf = a1gdf['rate'].agg({'sum': np.sum}) #比例
-    t3_gdf = a1gdf['rate'].agg({'size': np.size}) #个数
-
-    t4_df = pd.concat([t2_gdf, t3_gdf], axis=1, join='inner')
-    t41_df = pd.DataFrame({
-        'sum': t4_df['sum'],
-        'count': t4_df['size'],
-        'avg': t4_df['sum'] / t4_df['size']
-    })
-
-    t5_df = t41_df.sort_index(by='avg', ascending=True).head(100)
-    t6_df = t5_df.reset_index()
-
-    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
-    t7_df = pd.merge(t6_df, bdf, on='code')
-    return t7_df
-
 
 

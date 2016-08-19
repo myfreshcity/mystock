@@ -7,7 +7,7 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
-from webapp.services import db_service as ds,data_service as dts
+from webapp.services import db_service as ds,data_service as dts,holder_service as hs
 from webapp.models import MyStock
 from webapp import functions as fn
 from flask import current_app as app
@@ -16,7 +16,7 @@ blueprint = Blueprint('detail', __name__)
 
 @blueprint.route('/peJson', methods=['GET'])
 def peJson():
-    code = request.args.get('code')
+    code = request.args.get('code')[2:]
     period = 5 #最近5年
     quarter = 4 #第4季度
 
@@ -51,40 +51,41 @@ def peJson():
         )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
-@blueprint.route('/debetJson', methods=['POST'])
+@blueprint.route('/debetJson', methods=['GET'])
 def debetJson():
-    code = request.form['code']
-    period = int(request.form['period'])
-    df = ds.getStockValuationN(code,period)
+    code = request.args.get('code')
+    period = 5  # 最近5年
+    quarter = 4  # 第4季度
 
-    close = []
-    pe = []
+    fzlArray = []
+    dqfzArray = []
+    ldbArray = []
     tableData = []
 
-    for index, row in df.iterrows():
-        try:
-            tcp = row['t_cap']
-            rclose = row['close']
-            spe = 0 if row['jlr_ttm']== 0 else round(tcp/row['jlr_ttm'],2)
-            tdate = row['trade_date'].strftime('%Y-%m-%d')
-        except Exception, ex:
-            app.logger.error(tcp)
-            app.logger.error(row['jlr_ttm'])
-            app.logger.error(ex)
+    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    for index, row in valueDf.iterrows():
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+        fzl = round(row.zfz * 100.0 / row.zzc, 2) #负债率
+        dqfz = round(row.ldfz * 100.0 / row.zfz, 2) #短期负债比重
+        ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
 
-        close.append([tdate,rclose])
-        pe.append([tdate,spe])
+        fzlArray.append([report_type, fzl])
+        dqfzArray.append([report_type,dqfz])
+        ldbArray.append([report_type, ldb])
 
         tableData.append(
-            [tdate,
-             tcp,
-             spe,
-             row['jlr'],
-             row['jlr_ttm'],
-             0
+            [report_type,
+             format(row['zzc'], ','),
+             format(row['zfz'], ','),
+             format(row['ldzc'], ','),
+             format(row['ldfz'], ','),
+             format(row['gdqy'], ','),
+             fzl,
+             dqfz,
+             ldb
              ]
         )
-    return jsonify(data={'actual': close, 'valuation': pe, 'tableData':tableData},period=period)
+    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray, 'ldb': ldbArray, 'tableData':tableData},period=period)
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():
@@ -159,3 +160,31 @@ def psJson():
              ]
         )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
+
+@blueprint.route('/holderJson', methods=['GET'])
+def holderJson():
+    code = request.args.get('code')
+
+    tableData = []
+    latestDf = hs.getStockHolder(code)
+    for index, row in latestDf.iterrows():
+        report_date = row['report_date'].strftime('%Y-%m-%d')
+        tableData.append(
+            [report_date,
+             row['name'],
+             row['rate'],
+             format(row['amount'], ','),
+             row['var']
+             ])
+
+    sizeArray = []
+    sumArray = []
+    (size_df,sum_df) = hs.getStockHolderHistory(code)
+    it_1 = size_df.iterrows()
+    it_2 = sum_df.iterrows()
+    for index, row in it_1:
+        sizeArray.append([index.strftime('%Y-%m-%d'), row['size']])
+    for index, row in it_2:
+        sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
+
+    return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData})

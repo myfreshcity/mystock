@@ -9,9 +9,11 @@
       <div class="modal-body">
         <div class="container-fluid">
           <div class="row">
+            <div class="col-md-2 col-md-offset-10"><a id="m1_link" href='#' target="_blank">更多&gt;&gt;</a></div>
             <div id="valuation_chart" class="col-md-12"></div>
           </div>
           <div class="row">
+            <div class="col-md-2 col-md-offset-10"><a id="m2_link" href='#' target="_blank">更多&gt;&gt;</a></div>
             <div id="value_chart" class="col-md-12"></div>
             <div class="row">
               <table id="data_table" class="display" cellspacing="0" width="90%"></table>
@@ -42,6 +44,9 @@ $(function(){
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
     var data_table = modal.find('.modal-body #data_table');
+
+    modal.find('.modal-body #m1_link').attr("href","/stock/valuation/"+code);
+    modal.find('.modal-body #m2_link').attr("href","/stock/"+code);
 
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/detail/peJson',
@@ -126,7 +131,7 @@ $(function(){
     });
 
   // 隐藏后消失
-  $('#peModal').on('shown.bs.modal', function (event) {
+  $('#peModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
     modal.find('.modal-body').hide();
   });

@@ -1,9 +1,9 @@
-<div class="modal fade" id="pcfModal" tabindex="-1" role="dialog" aria-labelledby="pcfModalLabel">
+<div class="modal fade" id="debetModal" tabindex="-1" role="dialog" aria-labelledby="debetModalLabel">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="pcfModalLabel"></h4>
+        <h4 class="modal-title" id="debetModalLabel"></h4>
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
       <div class="modal-body">
@@ -30,7 +30,7 @@
 
 //加载完毕自动执行
 $(function(){
-  $('#pcfModal').on('show.bs.modal', function (event) {
+  $('#debetModal').on('shown.bs.modal', function (event) {
 
     var button = $(event.relatedTarget)
     var code = button.data('stock') // Extract info from data-* attributes
@@ -38,13 +38,13 @@ $(function(){
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 
     var modal = $(this)
-    modal.find('.modal-title').text('现金流 ' + button.data('name')+'-'+code );
+    modal.find('.modal-title').text('债务结构 -' + button.data('name')+'-'+code );
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
     var data_table = modal.find('.modal-body #data_table');
 
     var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/detail/pcfJson',
+    url:$SCRIPT_ROOT + '/detail/debetJson',
     data:{
              code : code
     },
@@ -55,18 +55,17 @@ $(function(){
     });
 
   function valuation(result){
-    var valuation_data = {'name':'估值',marker: {enabled: false}};
-    valuation_data['data'] = result.data.valuation;
+    var valuation_data = {'name':'负债率',marker: {enabled: false}};
+    valuation_data['data'] = result.data.fzl;
 
-    var actual_rate_data = {'name':'增长率',yAxis: 1,marker: {enabled: false}};
-    actual_rate_data['data'] = result.data.actualRate;
+    var dqfz = {'name':'短期负债比重',type: 'column',marker: {enabled: false}};
+    dqfz['data'] = result.data.dqfz;
 
-    var actual_data = {'name':'现金流',type: 'column',marker: {enabled: false}};
-    actual_data['data'] = result.data.actual;
 
     //显示数据
     modal.find('.modal-body').show();
     if(modal_datatable)modal_datatable.destroy();
+
     modal_datatable = data_table.DataTable( {
         scrollY: 300,
         paging: false,
@@ -75,17 +74,19 @@ $(function(){
         searching: false,
         columns: [
             { title: "日期" },
-            { title: "主营收入" },
-            { title: "净利润" },
-            { title: "经营性现金流" },
-            { title: "营收增长率(%)" },
-            { title: "净利润增长率(%)" },
-            { title: "经营性现金流增长率(%)" }
+            { title: "总资产" },
+            { title: "总负债" },
+            { title: "流动资产" },
+            { title: "流动负债" },
+            { title: "股东权益" },
+            { title: "负债率" },
+            { title: "短期负债比重" },
+            { title: "流动比" }
         ]
     } );
 
     valuation_chart.highcharts({
-        title: {text:  '估值'},
+        title: {text:  '负债率'},
         xAxis: {categories: []},
         credits: {enabled: false},
         series: [valuation_data],
@@ -94,25 +95,12 @@ $(function(){
            shared: true
         }
     });
+
     value_chart.highcharts({
-        title: {text:  '成长'},
-        xAxis: [{categories: []}],
-        yAxis: [
-        {// Primary yAxis
-        title: {text: '数值'}
-        },
-        {// Secondary yAxis
-        title: {text: '成长率'},
-        labels: {
-                format: '{value} %',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-        opposite: true
-        }],
+        title: {text:  '短期负债比重'},
+        xAxis: {categories: []},
         credits: {enabled: false},
-        series: [actual_data,actual_rate_data],
+        series: [dqfz],
         tooltip:{
            crosshairs: true,
            shared: true
@@ -123,10 +111,11 @@ $(function(){
 
     });
 
-    // 关闭按钮后隐藏
-  $('#pcfModal').on('hidden.bs.modal', function (event) {
+  // 隐藏后消失
+  $('#debetModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
     modal.find('.modal-body').hide();
   });
+
 });
 </script>
