@@ -11,6 +11,7 @@ from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 from pandas.tseries.offsets import *
 from datetime import datetime
+import urllib2,re,html5lib
 
 group_stockholder_rate = None
 
@@ -23,18 +24,18 @@ def getLatestStockHolder():
         #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
     return group_stockholder_rate
 
-def refreshStockHolder():
+def refreshStockHolder(start_date='2016-03-31'):
     #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(and_(Stock.latest_report < '2016-03-31',Stock.launch_date < '2016-03-31')).limit(200).all()
-    #stocks = db.session.query(Stock).all()
+    #stocks = db.session.query(Stock).filter(and_(Stock.latest_report < start_date,Stock.launch_date < start_date)).all()
+    stocks = stocks = db.session.query(MyStock).all()
     for st in stocks:
         app.logger.info('checking stock holder for:' + st.code)
         latest_report = updateStockHolder(st.code)
         st.latest_report = latest_report
         db.session.flush()
 
-def refreshStockHolderSum():
-    gdf = getLatestStockHolder()
+def refreshStockHolderSum(gdf):
+    #gdf = getLatestStockHolder()
     agdf = gdf[gdf['holder_type'] != '自然人股']
     a1gdf = agdf.groupby(['code'])
 
@@ -57,7 +58,13 @@ def refreshStockHolderSum():
         'count': t2_df['size'],
         'sum': t1_df['sum']
     })
-    m2_df.to_sql('stock_holder_sum', db.engine, if_exists='append', index=False, chunksize=1000)
+    if not m2_df.empty:
+        for row_index, row in m2_df.iterrows():
+            sql = text("delete from stock_holder_sum  where code =:code")
+            result = db.session.execute(sql,{'code': row.code})
+        m2_df.to_sql('stock_holder_sum', db.engine, if_exists='append', index=False, chunksize=1000)
+        global group_stockholder_rate
+        group_stockholder_rate = None
 
 #获得机构持股比例
 def getGroupStockHolderRate():
@@ -91,6 +98,7 @@ def getStockHolderRank():
 
 def updateStockHolder(code):
     latest_val = ''
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
     url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
     req = urllib2.Request(url=url, headers=headers)
     feeddata = urllib2.urlopen(req).read()
@@ -121,8 +129,8 @@ def updateStockHolder(code):
                     hname = t[1].div.text
                     report_date.append(rdate)
                     holder_name.append(hname)
-                    amount.append(t[2].div.string)
-                    rate.append(t[3].div.string)
+                    amount.append(float(t[2].div.string))
+                    rate.append(float(t[3].div.string))
                     holder_type.append(t[4].div.string)
                     holder_parent.append(hname.split('-')[0])
     df1 = pd.DataFrame({
@@ -135,7 +143,22 @@ def updateStockHolder(code):
         'holder_parent': holder_parent
 
     })
-    df1.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
+
+    sql = "select max(report_date) from stock_holder where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    s_date = resultProxy.scalar()
+    if (s_date == None):
+        s_date = dbs.getStock(code).launch_date  # 取上市日期
+
+    def convertDate(x):
+        return pd.to_datetime(x).date()
+    df2 = df1[df1['report_date'].apply(convertDate) > s_date]
+
+    if not df2.empty:
+        df2.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
+        #更新汇总信息
+        refreshStockHolderSum(df2)
+
     return latest_val
 
 #近期持股情况比较

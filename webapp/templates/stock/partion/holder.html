@@ -10,6 +10,7 @@
         <div class="container-fluid">
           <div class="row">
             <div class="row">
+              <div class="col-md-2 col-md-offset-10"><a id="m1_link" href='#'>更新数据</a></div>
               <table id="data_table" class="display" cellspacing="0" width="90%"></table>
             </div>
             <div id="value_chart" class="col-md-12"></div>
@@ -43,7 +44,29 @@ $(function(){
     var value_chart = modal.find('.modal-body #value_chart');
     var data_table = modal.find('.modal-body #data_table');
 
-    var aj = $.ajax( {
+    modal.find('.modal-body #m1_link').on("click",updateData);
+
+    function updateData(){
+        var aj = $.ajax( {
+        url:$SCRIPT_ROOT + '/setting/updateHolder/',
+        data:{
+                 code : code
+        },
+        type:'get',
+        cache:false,
+        dataType:'json',
+        success:function(result){
+             if(result.msg == true){
+                 $.ajax(holder_ajax_option);
+             }else{
+                console.error(result.msg);
+             }
+            }
+        });
+
+     };
+
+    var holder_ajax_option =  {
     url:$SCRIPT_ROOT + '/detail/holderJson',
     data:{
              code : code
@@ -52,10 +75,11 @@ $(function(){
     cache:false,
     dataType:'json',
     success:valuation
-    });
+    };
+    $.ajax(holder_ajax_option);
 
   function valuation(result){
-    var c1_data = {'name':'持股个数',marker: {enabled: false}};
+    var c1_data = {'name':'持股个数',type: 'column',marker: {enabled: false}};
     c1_data['data'] = result.data.holderSize;
 
     var c2_data = {'name':'持股比例',type: 'column',marker: {enabled: false}};

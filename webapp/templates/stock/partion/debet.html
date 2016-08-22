@@ -9,10 +9,13 @@
       <div class="modal-body">
         <div class="container-fluid">
           <div class="row">
-            <div id="valuation_chart" class="col-md-12"></div>
+            <div id="chart_1" class="col-md-12"></div>
+            <div id="chart_2" class="col-md-12"></div>
+            <div id="chart_3" class="col-md-12"></div>
+            <div id="chart_4" class="col-md-12"></div>
           </div>
           <div class="row">
-            <div id="value_chart" class="col-md-12"></div>
+
             <div class="row">
               <table id="data_table" class="display" cellspacing="0" width="90%"></table>
             </div>
@@ -39,8 +42,6 @@ $(function(){
 
     var modal = $(this)
     modal.find('.modal-title').text('债务结构 -' + button.data('name')+'-'+code );
-    var valuation_chart = modal.find('.modal-body #valuation_chart');
-    var value_chart = modal.find('.modal-body #value_chart');
     var data_table = modal.find('.modal-body #data_table');
 
     var aj = $.ajax( {
@@ -55,11 +56,18 @@ $(function(){
     });
 
   function valuation(result){
-    var valuation_data = {'name':'负债率',marker: {enabled: false}};
+    var valuation_data = {'name':'总负债率',type: 'column',marker: {enabled: false}};
     valuation_data['data'] = result.data.fzl;
 
-    var dqfz = {'name':'短期负债比重',type: 'column',marker: {enabled: false}};
+    var dqfz = {'name':'短期负债率',type: 'column',marker: {enabled: false}};
     dqfz['data'] = result.data.dqfz;
+
+    var chb = {'name':'存货比',type: 'column',marker: {enabled: false}};
+    chb['data'] = result.data.chb;
+
+    var yszkb = {'name':'营收帐款比',type: 'column',marker: {enabled: false}};
+    yszkb['data'] = result.data.yszkb;
+
 
 
     //显示数据
@@ -72,6 +80,9 @@ $(function(){
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
         searching: false,
+        aoColumnDefs: [
+        { "sWidth": "8%", "aTargets": [ 0 ] }
+        ],
         columns: [
             { title: "日期" },
             { title: "总资产" },
@@ -79,14 +90,16 @@ $(function(){
             { title: "流动资产" },
             { title: "流动负债" },
             { title: "股东权益" },
-            { title: "负债率" },
-            { title: "短期负债比重" },
+            { title: "总负债率(%)" },
+            { title: "短期负债率(%)" },
+            { title: "存货比(%)" },
+            { title: "营收帐款比(%)" },
             { title: "流动比" }
         ]
     } );
 
-    valuation_chart.highcharts({
-        title: {text:  '负债率'},
+    modal.find('.modal-body #chart_1').highcharts({
+        title: {text:  '总负债率'},
         xAxis: {categories: []},
         credits: {enabled: false},
         series: [valuation_data],
@@ -96,8 +109,8 @@ $(function(){
         }
     });
 
-    value_chart.highcharts({
-        title: {text:  '短期负债比重'},
+    modal.find('.modal-body #chart_2').highcharts({
+        title: {text:  '短期负债率'},
         xAxis: {categories: []},
         credits: {enabled: false},
         series: [dqfz],
@@ -107,6 +120,26 @@ $(function(){
         }
     });
 
+    modal.find('.modal-body #chart_3').highcharts({
+        title: {text:  '存货比'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [chb],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    modal.find('.modal-body #chart_4').highcharts({
+        title: {text:  '营收帐款比'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: [yszkb],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
   }
 
     });

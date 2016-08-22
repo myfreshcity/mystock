@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import sys
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine,text
 import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db
 from webapp.models import MyStock,Stock,DataItem,Comment
 import json
+
 from pandas.tseries.offsets import *
 from datetime import datetime
 import urllib2,re

@@ -15,15 +15,15 @@
             <th>名称</th>
             <th>类型</th>
             <th>市盈率</th>
-            <th>收益率</th>
-            <th>负债率</th>
+            <th>增长率(%)</th>
+            <th>短期负债率(%)</th>
             <th width="40">机构持股</th>
             <th>市销率</th>
             <th>市现率</th>
             <th>市净率</th>
-            <th>财务分析</th>
+            <th>净现金比</th>
             <th>市值(亿)</th>
-            <th>上市日期</th>
+
             <th></th>
         </tr>
         </thead>
@@ -34,16 +34,16 @@
             <td>{{d.code|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
-            <td>{{d.pe|e}}</td>
-            <td>{{d.roe|e}}</td>
-            <td>{{d.dar|e}}</td>
-            <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sh_rate|e}}</a></td>
+            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
+            <td><a href="#growModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.jlr_rate|e}}</a></td>
+            <td><a href="#debetModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
+            <td><a href="#holderModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.sh_rate|e}}</a></td>
             <td>{{d.ps|e}}</td>
             <td>{{d.pcf|e}}</td>
             <td>{{d.pb|e}}</td>
-            <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.report_type|e}}</a></td>
+            <td>{{d.cash_rate|e}}</td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
-            <td>{{d.launch_date|e}}</td>
+
             <td>
                 <div class="btn-group">
                     <button type="button" class="btn btn-default　btn-sm dropdown-toggle" data-toggle="dropdown"
@@ -54,6 +54,8 @@
                         <li><a href="#" onclick="javascript:sel('{{d.code|e}}');return false;">选取</a></li>
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
                         <li><a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">删除</a></li>
+                        <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
+                        <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
                     </ul>
                 </div>
             </td>
@@ -66,6 +68,7 @@
 <script type=text/javascript>
 
 var mytable;
+var modal_datatable;
 
 function sel(code) {
     var aj = $.ajax( {
@@ -138,5 +141,12 @@ $(function(){
     });
 });
 </script>
+
+{% include 'stock/partion/pe.html' %}
+{% include 'stock/partion/ps.html' %}
+{% include 'stock/partion/pcf.html' %}
+{% include 'stock/partion/debet.html' %}
+{% include 'stock/partion/holder.html' %}
+{% include 'stock/partion/grow.html' %}
 
 {% endblock %}

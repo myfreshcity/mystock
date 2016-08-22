@@ -54,24 +54,29 @@ def peJson():
 @blueprint.route('/debetJson', methods=['GET'])
 def debetJson():
     code = request.args.get('code')
-    period = 5  # 最近5年
-    quarter = 4  # 第4季度
 
     fzlArray = []
     dqfzArray = []
     ldbArray = []
+    chArray = []
+    yszkArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    valueDf = ds.get_revenue_df(code).head(20)
     for index, row in valueDf.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
         fzl = round(row.zfz * 100.0 / row.zzc, 2) #负债率
-        dqfz = round(row.ldfz * 100.0 / row.zfz, 2) #短期负债比重
+        dqfz = round(row.ldfz * 100.0 / row.zzc, 2) #短期负债率
         ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
+
+        ch = round(row.ch * 100.0 / row.ldzc, 2)  # 存货
+        yszk = round(row.yszk * 100.0 / row.ldzc, 2)  # 应收帐款比
 
         fzlArray.append([report_type, fzl])
         dqfzArray.append([report_type,dqfz])
         ldbArray.append([report_type, ldb])
+        chArray.append([report_type, ch])
+        yszkArray.append([report_type, yszk])
 
         tableData.append(
             [report_type,
@@ -82,10 +87,12 @@ def debetJson():
              format(row['gdqy'], ','),
              fzl,
              dqfz,
+             ch,
+             yszk,
              ldb
              ]
         )
-    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray, 'ldb': ldbArray, 'tableData':tableData},period=period)
+    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'chb': chArray,'yszkb': yszkArray, 'ldb': ldbArray, 'tableData':tableData})
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():
@@ -188,3 +195,19 @@ def holderJson():
         sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
 
     return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData})
+
+@blueprint.route('/growJson', methods=['GET'])
+def growJson():
+    code = request.args.get('code')[2:]
+    actualArray = []
+    actualRateArray = []
+
+    valueDf = ds.get_revenue_df(code)
+    valueDf = valueDf.head(5*4)
+    for index, row in valueDf.iterrows():
+        jlr_grow_rate = round(row['jlr_rate'] * 100, 2)
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+        actualArray.append([report_type, row['jlr_ttm']])
+        actualRateArray.append([report_type,jlr_grow_rate])
+
+    return jsonify(data={'actualRate':actualRateArray,'actual': actualArray})

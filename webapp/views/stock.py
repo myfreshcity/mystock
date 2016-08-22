@@ -7,7 +7,7 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
-from webapp.services import db_service as ds,data_service as dts
+from webapp.services import db_service as ds,data_service as dts,holder_service as  hs
 from webapp.models import MyStock
 from webapp import functions as fn
 from flask import current_app as app
@@ -33,8 +33,10 @@ def index():
             'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
             'pb': round(row.t_cap/(row.gdqy*10000),2),
             'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
-            'dar': round(row.zfz * 100.0 / row.zzc, 2),
+            'dar': round(row.ldfz*100.0 / row.zzc, 2),
             'sh_rate': row['count'],
+            'cash_rate': round((row['xjye']-(row['zfz']-row['ldfz']))*10000*100.0/row.t_cap,2), #现金余额减去长期负债
+            'jlr_rate': round(row['jlr_rate']*100.0,2),
             'launch_date': row['launch_date'],
             'report_type':row.report_type
         })
@@ -55,7 +57,6 @@ def mystock():
             'in_price': row['in_price'],
             'in_date': row['in_date'],
             'h_price': round(row.close*(row.h_cap/row.t_cap),2),
-            'p1': 0 if row.in_price==0 else round((row.t_cap-row.in_cap)*100/row.in_cap, 2),
             'p2': round((row.t_cap-row.h_cap)*100/row.h_cap, 2),
             'mvalue': round(row.t_cap / (10000*10000), 2),
             'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
@@ -63,8 +64,10 @@ def mystock():
             'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
             'pb': round(row.t_cap/(row.gdqy*10000),2),
             'roe': round(row.jlr_ttm*100.0/row.gdqy,2),
-            'dar': round(row.zfz*100.0 / row.zzc, 2),
+            'dar': round(row.ldfz*100.0 / row.zzc, 2),
+            'jlr_rate': round(row['jlr_rate']*100.0,2),
             'sh_rate': row['count'],
+            'cash_rate': round((row['xjye']-(row['zfz']-row['ldfz']))*10000*100.0/row.t_cap,2), #现金余额减去长期负债
             'trade_date': row.trade_date,
             'report_type':row.report_type
         })

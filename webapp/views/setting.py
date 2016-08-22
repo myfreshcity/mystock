@@ -10,7 +10,7 @@ import pandas as pd
 import time
 from datetime import datetime
 from webapp.models import MyStock,Stock,DataItem,Comment
-from webapp.services import data_service as dts,db_service as dbs,db
+from webapp.services import data_service as dts,db_service as dbs,db,holder_service as hs
 from flask import current_app as app
 
 blueprint = Blueprint('setting', __name__)
@@ -24,8 +24,15 @@ def index():
 def update():
     code = request.form['code']
     flag = dts.updateFinanceData(code[2:]) #更新财务数据
-    dts.updateTradeData(code[2:],code[:2]) #更新交易数据
+    dts.updateTradeData(code[2:]) #更新交易数据
+    dts.global_bdf, dts.global_tdf, dts.global_fdf = (None,None,None)
     return jsonify(msg=flag)
+
+@blueprint.route('/updateHolder/', methods = ['GET','POST'])
+def updateHolder():
+    code = request.args.get('code')
+    hs.updateStockHolder(code)
+    return jsonify(msg=True)
 
 @blueprint.route('/updateAll/<int:cat>', methods = ['GET','POST'])
 def updateAll(cat):

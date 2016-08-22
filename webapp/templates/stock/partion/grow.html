@@ -1,0 +1,211 @@
+<div class="modal fade" id="growModal" tabindex="-1" role="dialog" aria-labelledby="growModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="growModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div id="head_chart" class="col-md-12"></div>
+          </div>
+          <div class="row">
+            <div class="btn-group">
+              <button type="button" class="btn btn-primary dropdown-toggle"
+                      data-toggle="dropdown">
+                选择统计周期 <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu">
+                <li><a href="#" id="dm_q1">第一季度</a></li>
+                <li><a href="#" id="dm_q2">第二季度</a></li>
+                <li><a href="#" id="dm_q3">第三季度</a></li>
+                <li class="divider"></li>
+                <li><a href="#" id="dm_q4">年度(第四季度)</a></li>
+              </ul>
+            </div>
+            <div id="revenue_content">
+              <div id="revenue_1"></div>
+              <div id="revenue_2"></div>
+              <div id="revenue_3"></div>
+              <div id="revenue_4"></div>
+              <div class="row">
+                <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+  $('#growModal').on('shown.bs.modal', function (event) {
+
+    var button = $(event.relatedTarget)
+    var code = button.data('stock') // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+    var modal = $(this)
+    modal.find('.modal-title').text('成长性 -' + button.data('name')+'-'+code );
+    var head_chart = modal.find('.modal-body #head_chart');
+    var data_table = modal.find('.modal-body #data_table');
+
+    modal.find('.modal-body #dm_q1').on("click",{q:1},getData);
+    modal.find('.modal-body #dm_q2').on("click",{q:2},getData);
+    modal.find('.modal-body #dm_q3').on("click",{q:3},getData);
+    modal.find('.modal-body #dm_q4').on("click",{q:4},getData);
+//TTM 加载
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/detail/growJson',
+    data:{
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+      var actual_rate_data = {'name':'增长率',yAxis: 1,marker: {enabled: false}};
+      actual_rate_data['data'] = result.data.actualRate;
+
+      var actual_data = {'name':'净利润TTM',type: 'column',marker: {enabled: false}};
+      actual_data['data'] = result.data.actual;
+
+       modal.find('.modal-body').show();
+       head_chart.highcharts({
+        chart: {zoomType: 'xy'},
+        title: {text:  '成长'},
+        xAxis: [{categories: []}],
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '数值'}
+        },
+        {// Secondary yAxis
+        title: {text: '成长率'},
+        labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
+        credits: {enabled: false},
+        series: [actual_data,actual_rate_data],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    }
+    });
+
+//营收数据加载
+  function getData(event) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/revenueJson',
+    data:{
+             quarter : event.data.q,
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:revenue
+    });
+  };
+
+  function revenue(result){
+    var yysrs = [{'name':'营业收入','data':result.data.yysr,type:'column',marker: {enabled: false}}];
+    var jlrs = [{'name':'营业利润','data':result.data.jlr ,marker: {enabled: false}}];
+    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl,marker: {enabled: false} }];
+    var roe = [{'name':'净资产收益率','data':result.data.roe,marker: {enabled: false}}];
+
+    //显示数据
+    modal.find('.modal-body #revenue_content').show();
+    if(modal_datatable)modal_datatable.destroy();
+
+    modal_datatable = data_table.DataTable( {
+        scrollY: 300,
+        paging: false,
+        data: result.tableData,
+        "order": [[ 0, "desc" ]],
+        searching: false,
+        columns: [
+            { title: "日期" },
+            { title: "主营收入" },
+            { title: "净利润" },
+            { title: "经营性现金流" },
+            { title: "营收增长率(%)" },
+            { title: "净利润增长率(%)" },
+            { title: "经营性现金流增长率(%)" }
+        ]
+    } );
+
+    modal.find('.modal-body #revenue_1').highcharts({
+        chart: {type: 'column'},
+        title: {text: '营业收入'},
+        xAxis: {categories: []},
+        credits: {enabled: false},
+        series: yysrs,
+        tooltip:{
+           formatter:function(){
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
+           }
+        }
+    });
+    modal.find('.modal-body #revenue_2').highcharts({
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '净利润'},
+        credits: {enabled: false},
+        series: jlrs,
+        tooltip:{
+           formatter:function(){
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
+           }
+        }
+    });
+    modal.find('.modal-body #revenue_3').highcharts({
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '经营净现金流'},
+        credits: {enabled: false},
+        series: jyjxjls,
+        tooltip:{
+           formatter:function(){
+              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
+           }
+        }
+    });
+    modal.find('.modal-body #revenue_4').highcharts({
+        chart: {type: 'column'},
+        xAxis: {categories: []},
+        title: {text: '净资产收益率'},
+        credits: {enabled: false},
+        series: roe
+    });
+
+  }
+
+    });
+
+  // 隐藏后消失
+  $('#growModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find('.modal-body').hide();
+    modal.find('.modal-body #revenue_content').hide();
+
+  });
+
+});
+</script>

@@ -33,7 +33,8 @@ def refresh():
     config_app(app, 'scriptfan.cfg')
     ctx = app.app_context()
     #ctx.push()
-    hs.refreshStockHolder()
+    #hs.refreshStockHolder()
+    dts.refreshStockData()
     print "hello"
 
 

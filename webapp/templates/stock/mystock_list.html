@@ -9,13 +9,13 @@
             <th>名称</th>
             <th>类型</th>
             <th>市盈率</th>
-            <th>收益率</th>
-            <th>负债率</th>
+            <th>增长率(%)</th>
+            <th>短期负债率</th>
             <th width="40">机构持股</th>
             <th>市销率</th>
             <th>市现率</th>
             <th>市净率</th>
-            <th>盈亏（%）</th>
+            <th>净现金含量(%)</th>
             <th>市值(亿)</th>
             <th></th>
         </tr>
@@ -27,13 +27,13 @@
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
             <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
-            <td>{{d.roe|e}}</td>
+            <td><a href="#growModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.jlr_rate|e}}</a></td>
             <td><a href="#debetModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
             <td><a href="#holderModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.sh_rate|e}}</a></td>
             <td><a href="#psModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.ps|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
             <td>{{d.pb|e}}</td>
-            <td>{{d.p1|e}}({{d.in_price|e}})</td>
+            <td>{{d.cash_rate|e}}</td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td>
                 <div class="btn-group pull-right">
@@ -100,7 +100,14 @@ function updateData(code){
 
 //加载完毕自动执行
 $(function(){
- $('#example').DataTable({"paging": false});
+ $('#example').DataTable({
+    "paging": false,
+    aoColumnDefs: [
+        { "sWidth": "6%", "aTargets": [ 0 ] },
+        { "sWidth": "8%", "aTargets": [ 1 ] },
+        { "sWidth": "2%", "aTargets": [ 2 ] }
+        ],
+    });
 });
 
 </script>
@@ -111,5 +118,6 @@ $(function(){
 {% include 'stock/partion/pcf.html' %}
 {% include 'stock/partion/debet.html' %}
 {% include 'stock/partion/holder.html' %}
+{% include 'stock/partion/grow.html' %}
 
 {% endblock %}
