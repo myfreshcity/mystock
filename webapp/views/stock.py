@@ -27,6 +27,7 @@ def index():
             'price':row.close,
             'grow_type': row.grow_type,
             'ncode':row['market']+row['code'],
+            'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
             'mvalue': round(row.t_cap / (10000*10000), 2),
             'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
             'ps':round(row.t_cap/(row.zyysr_ttm*10000),2),
@@ -53,6 +54,7 @@ def mystock():
             'code':row.code,
             'grow_type': row.grow_type,
             'ncode': row['market'] + row['code'],
+            'pcode': row['code'] + ('01' if row['code'][:2]=='60'else '02'),
             'price':row.close,
             'in_price': row['in_price'],
             'in_date': row['in_date'],
@@ -82,6 +84,7 @@ def person_stockholder_rank():
         sdata.append({
             'name': row['name'],
             'code': row.code,
+            'ncode': 'sh'+row.code if row.code[:2]=='60'else 'sz'+row.code,
             'sum': row['sum'],
             'size': int(row['count']),
             'avg': round(row['avg'],3),
@@ -169,6 +172,10 @@ def revenueJson():
     yysr = [] #营业收入
     jlr = [] #净利润
     jyjxjl = [] #经营性净现金流
+    yysr_rate = [] #营业收入
+    jlr_rate = [] #净利润
+    jyjxjl_rate = [] #经营性净现金流
+
     roe = [] #净资产收益率
 
     code = request.args.get('code')[2:]
@@ -177,9 +184,17 @@ def revenueJson():
 
     for index, row in df.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
+        s_jyjxjl_rate =  round(row['jyjxjl_grow_rate'] * 100, 2)
+        s_jlr_rate = round(row['jlr_grow_rate'] * 100, 2)
+        s_yysr_rate = round(row['zyysr_grow_rate'] * 100, 2)
+
         yysr.append([report_type, row['zyysr']])
         jlr.append([report_type, row['jlr']])
         jyjxjl.append([report_type, row['jyjxjl']])
+
+        yysr_rate.append([report_type,s_yysr_rate])
+        jlr_rate.append([report_type, s_jlr_rate])
+        jyjxjl_rate.append([report_type,s_jyjxjl_rate])
         roe.append([report_type.encode('utf-8'), round(row['roe'], 2)])
 
         tableData.append(
@@ -187,26 +202,28 @@ def revenueJson():
              format(row['zyysr'], ','),
              format(row['jlr'], ','),
              format(row['jyjxjl'], ','),
-             round(row['zyysr_grow_rate'] * 100, 2),
-             round(row['jlr_grow_rate'] * 100, 2),
-             round(row['jyjxjl_grow_rate'] * 100, 2)
+             s_yysr_rate,
+             s_jlr_rate,
+             s_jyjxjl_rate
              ]
         )
 
-    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'roe':roe},tableData=tableData)
+    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'yysr_rate':yysr_rate,\
+                         'jlr_rate':jlr_rate,'jyjxjl_rate':jyjxjl_rate,'roe':roe},tableData=tableData)
 
 
 @blueprint.route('/add', methods=['GET', 'POST'])
 def add():
-    if request.method == 'POST':
-        code = request.form['code']
-        app.logger.debug('code:' + code)
-        msg = ds.addMystock(code)
-        if msg:
-            flash(msg)
-        return redirect('stock')
+    code = request.form['code']
+    app.logger.debug('code:' + code)
+    msg = ds.addMystock(code)
+    if msg:
+        return jsonify(msg=msg)
     else:
-        return render_template('stock/add.html')
+        dts.updateFinanceData(code)  # 更新财务数据
+        dts.updateTradeData(code)  # 更新交易数据
+        dts.global_bdf, dts.global_tdf, dts.global_fdf = (None, None, None)
+    return jsonify(msg='true')
 
 @blueprint.route('/get_basic', methods=['GET'])
 def get_basic():

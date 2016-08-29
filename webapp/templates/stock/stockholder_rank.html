@@ -17,7 +17,7 @@
         <tbody>
         {% for d in stocks: %}
         <tr>
-            <td>{{d.code|e}}</td>
+            <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.code|e}}</a></td>
             <td><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.avg|e}}</td>
             <td><a href='http://quotes.money.163.com/f10/gdfx_{{d.code|e}}.html#01d02' target="_blank">{{d.sum|e}}</a></td>

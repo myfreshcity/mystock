@@ -142,6 +142,58 @@ def getStockHighPrice(code,market):
     except Exception, ex:
         app.logger.error(ex)
 
+def getRelationStock(code):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    market = '01' if code[:2]=='60' else '02'
+    url = "http://soft-f9.eastmoney.com/soft/gp72.php?code="+code+market
+    app.logger.info('query stock(' + code + ') relation stock url is:' + url)
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(feeddata, "html5lib")
+    paper_name = soup.html.body.find(id="tablefont").tbody.find_all('tr')
+    code = []
+    name = []
+    pe_ttm = []
+    ps_ttm = []
+    pb_ttm = []
+    pcf_ttm = []
+    eve = []
+    peg = []
+    i = 0
+
+    def getValue(x):
+        if x.text.find('--') >= 0:
+            return 0
+        else:
+            return float(re.sub(',', '', x.text))
+
+    for e in paper_name:
+        if i == 2 or i > 4:
+            t = e.find_all('td')
+            code.append(t[1].string)
+            name.append(t[2].string)
+            pe_ttm.append(getValue(t[5]))
+            ps_ttm.append(getValue(t[10]))
+            pb_ttm.append(getValue(t[15]))
+            pcf_ttm.append(getValue(t[19]))
+            eve.append(getValue(t[21]))
+            peg.append(getValue(t[3]))
+
+        i += 1
+
+    df1 = pd.DataFrame({
+        'code': code,
+        'name': name,
+        'pe_ttm': pe_ttm,
+        'ps_ttm': ps_ttm,
+        'pb_ttm': pb_ttm,
+        'pcf_ttm': pcf_ttm,
+        'eve_ttm': eve,
+        'peg': peg
+    })
+    return df1
+
+
 def updateFinanceData(code):
     # 获得开始日期
     sql = "select max(report_type) from stock_finance_data where code=:code";

@@ -32,7 +32,7 @@ def peJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    valueDf = ds.get_quarter_stock_revenue(code)
     for index, row in valueDf.iterrows():
         jlr_grow_rate = round(row['jlr_grow_rate'] * 100, 2)
         report_type = row['report_type'].strftime('%Y-%m-%d')
@@ -59,7 +59,9 @@ def debetJson():
     dqfzArray = []
     ldbArray = []
     chArray = []
+    chRateArray = []
     yszkArray = []
+    yszkRateArray = []
     tableData = []
 
     valueDf = ds.get_revenue_df(code).head(20)
@@ -69,14 +71,16 @@ def debetJson():
         dqfz = round(row.ldfz * 100.0 / row.zzc, 2) #短期负债率
         ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
 
-        ch = round(row.ch * 100.0 / row.ldzc, 2)  # 存货
-        yszk = round(row.yszk * 100.0 / row.ldzc, 2)  # 应收帐款比
+        chRate = round(row.ch * 100.0 / row.ldzc, 2)  # 存货比
+        yszkRate = round(row.yszk * 100.0 / row.ldzc, 2)  # 应收帐款比
 
         fzlArray.append([report_type, fzl])
         dqfzArray.append([report_type,dqfz])
         ldbArray.append([report_type, ldb])
-        chArray.append([report_type, ch])
-        yszkArray.append([report_type, yszk])
+        chRateArray.append([report_type, chRate])
+        yszkRateArray.append([report_type, yszkRate])
+        chArray.append([report_type, row.ch])
+        yszkArray.append([report_type, row.yszk])
 
         tableData.append(
             [report_type,
@@ -85,14 +89,17 @@ def debetJson():
              format(row['ldzc'], ','),
              format(row['ldfz'], ','),
              format(row['gdqy'], ','),
+             format(row['ch'], ','),
+             format(row['yszk'], ','),
              fzl,
              dqfz,
-             ch,
-             yszk,
+             chRate,
+             yszkRate,
              ldb
              ]
         )
-    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'chb': chArray,'yszkb': yszkArray, 'ldb': ldbArray, 'tableData':tableData})
+    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'ch': chArray,'yszk': yszkArray,'chb': \
+        chRateArray,'yszkb': yszkRateArray, 'ldb': ldbArray, 'tableData':tableData})
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():
@@ -195,6 +202,28 @@ def holderJson():
         sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
 
     return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData})
+
+@blueprint.route('/relationJson', methods=['GET'])
+def relationJson():
+    code = request.args.get('code')
+
+    tableData = []
+    try:
+        df = dts.getRelationStock(code)
+        for index, row in df.iterrows():
+            tableData.append(
+                [row['code'],
+                 row['name'],
+                 row['pe_ttm'],
+                 row['eve_ttm'],
+                 row['pcf_ttm'],
+                 row['ps_ttm'],
+                 row['pb_ttm'],
+                 row['peg']
+                 ])
+    except Exception, ex:
+        app.logger.error(code+':',ex)
+    return jsonify(data={'tableData':tableData})
 
 @blueprint.route('/growJson', methods=['GET'])
 def growJson():

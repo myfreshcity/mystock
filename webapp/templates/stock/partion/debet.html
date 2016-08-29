@@ -65,10 +65,14 @@ $(function(){
     var chb = {'name':'存货比',type: 'column',marker: {enabled: false}};
     chb['data'] = result.data.chb;
 
-    var yszkb = {'name':'营收帐款比',type: 'column',marker: {enabled: false}};
+    var ch = {'name':'存货',yAxis: 1};
+    ch['data'] = result.data.ch;
+
+    var yszkb = {'name':'应收帐款比',type: 'column',marker: {enabled: false}};
     yszkb['data'] = result.data.yszkb;
 
-
+    var yszk = {'name':'应收帐款',yAxis: 1};
+    yszk['data'] = result.data.yszk;
 
     //显示数据
     modal.find('.modal-body').show();
@@ -90,10 +94,12 @@ $(function(){
             { title: "流动资产" },
             { title: "流动负债" },
             { title: "股东权益" },
+            { title: "存货" },
+            { title: "应收账款" },
             { title: "总负债率(%)" },
             { title: "短期负债率(%)" },
             { title: "存货比(%)" },
-            { title: "营收帐款比(%)" },
+            { title: "应收帐款比(%)" },
             { title: "流动比" }
         ]
     } );
@@ -121,20 +127,54 @@ $(function(){
     });
 
     modal.find('.modal-body #chart_3').highcharts({
-        title: {text:  '存货比'},
+        chart: {zoomType: 'xy'},
+        title: {text:  '存货比（存货/流动资产）'},
         xAxis: {categories: []},
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '比例'},
+        labels: {
+                format: '{value} %'
+                }
+        },
+        {// Secondary yAxis
+        title: {text: '数值'},
+        labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
         credits: {enabled: false},
-        series: [chb],
+        series: [chb,ch],
         tooltip:{
            crosshairs: true,
            shared: true
         }
     });
     modal.find('.modal-body #chart_4').highcharts({
-        title: {text:  '营收帐款比'},
+        chart: {zoomType: 'xy'},
+        title: {text:  '应收帐款比（应收帐款/流动资产）'},
         xAxis: {categories: []},
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '比例'},
+        labels: {
+                format: '{value} %'
+                }
+        },
+        {// Secondary yAxis
+        title: {text: '数值'},
+        labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
         credits: {enabled: false},
-        series: [yszkb],
+        series: [yszkb,yszk],
         tooltip:{
            crosshairs: true,
            shared: true

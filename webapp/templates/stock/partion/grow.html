@@ -26,13 +26,13 @@
               </ul>
             </div>
             <div id="revenue_content">
-              <div id="revenue_1"></div>
-              <div id="revenue_2"></div>
-              <div id="revenue_3"></div>
-              <div id="revenue_4"></div>
               <div class="row">
                 <table id="data_table" class="display" cellspacing="0" width="90%"></table>
               </div>
+              <div id="revenue_2"></div>
+              <div id="revenue_3"></div>
+              <div id="revenue_1"></div>
+              <div id="revenue_4"></div>
             </div>
           </div>
         </div>
@@ -44,7 +44,8 @@
   </div>
 </div>
 <script type=text/javascript>
-
+var growModal = {};
+growModal.quarter = 0;
 
 //加载完毕自动执行
 $(function(){
@@ -74,10 +75,10 @@ $(function(){
     cache:false,
     dataType:'json',
     success:function(result) {
-      var actual_rate_data = {'name':'增长率',yAxis: 1,marker: {enabled: false}};
+      var actual_rate_data = {'name':'增长率',type: 'column',marker: {enabled: false}};
       actual_rate_data['data'] = result.data.actualRate;
 
-      var actual_data = {'name':'净利润TTM',type: 'column',marker: {enabled: false}};
+      var actual_data = {'name':'净利润TTM',yAxis: 1};
       actual_data['data'] = result.data.actual;
 
        modal.find('.modal-body').show();
@@ -87,20 +88,21 @@ $(function(){
         xAxis: [{categories: []}],
         yAxis: [
         {// Primary yAxis
-        title: {text: '数值'}
-        },
-        {// Secondary yAxis
         title: {text: '成长率'},
         labels: {
                 format: '{value} %',
                 style: {
                     color: Highcharts.getOptions().colors[0]
                 }
-            },
+            }
+        },
+        {// Secondary yAxis
+        title: {text: '数值'},
         opposite: true
+
         }],
         credits: {enabled: false},
-        series: [actual_data,actual_rate_data],
+        series: [actual_rate_data,actual_data],
         tooltip:{
            crosshairs: true,
            shared: true
@@ -108,13 +110,20 @@ $(function(){
     });
     }
     });
-
 //营收数据加载
-  function getData(event) {
+loadData(); //初始加载
+
+function getData(event){
+   growModal.quarter = event.data.q;
+   loadData();
+}
+
+
+  function loadData() {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/revenueJson',
     data:{
-             quarter : event.data.q,
+             quarter : growModal.quarter,
              code : code
     },
     type:'get',
@@ -125,10 +134,16 @@ $(function(){
   };
 
   function revenue(result){
-    var yysrs = [{'name':'营业收入','data':result.data.yysr,type:'column',marker: {enabled: false}}];
-    var jlrs = [{'name':'营业利润','data':result.data.jlr ,marker: {enabled: false}}];
-    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl,marker: {enabled: false} }];
-    var roe = [{'name':'净资产收益率','data':result.data.roe,marker: {enabled: false}}];
+    var yysrs = {'name':'营业收入','data':result.data.yysr,yAxis: 1,marker: {enabled: true}};
+    var jlrs = {'name':'营业利润','data':result.data.jlr ,yAxis: 1,marker: {enabled: true}};
+    var jyjxjls = {'name':'经营净现金流','data':result.data.jyjxjl,yAxis: 1,marker: {enabled: true} };
+
+    var yysrs_rate = {'name':'营业收入增长率','data':result.data.yysr_rate,type:'column',marker: {enabled: false}};
+    var jlrs_rate = {'name':'营业利润增长率','data':result.data.jlr_rate,type:'column',marker: {enabled: false}};
+    var jyjxjls_rate = {'name':'经营净现金流增长率','data':result.data.jyjxjl_rate,type:'column',marker: {enabled: false} };
+
+
+    var roe = {'name':'净资产收益率','data':result.data.roe,marker: {enabled: false}};
 
     //显示数据
     modal.find('.modal-body #revenue_content').show();
@@ -152,39 +167,81 @@ $(function(){
     } );
 
     modal.find('.modal-body #revenue_1').highcharts({
-        chart: {type: 'column'},
+        chart: {zoomType: 'xy'},
         title: {text: '营业收入'},
         xAxis: {categories: []},
+        yAxis: [
+        {
+        title: {text: '成长率'},
+        labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+        },
+        {
+        title: {text: '数值'},
+        opposite: true
+        }
+        ],
         credits: {enabled: false},
-        series: yysrs,
+        series: [yysrs_rate,yysrs],
         tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
+           crosshairs: true,
+           shared: true
         }
     });
     modal.find('.modal-body #revenue_2').highcharts({
-        chart: {type: 'column'},
+        chart: {zoomType: 'xy'},
         xAxis: {categories: []},
+        yAxis: [
+        {
+        title: {text: '成长率'},
+        labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+        },
+        {
+        title: {text: '数值'},
+        opposite: true
+        }
+        ],
         title: {text: '净利润'},
         credits: {enabled: false},
-        series: jlrs,
+        series: [jlrs_rate,jlrs],
         tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
+           crosshairs: true,
+           shared: true
         }
     });
     modal.find('.modal-body #revenue_3').highcharts({
-        chart: {type: 'column'},
+        chart: {zoomType: 'xy'},
         xAxis: {categories: []},
         title: {text: '经营净现金流'},
+        yAxis: [
+        {
+        title: {text: '成长率'},
+        labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+        },
+        {
+        title: {text: '数值'},
+        opposite: true
+        }
+        ],
         credits: {enabled: false},
-        series: jyjxjls,
+        series: [jyjxjls_rate,jyjxjls],
         tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
+           crosshairs: true,
+           shared: true
         }
     });
     modal.find('.modal-body #revenue_4').highcharts({
@@ -192,7 +249,7 @@ $(function(){
         xAxis: {categories: []},
         title: {text: '净资产收益率'},
         credits: {enabled: false},
-        series: roe
+        series: [roe]
     });
 
   }

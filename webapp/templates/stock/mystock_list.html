@@ -46,6 +46,10 @@
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
                         <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
                         <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
+                        <li><a href='http://data.eastmoney.com/report/{{d.ncode|e}}.html' target="_blank">研报</a></li>
+                        <li><a href='http://data.eastmoney.com/notice/{{d.code|e}}.html' target="_blank">公告</a></li>
+                        <li><a href='http://soft-f9.eastmoney.com/soft/gp30.php?code={{d.pcode|e}}' target="_blank">业务分析</a></li>
+                        <li><a href="#relationModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">行业对比</a></li>
                         <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
                     </ul>
                 </div>
@@ -119,5 +123,6 @@ $(function(){
 {% include 'stock/partion/debet.html' %}
 {% include 'stock/partion/holder.html' %}
 {% include 'stock/partion/grow.html' %}
+{% include 'stock/partion/relation.html' %}
 
 {% endblock %}

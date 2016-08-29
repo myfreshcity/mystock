@@ -84,8 +84,10 @@ def getStockRevenue(code):
     return df2.sort_values(by='report_type',ascending=False)
 
 #获取每季度营收
-def get_quarter_stock_revenue(code,quarter):
+def get_quarter_stock_revenue(code,quarter=0):
     df = get_revenue_df(code)
+    if quarter == 0:
+        quarter = df.index.max().quarter
     tdate = df.index[df.index.quarter == quarter]
     df4 = df.iloc[df.index.isin(tdate)]
     return df4
@@ -190,14 +192,14 @@ def getMyStock(code):
 
 def addMystock(code):
     code = code.strip()
-    if len(code) != 8:
-        return "'"+code+"'无效,长度应为8位,以sz/sh加数字标示"
-    mystock = db.session.query(MyStock).filter_by(code = code[2:]).first()
+    if len(code) != 6:
+        return "'"+code+"'无效,长度应为6位"
+    mystock = db.session.query(MyStock).filter_by(code = code).first()
     if not mystock:
         #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
         #stock = Stock.find_by_code(code)
-        market = code[0:2].strip().lower()
-        code = code[2:].strip()
+        market = 'sh' if code[0:2]=='60' else 'sz'
+        code = code.strip()
         url = "http://hq.sinajs.cn/list=" + market + code
         req = urllib2.Request(url)
         res_data = urllib2.urlopen(req).read()

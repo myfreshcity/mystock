@@ -12,3 +12,27 @@ function toThousands(num) {
 function formatRevenceVal(num){
    return toThousands(Math.floor(num/1000000));
 }
+
+function addStock(code){
+    bootbox.confirm("确认添加该股票吗？", function(result){
+     /* your callback code */
+      if(result==true){
+            var aj = $.ajax( {
+          url:$SCRIPT_ROOT + '/stock/add',
+          data:{
+                   code : code
+          },
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(data) {
+              if(data.msg =="true" ){
+                  bootbox.alert('添加成功');
+              }else{
+                  bootbox.alert(data.msg);
+              }
+           }
+          });
+      }
+     })
+}

@@ -190,8 +190,8 @@ def getStockHolder(code):
 
     def countVar(x):
         d1 = m1_df[m1_df['holder_name'] == x]
-        v1 = d1.get('amount_x')
-        v2 = d1.get('amount_y')
+        v1 = d1.get('rate_x')
+        v2 = d1.get('rate_y')
         if v1.item() != v1.item():  # 空值判断
             return '减持'
         elif v2.item() != v2.item():

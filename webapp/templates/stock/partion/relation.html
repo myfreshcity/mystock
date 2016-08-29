@@ -1,0 +1,120 @@
+<div class="modal fade" id="relationModal" tabindex="-1" role="dialog" aria-labelledby="relationModalLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="relationModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="row">
+              <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+            </div>
+            <div id="value_chart" class="col-md-12"></div>
+          </div>
+          <div class="row">
+                <div class="panel panel-default col-md-12">
+                    <div class="panel-body">
+                        <ul>
+                            <li>PEG=TTM市盈率/(未来3年复合增长率*100)<p>
+                                其中：TTM市盈率=总市值/TTM归属母公司所有者净利润，TTM归属母公司所有者净利润=最新季度归属母公司所有者净利润+前3个季度归属母公司所有者净利润
+                                   未来3年复合增长率=（最新一期年报后的第三年预测归属净利润/最新一期年报实际归属净利润）的三次方根-1。</p></li>
+                            <li>TTM市盈率=最新总市值/TTM归属母公司所有者净利润<p>其中：TTM归属母公司所有者净利润=最新季度归属母公司所有者净利润+前3个季度归属母公司所有者净利润</p>
+                            </li>
+                            <li>TTM市销率=最新总市值/TTM主营业务收入
+                                   <p>其中：TTM主营业务收入=最新季度主营业务收入+前3个季度主营业务收入</p></li>
+                            <li>市净率=上一交易日收盘价/最新每股净资产</li>
+                            <li>市现率②=总市值/TTM经营活动产生的现金流量净额
+                                   <p>其中：TTM经营活动产生的现金流量净额=最新季度经营活动产生的现金流量净额+前3个季度经营活动产生的现金流量净额增加额</p></li>
+                            <li>EV/EBITDA=(总市值+负债总额)/(TTM利润总额+TTM财务费用+TTM折旧+TTM摊销)
+                                   <p>其中：TTM利润总额=最新季度利润总额+前3个季度利润总额<br/>
+                                       TTM财务费用=最新季度财务费用+前3个季度财务费用<br/>
+                                       TTM折旧=最新季度折旧+前3个季度折旧<br/>
+                                       TTM摊销=最新季度摊销+前3个季度摊销</p></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+          <div class="row">
+            <div id="valuation_chart" class="col-md-12"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+  $('#relationModal').on('shown.bs.modal', function (event) {
+
+    var button = $(event.relatedTarget)
+    var code = button.data('stock') // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+    var modal = $(this)
+    modal.find('.modal-title').text('行业对比 -' + button.data('name')+'-'+code );
+    var data_table = modal.find('.modal-body #data_table');
+
+    var holder_ajax_option =  {
+    url:$SCRIPT_ROOT + '/detail/relationJson',
+    data:{
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:valuation
+    };
+    $.ajax(holder_ajax_option);
+
+  function valuation(result){
+    //显示数据
+    modal.find('.modal-body').show();
+    if(modal_datatable)modal_datatable.destroy();
+
+    modal_datatable = data_table.DataTable( {
+        paging: false,
+        data: result.data.tableData,
+        "order": [[ 2, "asc" ]],
+        searching: false,
+        columns: [
+            { title: "代码"},
+            { title: "名称" },
+            { title: "市盈率" },
+            { title: "EV/EBITDA" },
+            { title: "市现率" },
+            { title: "市销率" },
+            { title: "市净率" },
+            { title: "PEG" }
+        ],
+        columnDefs: [
+                  {
+                      "targets": [0],
+                      "render": function(data, type, full) {
+                          return "<a href='#' onclick='addStock(\"" + full[0] + "\")' >"+data+"</a>&nbsp;"
+                      }
+                  }
+        ]
+    } );
+
+  }
+
+    });
+
+  // 隐藏后消失
+  $('#relationModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find('.modal-body').hide();
+  });
+
+});
+</script>
