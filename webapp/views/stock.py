@@ -254,19 +254,19 @@ def saveInPrice():
 def remove():
     code = request.form['code']
     ds.removeMystock(code)
-    return jsonify(msg='true')
+    return jsonify(msg='true',code=code)
 
 @blueprint.route('/rollback', methods=['POST'])
 def rollback():
     code = request.form['code']
     ds.rollbackStock(code)
-    return jsonify(msg='true')
+    return jsonify(msg='true',code=code)
 
 @blueprint.route('/del', methods=['POST'])
 def hardRemove():
     code = request.form['code']
     ds.hardRemoveMystock(code)
-    return jsonify(msg='true')
+    return jsonify(msg='true',code=code)
 
 @blueprint.route('/queryComments', methods=['GET', 'POST'])
 def queryComments():

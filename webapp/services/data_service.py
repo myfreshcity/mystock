@@ -70,7 +70,7 @@ def updateTradeData(code):
     if (s_date == None):
         s_date = dbs.getStock(code).launch_date #取上市日期
     s_date = max(s_date, pd.to_datetime('2000-01-01').date())
-    s_date = (s_date + Week()).date()  # 排除掉之前插入的数据
+    s_date = (s_date +DateOffset(days=1)).date()  # 排除掉之前插入的数据
     e_date = datetime.now().date()
 
     #根据类型获取市场代码

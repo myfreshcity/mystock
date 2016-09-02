@@ -58,10 +58,10 @@ $(function(){
     var valuation_data = {'name':'估值',marker: {enabled: false}};
     valuation_data['data'] = result.data.valuation;
 
-    var actual_rate_data = {'name':'增长率',yAxis: 1,marker: {enabled: false}};
+    var actual_rate_data = {'name':'增长率',type: 'column',marker: {enabled: false}};
     actual_rate_data['data'] = result.data.actualRate;
 
-    var actual_data = {'name':'主营收入',type: 'column',marker: {enabled: false}};
+    var actual_data = {'name':'主营收入',yAxis: 1,marker: {enabled: true}};
     actual_data['data'] = result.data.actual;
 
     //显示数据
@@ -98,9 +98,6 @@ $(function(){
         title: {text:  '成长'},
         xAxis: [{categories: []}],
         yAxis: [
-        {// Primary yAxis
-        title: {text: '数值'}
-        },
         {// Secondary yAxis
         title: {text: '成长率'},
         labels: {
@@ -108,11 +105,15 @@ $(function(){
                 style: {
                     color: Highcharts.getOptions().colors[0]
                 }
-            },
+            }
+        },
+        {// Primary yAxis
+        title: {text: '数值'},
         opposite: true
-        }],
+        }
+        ],
         credits: {enabled: false},
-        series: [actual_data,actual_rate_data],
+        series: [actual_rate_data,actual_data],
         tooltip:{
            crosshairs: true,
            shared: true

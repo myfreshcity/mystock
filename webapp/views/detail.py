@@ -86,8 +86,8 @@ def debetJson():
             [report_type,
              format(row['zzc'], ','),
              format(row['zfz'], ','),
-             format(row['ldzc'], ','),
-             format(row['ldfz'], ','),
+             #format(row['ldzc'], ','),
+             #format(row['ldfz'], ','),
              format(row['gdqy'], ','),
              format(row['ch'], ','),
              format(row['yszk'], ','),
@@ -105,7 +105,7 @@ def debetJson():
 def pcfJson():
     code = request.args.get('code')
     period = 5 #最近5年
-    quarter = 4 #第4季度
+
 
     valuationArray = []
     valuationDf = ds.getStockValuationN(code,period)
@@ -119,7 +119,7 @@ def pcfJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    valueDf = ds.get_quarter_stock_revenue(code)
     for index, row in valueDf.iterrows():
         jlr_grow_rate = round(row['jyjxjl_grow_rate'] * 100, 2)
         report_type = row['report_type'].strftime('%Y-%m-%d')
@@ -142,7 +142,6 @@ def pcfJson():
 def psJson():
     code = request.args.get('code')
     period = 5 #最近5年
-    quarter = 4 #第4季度
 
     valuationArray = []
     valuationDf = ds.getStockValuationN(code,period)
@@ -156,7 +155,7 @@ def psJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    valueDf = ds.get_quarter_stock_revenue(code)
     for index, row in valueDf.iterrows():
         jlr_grow_rate = round(row['zyysr_grow_rate'] * 100, 2)
         report_type = row['report_type'].strftime('%Y-%m-%d')
@@ -202,6 +201,25 @@ def holderJson():
         sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
 
     return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData})
+
+@blueprint.route('/holderTrackJson', methods=['GET'])
+def holderTrackJson():
+    holder_name = request.args.get('name')
+
+    tableData = []
+    df = hs.getStockHolderTrack(holder_name)
+    for index, row in df.iterrows():
+        report_date = row['report_date'].strftime('%Y-%m-%d')
+        tableData.append(
+            [report_date,
+             row['code'],
+             row['name'],
+             row['rate'],
+             format(row['amount'], ',')
+             ])
+
+    return jsonify(data={'tableData':tableData})
+
 
 @blueprint.route('/relationJson', methods=['GET'])
 def relationJson():

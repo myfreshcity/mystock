@@ -166,12 +166,16 @@ def getStockHolder(code):
     hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate,amount \
                                 from stock_holder where code=%(name)s order by report_date desc", db.engine,\
                             params={'name': code})
+    n_holder = pd.Series(hdf['holder_name'].apply(lambda x: x.replace('-', '').replace('－', '').replace(' ', '').strip()),
+                         name='holder_name_new')
+    hdf = pd.concat([hdf, n_holder], axis=1)
+
     t2_df = hdf[:10]
     t3_df = hdf[10:20]
-    m1_df = pd.merge(t2_df, t3_df, how='outer', on='holder_name')
+    m1_df = pd.merge(t2_df, t3_df, how='outer', on='holder_name_new')
 
     def getReportDate(x, attri):
-        d1 = m1_df[m1_df['holder_name'] == x]
+        d1 = m1_df[m1_df['holder_name_new'] == x]
         v1 = d1.get(attri + '_x')
         v2 = d1.get(attri + '_y')
         if v1 == None:  # 空值判断
@@ -180,7 +184,7 @@ def getStockHolder(code):
             return v1
 
     def getValue(x, attri):
-        d1 = m1_df[m1_df['holder_name'] == x]
+        d1 = m1_df[m1_df['holder_name_new'] == x]
         v1 = d1.get(attri + '_x')
         v2 = d1.get(attri + '_y')
         if v1.item() != v1.item():  # 空值判断
@@ -189,7 +193,7 @@ def getStockHolder(code):
             return v1.item()
 
     def countVar(x):
-        d1 = m1_df[m1_df['holder_name'] == x]
+        d1 = m1_df[m1_df['holder_name_new'] == x]
         v1 = d1.get('rate_x')
         v2 = d1.get('rate_y')
         if v1.item() != v1.item():  # 空值判断
@@ -202,11 +206,30 @@ def getStockHolder(code):
             return format(v1.item() - v2.item(), ',')
 
     m2_df = pd.DataFrame({
-        'name': m1_df.holder_name,
-        'report_date': m1_df['holder_name'].apply(getValue, args=('report_date',)),
-        'amount': m1_df['holder_name'].apply(getValue, args=('amount',)),
-        'rate': m1_df['holder_name'].apply(getValue, args=('rate',)),
-        'var': m1_df['holder_name'].apply(countVar)
+        'name': m1_df['holder_name_new'].apply(getValue, args=('holder_name',)),
+        'report_date': m1_df['holder_name_new'].apply(getValue, args=('report_date',)),
+        'amount': m1_df['holder_name_new'].apply(getValue, args=('amount',)),
+        'rate': m1_df['holder_name_new'].apply(getValue, args=('rate',)),
+        'var': m1_df['holder_name_new'].apply(countVar)
+    })
+
+    return m2_df
+
+#指定股东的持股历史
+def getStockHolderTrack(holder_name):
+    hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate,amount \
+                                from stock_holder where holder_name=%(name)s", db.engine,\
+                            params={'name': holder_name})
+
+    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
+    t3_df = pd.merge(hdf, bdf, on='code')
+
+    m2_df = pd.DataFrame({
+        'code': hdf.code,
+        'name': t3_df['name'],
+        'report_date': hdf.report_date,
+        'amount': hdf['amount'],
+        'rate': hdf['rate']
     })
 
     return m2_df

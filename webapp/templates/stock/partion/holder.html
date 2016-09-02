@@ -95,16 +95,25 @@ $(function(){
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
         searching: false,
-        aoColumnDefs: [
-        { "sWidth": "12%", "aTargets": [ 0 ] },
-        { "sWidth": "12%", "aTargets": [ 4 ] }
-        ],
         columns: [
             { title: "报告日期"},
             { title: "流通股东" },
             { title: "持有比例(%)" },
             { title: "持有数量" },
             { title: "持股变动(%)" }
+        ],
+        columnDefs: [
+                  {
+                      "targets": [0],
+                      "width": "12%"
+                  },
+                  {
+                      "targets": [1],
+                      "render": function(data, type, full) {
+                          //return '<a href="#holderTrackModal" >'+data+'</a>';
+                          return '<a href="#holderTrackModal" data-holder-name="'+data+'" data-toggle="modal">'+data+'</a>';
+                      }
+                  }
         ]
     } );
 

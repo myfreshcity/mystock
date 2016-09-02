@@ -1,0 +1,104 @@
+<div class="modal fade" id="holderTrackModal" tabindex="-1" role="dialog" aria-labelledby="holderTrackModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="holderTrackModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="row">
+              <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+            </div>
+            <div id="value_chart" class="col-md-12"></div>
+          </div>
+          <div class="row">
+            <div id="valuation_chart" class="col-md-12"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+var track_modal = {};
+
+//加载完毕自动执行
+$(function(){
+  $('#holderTrackModal').on('shown.bs.modal', function (event) {
+
+    var button = $(event.relatedTarget)
+    var holder_name = button.data('holder-name') // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+    var modal = $(this)
+    modal.find('.modal-title').text('股东持股历史 -' + holder_name );
+    var valuation_chart = modal.find('.modal-body #valuation_chart');
+    var value_chart = modal.find('.modal-body #value_chart');
+    var data_table = modal.find('.modal-body #data_table');
+
+    var holder_ajax_option =  {
+    url:$SCRIPT_ROOT + '/detail/holderTrackJson',
+    data:{
+             name : holder_name
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:valuation
+    };
+    $.ajax(holder_ajax_option);
+
+  function valuation(result){
+
+    //显示数据
+    modal.find('.modal-body').show();
+    if(track_modal.modal_datatable)track_modal.modal_datatable.destroy();
+
+    track_modal.modal_datatable = data_table.DataTable( {
+        paging: false,
+        data: result.data.tableData,
+        "order": [[ 0, "desc" ]],
+        searching: false,
+        columns: [
+            { title: "报告日期"},
+            { title: "股票代码" },
+            { title: "股票名称" },
+            { title: "持有比例(%)" },
+            { title: "持有数量" }
+        ],
+         columnDefs: [
+                  {
+                      "targets": [0],
+                      "width": "20%"
+                  },
+                  {
+                      "targets": [1],
+                      "width": "20%",
+                      "render": function(data, type, full) {
+                          return "<a href='#' onclick='addStock(\"" + data + "\")' >"+data+"</a>&nbsp;"
+                      }
+                  }
+        ]
+    } );
+
+
+  }
+
+    });
+
+  // 隐藏后消失
+  $('#holderTrackModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find('.modal-body').hide();
+  });
+
+});
+</script>
