@@ -66,10 +66,10 @@ def mystock():
             'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
             'pb': round(row.t_cap/(row.gdqy*10000),2),
             'roe': round(row.jlr_ttm*100.0/row.gdqy,2),
-            'dar': round(row.ldfz*100.0 / row.zzc, 2),
+            'dar': round(row.zfz*100.0 / (row.zzc), 2),
             'jlr_rate': round(row['jlr_rate']*100.0,2),
             'sh_rate': row['count'],
-            'cash_rate': round((row['xjye']-(row['zfz']-row['ldfz']))*10000*100.0/row.t_cap,2), #现金余额减去长期负债
+            'cash_rate': round((row['xjye'])*10000*100.0/row.t_cap,2), #企业可支配现金，包含现金借款
             'trade_date': row.trade_date,
             'report_type':row.report_type
         })

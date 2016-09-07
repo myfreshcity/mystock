@@ -15,6 +15,7 @@
           <div class="row">
             <div class="col-md-2 col-md-offset-10"><a id="m2_link" href='#' target="_blank">更多&gt;&gt;</a></div>
             <div id="value_chart" class="col-md-12"></div>
+            <div id="cash_chart" class="col-md-12"></div>
             <div class="row">
               <table id="data_table" class="display" cellspacing="0" width="90%"></table>
             </div>
@@ -128,6 +129,52 @@ $(function(){
     });
 
   }
+  //增长质量，增长现金率
+        var aj = $.ajax( {
+        url:$SCRIPT_ROOT + '/detail/cashRateJson',
+        data:{
+                 code : code
+        },
+        type:'get',
+        cache:false,
+        dataType:'json',
+        success:function(result){
+
+        var rate_data = {'name':'现金/营业收入',yAxis: 1,marker: {enabled: true}};
+        rate_data['data'] = result.data.cash;
+
+        var rate_var_data = {'name':'比例变化',type: 'column',marker: {enabled: false},dataLabels: {enabled: true}};
+        rate_var_data['data'] = result.data.cashRate;
+
+        modal.find('.modal-body #cash_chart').highcharts({
+            title: {text:  '成长质量'},
+            xAxis: {categories: []},
+            yAxis: [
+            {
+            title: {text: '变化率'},
+            labels: {
+                    format: '{value} %',
+                    style: {
+                        color: Highcharts.getOptions().colors[0]
+                    }
+                }
+            },
+            {
+              title: {text: '比例'},
+              opposite: true
+            }
+            ],
+            credits: {enabled: false},
+            series: [rate_var_data,rate_data],
+            tooltip:{
+             crosshairs: true,
+             shared: true
+            }
+        });
+
+            }
+        });
+  //增长质量结束
 
     });
 

@@ -258,3 +258,19 @@ def growJson():
         actualRateArray.append([report_type,jlr_grow_rate])
 
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray})
+
+@blueprint.route('/cashRateJson', methods=['GET'])
+def cashRateJson():
+    code = request.args.get('code')[2:]
+    actualArray = []
+    actualRateArray = []
+
+    valueDf = ds.get_cash_rate(code)
+    valueDf = valueDf.head(5*4)
+    for index, row in valueDf.iterrows():
+        jlr_grow_rate = round(row['cash_rate_var'] * 100, 2)
+        report_type = index.strftime('%Y-%m-%d')
+        actualArray.append([report_type, row['cash_rate']])
+        actualRateArray.append([report_type,jlr_grow_rate])
+
+    return jsonify(data={'cashRate':actualRateArray,'cash': actualArray})

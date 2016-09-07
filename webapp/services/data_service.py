@@ -74,7 +74,7 @@ def updateTradeData(code):
     e_date = datetime.now().date()
 
     #根据类型获取市场代码
-    mc = '0' if code[:3]=='600' else '1'
+    mc = '0' if code[:2]=='60' else '1'
     url = 'http://quotes.money.163.com/service/chddata.html?code=' + mc  + code +\
           '&start=' + s_date.strftime("%Y%m%d") + '&end=' + e_date.strftime("%Y%m%d") + '&fields=TCLOSE;VATURNOVER;TCAP;MCAP'
     app.logger.info('query stock('+code+') trade data url is:'+url)
@@ -270,7 +270,17 @@ def updateFinanceData(code):
         })
         #计算收益增长率
         t1_df = t1_df.sort_values(by='report_type',ascending=True)
-        jlr_ttm = pd.Series(t1_df['jlr_ttm'].pct_change(periods=4), name='jlr_rate')
+
+        def pct_change_fix(x, attri):  # 解决基准值为负值的情况
+            dt_1 = pd.to_datetime(x)
+            dt_2 = (dt_1 - DateOffset(months=12)).date()  # 去年同期
+            v1 = t1_df[t1_df['report_type'] == dt_1.strftime('%Y-%m-%d')].get(attri)
+            v2 = t1_df[t1_df['report_type'] == dt_2.strftime('%Y-%m-%d')].get(attri)
+            if v2.empty:
+                return None
+            else:
+                return (float(v1) - float(v2)) / abs(float(v2))
+        jlr_ttm = pd.Series(t1_df['report_type'].apply(pct_change_fix,args=('jlr_ttm',)), name='jlr_rate')
         df = pd.concat([t1_df, jlr_ttm], axis=1)
 
         # insert new data to database
@@ -423,13 +433,13 @@ def getMyStocks(flag):
     #获取交易数据
     if global_tdf is None:
         tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
-                                    from stock_trade_data order by trade_date desc limit 5000", db.engine)
+                                    from stock_trade_data order by trade_date desc limit 6000", db.engine) #上市股票不足3000家，取两倍数值
         global_tdf = tdf.groupby([tdf['code']]).first()
 
     # 获取财务数据
     if global_fdf is None:
-        fdf = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kjlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,jlr_rate,xjye,ldfz\
-                                from stock_finance_data order by report_type desc limit 5000", db.engine)
+        fdf = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kjlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,jlr_rate,xjye,ldfz,ch,yszk\
+                                from stock_finance_data order by report_type desc limit 6000", db.engine)
         global_fdf = fdf.groupby([fdf['code']]).first()
 
     if flag == '0':

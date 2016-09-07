@@ -45,18 +45,18 @@ def refreshStockHolderSum(gdf):
     t2_gdf = t2_gdf.reset_index()
     t3_gdf = gdf.drop_duplicates(['report_date','code'])
 
-    t1_df = pd.merge(t3_gdf, t2_gdf, on='code')
-    t2_df = pd.merge(t3_gdf, t1_gdf, on='code')
+    t3_gdf = pd.merge(t3_gdf, t2_gdf, on='code')
+    t3_gdf = pd.merge(t3_gdf, t1_gdf, on='code')
 
     bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
     t3_df = pd.merge(t3_gdf, bdf, on='code')
 
     m2_df = pd.DataFrame({
-        'code': t1_df.code,
+        'code': t3_df.code,
         'name': t3_df['name'],
-        'report_date': t1_df.report_date,
-        'count': t2_df['size'],
-        'sum': t1_df['sum']
+        'report_date': t3_df.report_date,
+        'count': t3_df['size'],
+        'sum': t3_df['sum']
     })
     if not m2_df.empty:
         for row_index, row in m2_df.iterrows():
@@ -225,11 +225,11 @@ def getStockHolderTrack(holder_name):
     t3_df = pd.merge(hdf, bdf, on='code')
 
     m2_df = pd.DataFrame({
-        'code': hdf.code,
+        'code': t3_df.code,
         'name': t3_df['name'],
-        'report_date': hdf.report_date,
-        'amount': hdf['amount'],
-        'rate': hdf['rate']
+        'report_date': t3_df.report_date,
+        'amount': t3_df['amount'],
+        'rate': t3_df['rate']
     })
 
     return m2_df
