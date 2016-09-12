@@ -9,6 +9,8 @@
                 选择统计周期 <span class="caret"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
+                <li><a href="#" onclick="getData(1,'{{ code|safe }}')">最近一年</a></li>
+                <li><a href="#" onclick="getData(2,'{{ code|safe }}')">最近两年</a></li>
                 <li><a href="#" onclick="getData(3,'{{ code|safe }}')">最近三年</a></li>
                 <li><a href="#" onclick="getData(5,'{{ code|safe }}')">最近五年</a></li>
                 <li><a href="#" onclick="getData(10,'{{ code|safe }}')">最近十年</a></li>
