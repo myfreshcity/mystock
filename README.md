@@ -3,9 +3,14 @@
 启动程序
  python manage.py runserver -H localhost
 
+virtualenvs 配置：
+ virtualenv venv
+ source venv/bin/activate
+
+
 环境安装：
    pip install flask
-   pip install mysql-connector-python
+   #pip install mysql-connector-python
    export PATH=$PATH:/usr/local/mysql/bin
    pip install MySQL-python 
 
@@ -19,6 +24,10 @@ pip install -r requirements.txt
 
 
 文档参考：
+
+virtualenvs
+
+http://docs.python-guide.org/en/latest/dev/virtualenvs/
 
 flask 最佳实践
 
