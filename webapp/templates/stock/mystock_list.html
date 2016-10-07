@@ -62,7 +62,7 @@
                         <li><a href="#" onclick="javascript:sel('{{d.code|e}}',this);return false;">选为自选股</a></li>
                         <li><a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">从备选股清除</a></li>
                         {% endif %}
-                        {% if title=='相关股' %}
+                        {% if title=='相关股' and d.code != code %}
                         <li><a href="#" onclick="javascript:delRelation('{{code|e}}','{{d.code|e}}',this);return false;">从相关股清除</a></li>
                         {% endif %}
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>

@@ -227,6 +227,8 @@ def addRelationStock(mcode,scode):
     code = scode.strip()
     if len(code) != 6:
         return "'"+code+"'无效,长度应为6位"
+    if scode == mcode:
+        return "相关股票和母股票相同"
 
     rstock1 = db.session.query(RelationStock).filter_by(main_stock = mcode,relation_stock = scode).first()
     rstock2 = db.session.query(RelationStock).filter_by(relation_stock=mcode, main_stock=scode).first()

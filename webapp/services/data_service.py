@@ -432,9 +432,14 @@ def getMyStocks(flag):
                                index_col='code')
         bdf = global_bdf[global_bdf['flag'] == int(flag)]
     else:
-        bdf = pd.read_sql_query("select * from relation_stocks rs,stock_basic sb " \
+        tf1 = pd.read_sql_query("select sb.* from relation_stocks rs,stock_basic sb " \
                                "where rs.relation_stock=sb.code and rs.main_stock=%(name)s", db.engine, params={'name': flag}, \
                                index_col='code')
+        tf2 = pd.read_sql_query("select * from stock_basic sb " \
+                                "where sb.code=%(name)s", db.engine,
+                                params={'name': flag}, \
+                                index_col='code')
+        bdf = pd.concat([tf1, tf2])
 
     #获取交易数据
     if global_tdf is None:
