@@ -14,67 +14,46 @@ from flask import current_app as app
 
 blueprint = Blueprint('stock', __name__)
 
+@blueprint.route('/mystock/<code>', methods=['GET'])
+def mystock(code):
+    title = '自选股'
+    if code == '1':
+        data = dts.getMyStocks(code)
+        title = '备选股'
+    elif code == '0':
+        data = dts.getMyStocks(code)
+        title = '自选股'
+    else:
+        data = dts.getMyStocks(code)
+        title = '相关股'
 
-@blueprint.route('/', methods=['GET'])
-def index():
-    data = dts.getMyStocks('1')
+    return render_template('stock/mystock_list.html', title=title, code=code, stocks=result_list_to_array(data))
+
+def result_list_to_array(data):
     sdata = []
     for index, row in data.iterrows():
-        sdata.append({
-            'id':row['id'],
-            'name':row['name'],
-            'code':row.code,
-            'price':row.close,
-            'grow_type': row.grow_type,
-            'ncode':row['market']+row['code'],
-            'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
-            'mvalue': round(row.t_cap / (10000*10000), 2),
-            'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
-            'ps':round(row.t_cap/(row.zyysr_ttm*10000),2),
-            'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
-            'pb': round(row.t_cap/(row.gdqy*10000),2),
-            'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
-            'dar': round(row.ldfz*100.0 / row.zzc, 2),
-            'sh_rate': row['count'],
-            'cash_rate': round((row['xjye']-(row['zfz']-row['ldfz']))*10000*100.0/row.t_cap,2), #现金余额减去长期负债
-            'jlr_rate': round(row['jlr_rate']*100.0,2),
-            'launch_date': row['launch_date'],
-            'report_type':row.report_type
-        })
-    return render_template('stock/stock_list.html', title='备选股', stocks=sdata)
-
-
-@blueprint.route('/mystock', methods=['GET'])
-def mystock():
-    data = dts.getMyStocks('0')
-    sdata = []
-    for index, row in data.iterrows():
-        sdata.append({
-            'name':row['name'],
-            'code':row.code,
-            'grow_type': row.grow_type,
-            'ncode': row['market'] + row['code'],
-            'pcode': row['code'] + ('01' if row['code'][:2]=='60'else '02'),
-            'price':row.close,
-            'in_price': row['in_price'],
-            'in_date': row['in_date'],
-            'h_price': round(row.close*(row.h_cap/row.t_cap),2),
-            'p2': round((row.t_cap-row.h_cap)*100/row.h_cap, 2),
-            'mvalue': round(row.t_cap / (10000*10000), 2),
-            'pe':round(row.t_cap/(row.jlr_ttm*10000),2),
-            'ps':round(row.t_cap/(row.zyysr_ttm*10000),2),
-            'pcf':round(row.t_cap/(row.jyjxjl_ttm*10000),2),
-            'pb': round(row.t_cap/(row.gdqy*10000),2),
-            'roe': round(row.jlr_ttm*100.0/row.gdqy,2),
-            'dar': round(row.zfz*100.0 / (row.zzc), 2),
-            'jlr_rate': round(row['jlr_rate']*100.0,2),
-            'sh_rate': row['count'],
-            'cash_rate': round((row['xjye'])*10000*100.0/row.t_cap,2), #企业可支配现金，包含现金借款
-            'trade_date': row.trade_date,
-            'report_type':row.report_type
-        })
-
-    return render_template('stock/mystock_list.html', title='自选股', stocks=sdata)
+        sdata.append(
+            {'name': row['name'],
+             'code': row.code,
+             'grow_type': row.grow_type,
+             'ncode': fn.code_to_ncode(row.code),
+             'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
+             'price': row.close,
+             'mvalue': round(row.t_cap / (10000 * 10000), 2),
+             'pe': round(row.t_cap / (row.jlr_ttm * 10000), 2),
+             'ps': round(row.t_cap / (row.zyysr_ttm * 10000), 2),
+             'pcf': round(row.t_cap / (row.jyjxjl_ttm * 10000), 2),
+             'pb': round(row.t_cap / (row.gdqy * 10000), 2),
+             'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
+             'dar': round(row.zfz * 100.0 / (row.zzc), 2),
+             'jlr_rate': round(row['jlr_rate'] * 100.0, 2),
+             'sh_rate': row['count'],
+             'cash_rate': round((row['xjye']) * 10000 * 100.0 / row.t_cap, 2),  # 企业可支配现金，包含现金借款
+             'trade_date': row.trade_date,
+             'report_type': row.report_type
+             }
+        )
+    return sdata
 
 @blueprint.route('/person_stockholder_rank', methods=['GET'])
 def person_stockholder_rank():
@@ -84,7 +63,7 @@ def person_stockholder_rank():
         sdata.append({
             'name': row['name'],
             'code': row.code,
-            'ncode': 'sh'+row.code if row.code[:2]=='60'else 'sz'+row.code,
+            'ncode': fn.code_to_ncode(row.code),
             'sum': row['sum'],
             'size': int(row['count']),
             'avg': round(row['avg'],3),
@@ -223,6 +202,28 @@ def add():
         dts.updateFinanceData(code)  # 更新财务数据
         dts.updateTradeData(code)  # 更新交易数据
         dts.global_bdf, dts.global_tdf, dts.global_fdf = (None, None, None)
+    return jsonify(msg='true')
+
+@blueprint.route('/add_relation', methods=['GET', 'POST'])
+def add_relation():
+    mcode = request.form['mcode']
+    scode = request.form['scode']
+
+    app.logger.debug('mcode:' + mcode +',scode:' +scode)
+    msg = ds.addRelationStock(mcode,scode)
+    if msg:
+        return jsonify(msg=msg)
+    return jsonify(msg='true')
+
+@blueprint.route('/del_relation', methods=['GET', 'POST'])
+def del_relation():
+    mcode = request.form['mcode']
+    scode = request.form['scode']
+
+    app.logger.debug('mcode:' + mcode +',scode:' +scode)
+    msg = ds.delRelationStock(mcode,scode)
+    if msg:
+        return jsonify(msg=msg)
     return jsonify(msg='true')
 
 @blueprint.route('/get_basic', methods=['GET'])

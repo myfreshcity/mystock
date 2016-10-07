@@ -1,4 +1,17 @@
 {% extends "layout.html" %}
+
+{% block nav %}
+    {% if title=='备选股' %}
+    <li><a href="#addStockModal"  data-toggle="modal">添加股票</a></li>
+    {% endif %}
+    {% if title=='自选股' %}
+    <li><a href="/stock/blog/sh000001">交易日记</a></li>
+    {% endif %}
+    {% if title=='相关股' %}
+    <li><a href="#addRelationStockModal"  data-toggle="modal" data-stock="{{code|e}}">添加相关股票</a></li>
+    {% endif %}
+{% endblock %}
+
 {% block body %}
 
 <div class="container-fluid">
@@ -42,15 +55,26 @@
                         Action <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
-                        <li><a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">删除</a></li>
+                        {% if title=='自选股' %}
+                        <li><a href="#" onclick="javascript:unsel('{{d.code|e}}',this);return false;">撤回备选股</a></li>
+                        {% endif %}
+                        {% if title=='备选股' %}
+                        <li><a href="#" onclick="javascript:sel('{{d.code|e}}',this);return false;">选为自选股</a></li>
+                        <li><a href="#" onclick="javascript:del('{{d.code|e}}',this);return false;">从备选股清除</a></li>
+                        {% endif %}
+                        {% if title=='相关股' %}
+                        <li><a href="#" onclick="javascript:delRelation('{{code|e}}','{{d.code|e}}',this);return false;">从相关股清除</a></li>
+                        {% endif %}
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
                         <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
                         <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
+                        <li><a href='/stock/mystock/{{d.code|e}}' target="_blank">相关股票</a></li>
                         <li><a href='http://data.eastmoney.com/report/{{d.ncode|e}}.html' target="_blank">研报</a></li>
                         <li><a href='http://data.eastmoney.com/notice/{{d.code|e}}.html' target="_blank">公告</a></li>
                         <li><a href='http://soft-f9.eastmoney.com/soft/gp30.php?code={{d.pcode|e}}' target="_blank">业务分析</a></li>
                         <li><a href="#relationModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">行业对比</a></li>
                         <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
+                        <li><a href='http://gu.qq.com/{{d.ncode|e}}' target="_blank">新闻资讯</a></li>
                     </ul>
                 </div>
             </td>
@@ -63,8 +87,8 @@
 <script type=text/javascript>
 var modal_datatable;
 var list_table;
-
-function del(code,el) {
+// 撤为备选股
+function unsel(code,el) {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/remove',
     data:{
@@ -103,11 +127,74 @@ function updateData(code){
     });
 
 };
+// 选为自选股
+function sel(code,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/rollback',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+            list_table.row($(el).parents('tr')).remove().draw(false);
+            //window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
+// 从备选股清除
+function del(code,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/del',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+        list_table.row($(el).parents('tr')).remove().draw(false);
+            //window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
+
+// 从相关股清除
+function delRelation(mcode,scode,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/del_relation',
+    data:{
+             mcode: mcode,
+             scode: scode
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+        list_table.row($(el).parents('tr')).remove().draw(false);
+            //window.location.reload();
+        }else{
+            console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
 
 //加载完毕自动执行
 $(function(){
  list_table = $('#example').DataTable({
     "paging": false,
+    scrollY: 600,
     aoColumnDefs: [
         { "sWidth": "6%", "aTargets": [ 0 ] },
         { "sWidth": "8%", "aTargets": [ 1 ] },
@@ -126,6 +213,7 @@ $(function(){
 {% include 'stock/partion/holder.html' %}
 {% include 'stock/partion/grow.html' %}
 {% include 'stock/partion/relation.html' %}
+{% include 'stock/partion/add_relation_stock.html' %}
 {% include 'stock/partion/holder_track.html' %}
 
 {% endblock %}

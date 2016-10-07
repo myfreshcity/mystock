@@ -140,7 +140,7 @@ $(function(){
         dataType:'json',
         success:function(result){
 
-        var rate_data = {'name':'现金/营业收入',yAxis: 1,marker: {enabled: true}};
+        var rate_data = {'name':'经营性现金流/营业收入',yAxis: 1,marker: {enabled: true}};
         rate_data['data'] = result.data.cash;
 
         var rate_var_data = {'name':'比例变化',type: 'column',marker: {enabled: false},dataLabels: {enabled: true}};

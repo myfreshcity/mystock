@@ -10,3 +10,6 @@ def md5(password):
 
 def get_data_array(mydate,myvalue):
     return [mydate.encode('utf-8'), round(myvalue / 1000000, 2)]
+
+def code_to_ncode(code):
+    return 'sh' + code if code[:2] == '60'else 'sz' + code

@@ -426,10 +426,16 @@ def getPerStockHighPrice(df):
 
 def getMyStocks(flag):
     global global_tdf,global_fdf
-    global_bdf = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,ms.flag,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
-                           "where ms.code=sb.code and ms.code != '000001'", db.engine, \
-                           index_col='code')
-    bdf = global_bdf[global_bdf['flag'] == int(flag)]
+    if flag == '0' or flag == '1':
+        global_bdf = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,ms.flag,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+                               "where ms.code=sb.code and ms.code != '000001'", db.engine, \
+                               index_col='code')
+        bdf = global_bdf[global_bdf['flag'] == int(flag)]
+    else:
+        bdf = pd.read_sql_query("select * from relation_stocks rs,stock_basic sb " \
+                               "where rs.relation_stock=sb.code and rs.main_stock=%(name)s", db.engine, params={'name': flag}, \
+                               index_col='code')
+
     #获取交易数据
     if global_tdf is None:
         tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
@@ -442,11 +448,7 @@ def getMyStocks(flag):
                                 from stock_finance_data order by report_type desc limit 6000", db.engine)
         global_fdf = fdf.groupby([fdf['code']]).first()
 
-    if flag == '0':
-        df11 = getPerStockHighPrice(bdf)
-        df3 = pd.concat([global_tdf, df11, global_fdf], axis=1, join='inner')
-    else:
-        df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
+    df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
 
     bdf = bdf.reset_index()
     df3 = df3.reset_index()

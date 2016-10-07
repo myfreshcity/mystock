@@ -58,10 +58,6 @@ def debetJson():
     fzlArray = []
     dqfzArray = []
     ldbArray = []
-    chArray = []
-    chRateArray = []
-    yszkArray = []
-    yszkRateArray = []
     tableData = []
 
     valueDf = ds.get_revenue_df(code).head(20)
@@ -71,16 +67,9 @@ def debetJson():
         dqfz = round(row.ldfz * 100.0 / row.zzc, 2) #短期负债率
         ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
 
-        chRate = round(row.ch * 100.0 / row.ldzc, 2)  # 存货比
-        yszkRate = round(row.yszk * 100.0 / row.ldzc, 2)  # 应收帐款比
-
         fzlArray.append([report_type, fzl])
         dqfzArray.append([report_type,dqfz])
         ldbArray.append([report_type, ldb])
-        chRateArray.append([report_type, chRate])
-        yszkRateArray.append([report_type, yszkRate])
-        chArray.append([report_type, row.ch])
-        yszkArray.append([report_type, row.yszk])
 
         tableData.append(
             [report_type,
@@ -93,13 +82,58 @@ def debetJson():
              format(row['yszk'], ','),
              fzl,
              dqfz,
-             chRate,
-             yszkRate,
              ldb
              ]
         )
+
+    chArray = []
+    chRateArray = []
+    yszkArray = []
+    yszkRateArray = []
+
+    valueDf2 = ds.get_quarter_stock_revenue(code)
+    for index, row in valueDf2.iterrows():
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+
+        chRate = round(row.ch * 100.0 / row.zyysr, 2)  # 存货比
+        yszkRate = round(row.yszk * 100.0 / row.zyysr, 2)  # 应收帐款比
+
+        chRateArray.append([report_type, chRate])
+        yszkRateArray.append([report_type, yszkRate])
+        chArray.append([report_type, row.ch])
+        yszkArray.append([report_type, row.yszk])
+
+
     return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'ch': chArray,'yszk': yszkArray,'chb': \
         chRateArray,'yszkb': yszkRateArray, 'ldb': ldbArray, 'tableData':tableData})
+
+
+@blueprint.route('/debetExJson', methods=['GET'])
+def debetExJson():
+    code = request.args.get('code')
+    quarter = int(request.args.get('quarter'))
+
+    chArray = []
+    chRateArray = []
+    yszkArray = []
+    yszkRateArray = []
+
+    valueDf = ds.get_quarter_stock_revenue(code,quarter)
+    for index, row in valueDf.iterrows():
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+
+        chRate = round(row.ch * 100.0 / row.zyysr, 2)  # 存货比
+        yszkRate = round(row.yszk * 100.0 / row.zyysr, 2)  # 应收帐款比
+
+        chRateArray.append([report_type, chRate])
+        yszkRateArray.append([report_type, yszkRate])
+        chArray.append([report_type, row.ch])
+        yszkArray.append([report_type, row.yszk])
+
+
+    return jsonify(data={'ch': chArray,'yszk': yszkArray,'chb': \
+        chRateArray,'yszkb': yszkRateArray})
+
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():

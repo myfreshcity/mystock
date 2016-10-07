@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db
-from webapp.models import MyStock,Stock,DataItem,Comment
+from webapp.models import MyStock,Stock,DataItem,Comment,RelationStock
 import json
 
 from pandas.tseries.offsets import *
@@ -222,6 +222,30 @@ def addMystock(code):
             return None
     else:
         return "'"+code+"'股票已存在"
+
+def addRelationStock(mcode,scode):
+    code = scode.strip()
+    if len(code) != 6:
+        return "'"+code+"'无效,长度应为6位"
+
+    rstock1 = db.session.query(RelationStock).filter_by(main_stock = mcode,relation_stock = scode).first()
+    rstock2 = db.session.query(RelationStock).filter_by(relation_stock=mcode, main_stock=scode).first()
+
+    if (not rstock1) and (not rstock2):
+        rstock = RelationStock(mcode,scode)
+        db.session.add(rstock)
+        rstock = RelationStock(scode,mcode)
+        db.session.add(rstock)
+        return None
+    else:
+        return "'"+code+"'股票已存在"
+
+def delRelationStock(mcode,scode):
+    mystock = db.session.query(RelationStock).filter_by(main_stock = mcode,relation_stock = scode).first()
+    db.session.delete(mystock)
+    mystock = db.session.query(RelationStock).filter_by(relation_stock=mcode, main_stock=scode).first()
+    db.session.delete(mystock)
+    return db.session.flush()
 
 def removeMystock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
