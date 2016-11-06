@@ -17,25 +17,39 @@
     <script type="text/javascript" src="{{ url_for('static', filename='highcharts.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.dataTables.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.blockui.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
         $(function(){
             $(document).ajaxStart(function(){
-                $(".spinner").removeClass("loading-inactive");
+                $.blockUI({
+                    message: '加载中...',
+                    baseZ: 1000,
+                    css: {
+                        border: '1px solid #ddd',
+                        padding: '7px',
+                        fontSize: '13px',
+                        position: 'fixed',
+                        backgroundColor: '#eee'
+                    },
+                    overlayCSS: {
+                        backgroundColor: '#555',
+                        opacity: 0.5,
+                        cursor: 'wait'
+                    }
+                });
                 console.debug('start');
               });
               $(document).ajaxSuccess(function(){
-                $(".spinner").addClass("loading-inactive");
+                $.unblockUI();
                 console.debug('end');
               });
         });
     </script>
 </head>
 <body>
-
-<div class="spinner loading-inactive"></div>
 
 <nav class="navbar navbar-default navbar-fixed-top">
     <div class="container-fluid">
@@ -64,6 +78,7 @@
                         <li><a href="http://data.eastmoney.com/xuangu/" target="_blank">选股器</a></li>
                         <li><a href="/stock/person_stockholder_rank">自然人持股排行</a></li>
                         <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
+                        <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">基金排行(市场热度)</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/macro">宏观指标</a></li>
                         <li><a href="/stock/blog/sh000001">交易日记</a></li>

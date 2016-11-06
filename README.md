@@ -3,9 +3,16 @@
 启动程序
  python manage.py runserver -H localhost
 
+激活 virtualenvs：
+ source venv/bin/activate
+
+退出 virtualenvs：
+ deactivate
+
+
 virtualenvs 配置：
  virtualenv venv
- source venv/bin/activate
+
 
 
 环境安装：
@@ -18,9 +25,11 @@ virtualenvs 配置：
 pip install -r requirements.txt
 
 
-
+安装
+  pip install jupyter
 调试工具
    ipython notebook
+   jupyter notebook
 
 
 文档参考：

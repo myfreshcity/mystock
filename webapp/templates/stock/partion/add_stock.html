@@ -40,7 +40,7 @@ $(function(){
       var aj = $.ajax( {
       url:$SCRIPT_ROOT + '/stock/add',
       data:{
-               code : $('#code').val()
+               code : modal.find('.modal-body #code').val()
       },
       type:'post',
       cache:false,
