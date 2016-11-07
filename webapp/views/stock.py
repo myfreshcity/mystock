@@ -80,6 +80,12 @@ def home(code):
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
     return render_template('stock/home.html', title=stock.name, mydate=date,code=code,price=price)
 
+@blueprint.route('/holder/<code>', methods=['GET'])
+def holder(code):
+    stock = ds.getStock(code)
+    return render_template('stock/holder.html', title=stock.name, stock=stock)
+
+
 @blueprint.route('/blog/<code>', methods=['GET'])
 def blog(code):
     stock = ds.getMyStock(code)

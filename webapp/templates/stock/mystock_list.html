@@ -42,7 +42,7 @@
             <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
             <td><a href="#growModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.jlr_rate|e}}</a></td>
             <td><a href="#debetModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
-            <td><a href="#holderModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.sh_rate|e}}</a></td>
+            <td><a href='/stock/holder/{{d.code|e}}' target="_blank">{{d.sh_rate|e}}</a></td>
             <td><a href="#psModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.ps|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
             <td>{{d.pb|e}}</td>
@@ -210,11 +210,9 @@ $(function(){
 {% include 'stock/partion/ps.html' %}
 {% include 'stock/partion/pcf.html' %}
 {% include 'stock/partion/debet.html' %}
-{% include 'stock/partion/holder.html' %}
 {% include 'stock/partion/grow.html' %}
 {% include 'stock/partion/relation.html' %}
 {% include 'stock/partion/add_relation_stock.html' %}
-{% include 'stock/partion/holder_track.html' %}
 {% include 'stock/partion/add_stock.html' %}
 
 {% endblock %}

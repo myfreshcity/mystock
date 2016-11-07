@@ -10,7 +10,7 @@
         <div class="container-fluid">
           <div class="row">
             <div class="row">
-              <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+              <table id="data_table_2" class="display" cellspacing="0" width="90%"></table>
             </div>
             <div id="value_chart" class="col-md-12"></div>
           </div>
@@ -42,29 +42,27 @@ $(function(){
     modal.find('.modal-title').text('股东持股历史 -' + holder_name );
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
-    var data_table = modal.find('.modal-body #data_table');
-
-    var holder_ajax_option =  {
-    url:$SCRIPT_ROOT + '/detail/holderTrackJson',
-    data:{
-             name : holder_name
-    },
-    type:'get',
-    cache:false,
-    dataType:'json',
-    success:valuation
-    };
-    $.ajax(holder_ajax_option);
-
-  function valuation(result){
+    var ajaxParams = {name : holder_name};
 
     //显示数据
     modal.find('.modal-body').show();
-    if(track_modal.modal_datatable)track_modal.modal_datatable.destroy();
-
-    track_modal.modal_datatable = data_table.DataTable( {
+    if(track_modal.modal_datatable){
+      track_modal.modal_datatable.ajax.reload();
+    }
+    else{
+    track_modal.modal_datatable = modal.find('.modal-body #data_table_2').DataTable( {
         paging: false,
-        data: result.data.tableData,
+        serverSide: true,
+        "ajax": {
+          url:$SCRIPT_ROOT + '/detail/holderTrackJson',
+          type:'get',
+          cache:false,
+          dataType:'json',
+          data:ajaxParams,
+          "dataSrc": function(res) {
+            return res.data.tableData;
+          }
+        },
         "order": [[ 0, "desc" ]],
         columns: [
             { title: "报告日期"},
