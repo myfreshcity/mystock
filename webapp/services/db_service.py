@@ -83,8 +83,11 @@ def get_cash_rate(code):
     return df1
 
 #获取每季度营收
-def get_quarter_stock_revenue(code,quarter=0):
-    df = get_revenue_df(code)
+def get_quarter_stock_revenue(code,quarter=0,pType=0):
+    if pType==1 and quarter==0: #计算单季环比
+        return get_revenue_df(code,1,pType)
+
+    df = get_revenue_df(code,0,pType)
     if quarter == 0:
         quarter = df.index.max().quarter
     tdate = df.index[df.index.quarter == quarter]
@@ -92,22 +95,37 @@ def get_quarter_stock_revenue(code,quarter=0):
     return df4
 
 #获取营收df
-def get_revenue_df(code):
+def get_revenue_df(code,period=0,pType=0):
     def pct_change_fix(x, attri): #解决基准值为负值的情况
         dt_1 = x
-        dt_2 = (dt_1 - DateOffset(months=12)).date()  # 去年同期
         v1 = df[df['report_type'] == dt_1].get(attri)
-        v2 = df[df['report_type'] == dt_2].get(attri)
-        if v2.empty:
-            return None
-        else:
-            return (float(v1) - float(v2)) / abs(float(v2))
+        if period == 1: #环比计算
+            dt_2 = QuarterEnd().rollback(dt_1 - DateOffset(days=1)) #上一期
+            dt_2 = dt_2.date()
+            v2 = df[df['report_type'] == dt_2].get(attri)
+            if v2.empty:
+                return None
+            else:
+                return (float(v1) - float(v2)) / abs(float(v2))
+        else: #同比计算
+            dt_2 = (dt_1 - DateOffset(months=12)).date()  # 去年同期
+            v2 = df[df['report_type'] == dt_2].get(attri)
+            if v2.empty:
+                return None
+            else:
+                return (float(v1) - float(v2)) / abs(float(v2))
 
     df = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
                            db.engine, params={'name': code})
-    zyysr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('zyysr',)), name='zyysr_grow_rate')
-    jlr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jlr',)), name='jlr_grow_rate')
-    jyjxjl_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jyjxjl',)), name='jyjxjl_grow_rate')
+    if pType == 0:
+        zyysr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('zyysr',)), name='zyysr_grow_rate')
+        jlr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jlr',)), name='jlr_grow_rate')
+        jyjxjl_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jyjxjl',)), name='jyjxjl_grow_rate')
+    else:
+        zyysr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('zyysr_qt',)), name='zyysr_grow_rate')
+        jlr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jlr_qt',)), name='jlr_grow_rate')
+        jyjxjl_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jyjxjl_qt',)), name='jyjxjl_grow_rate')
+
     df1 = pd.concat([df, zyysr_ttm, jlr_ttm, jyjxjl_ttm], axis=1)
 
     i = df['report_type'].map(lambda x: pd.to_datetime(x))

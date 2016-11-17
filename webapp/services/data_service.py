@@ -244,18 +244,43 @@ def updateFinanceData(code):
             app.logger.error(ex)
             return 1
 
+    def getQuarterRevence(x, attri):
+        dt = pd.to_datetime(x)
+        s_dt = tdf[tdf['index'] == dt.strftime('%Y-%m-%d')]
+        v1 = s_dt.get(attri)
+
+        lastQuart = QuarterEnd().rollback(dt - DateOffset(days=1))  # 上一期
+        s_lq = tdf[tdf['index'] == lastQuart.strftime('%Y-%m-%d')]
+
+        if dt.quarter != 1:
+            v2 = s_lq.get(attri)
+            if v2.empty:
+                v2 = 0
+        else:
+            v2 = 0
+
+        try:
+            v4 = int(v1) - int(v2)
+            return 1 if v4==0 else v4
+        except Exception, ex:
+            app.logger.error(ex)
+            return 1
+
     if tdf['index'].max() > s_date.strftime("%Y-%m-%d"):
         t1_df = pd.DataFrame({
             'report_type': tdf['index'],
             'zyysr': tdf[3].apply(fixNaN),
             'zyysr_ttm': tdf['index'].apply(getRevence, args=(3,)),
+            'zyysr_qt': tdf['index'].apply(getQuarterRevence, args=(3,)),
             'zyylr': tdf[4].apply(fixNaN),
             'yylr': tdf[5].apply(fixNaN),
             'jlr': tdf[9].apply(fixNaN),
             'jlr_ttm': tdf['index'].apply(getRevence, args=(9,)),
+            'jlr_qt': tdf['index'].apply(getQuarterRevence, args=(9,)),
             'kjlr': tdf[10].apply(fixNaN),
             'jyjxjl': tdf[11].apply(fixNaN),
             'jyjxjl_ttm': tdf['index'].apply(getRevence, args=(11,)),
+            'jyjxjl_qt': tdf['index'].apply(getQuarterRevence, args=(11,)),
             'xjjze': tdf[12].apply(fixNaN),
             'zzc': tdf[13].apply(fixNaN),
             'ldzc': tdf[14].apply(fixNaN),

@@ -1,4 +1,3 @@
-var mytable;
 
 function updateData(code){
     var aj = $.ajax( {
@@ -54,12 +53,23 @@ function getStockData(code) {
     });
   };
 
-function getData(quarter,code) {
+function changePeriod(quarter){
+    homePage.quarter = quarter;
+    getData();
+}
+
+function changePtype(pType){
+    homePage.pType = pType;
+    getData();
+}
+
+function getData() {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/revenueJson',
     data:{
-             quarter : quarter,
-             code : code
+             code : homePage.code,
+             quarter : homePage.quarter,
+             pType : homePage.pType
     },
     type:'get',
     cache:false,
@@ -91,36 +101,21 @@ function revenue(result){
         title: {text: '营业收入'},
         xAxis: {categories: []},
         credits: {enabled: false},
-        series: yysrs,
-        tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
-        }
+        series: yysrs
     });
     $('#revenue_2').highcharts({
         chart: {type: 'column'},
         xAxis: {categories: []},
         title: {text: '净利润'},
         credits: {enabled: false},
-        series: jlrs,
-        tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
-        }
+        series: jlrs
     });
     $('#revenue_3').highcharts({
         chart: {type: 'column'},
         xAxis: {categories: []},
         title: {text: '经营净现金流'},
         credits: {enabled: false},
-        series: jyjxjls,
-        tooltip:{
-           formatter:function(){
-              return Highcharts.numberFormat(this.y,0,".", ",")+' 万';
-           }
-        }
+        series: jyjxjls
     });
     $('#revenue_4').highcharts({
         chart: {type: 'column'},
@@ -131,8 +126,8 @@ function revenue(result){
     });
 
     //显示数据
-    if(mytable) mytable.destroy();
-    mytable = $('#example').DataTable( {
+    if(homePage.mytable) homePage.mytable.destroy();
+    homePage.mytable = $('#example').DataTable( {
         scrollY: 300,
         paging: false,
         data: result.tableData,

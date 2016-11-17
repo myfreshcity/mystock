@@ -165,7 +165,11 @@ def revenueJson():
 
     code = request.args.get('code')[2:]
     quarter = int(request.args.get('quarter'))
-    df = ds.get_quarter_stock_revenue(code, quarter)
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_quarter_stock_revenue(code, quarter,pType)
 
     for index, row in df.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
@@ -173,20 +177,30 @@ def revenueJson():
         s_jlr_rate = round(row['jlr_grow_rate'] * 100, 2)
         s_yysr_rate = round(row['zyysr_grow_rate'] * 100, 2)
 
-        yysr.append([report_type, row['zyysr']])
-        jlr.append([report_type, row['jlr']])
-        jyjxjl.append([report_type, row['jyjxjl']])
+        if pType==1:
+            row_zyysr = row['zyysr_qt']
+            row_jlr = row['jlr_qt']
+            row_jyjxjl = row['jyjxjl_qt']
+        else:
+            row_zyysr = row['zyysr']
+            row_jlr = row['jlr']
+            row_jyjxjl = row['jyjxjl']
+
+        yysr.append([report_type, row_zyysr])
+        jlr.append([report_type, row_jlr])
+        jyjxjl.append([report_type, row_jyjxjl])
 
         yysr_rate.append([report_type,s_yysr_rate])
         jlr_rate.append([report_type, s_jlr_rate])
         jyjxjl_rate.append([report_type,s_jyjxjl_rate])
         roe.append([report_type.encode('utf-8'), round(row['roe'], 2)])
 
+
         tableData.append(
             [report_type,
-             format(row['zyysr'], ','),
-             format(row['jlr'], ','),
-             format(row['jyjxjl'], ','),
+             format(row_zyysr, ','),
+             format(row_jlr, ','),
+             format(row_jyjxjl, ','),
              s_yysr_rate,
              s_jlr_rate,
              s_jyjxjl_rate
