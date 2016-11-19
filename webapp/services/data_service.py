@@ -274,6 +274,7 @@ def updateFinanceData(code):
             'zyysr_qt': tdf['index'].apply(getQuarterRevence, args=(3,)),
             'zyylr': tdf[4].apply(fixNaN),
             'yylr': tdf[5].apply(fixNaN),
+            'yylr_qt': tdf['index'].apply(getQuarterRevence, args=(5,)),
             'jlr': tdf[9].apply(fixNaN),
             'jlr_ttm': tdf['index'].apply(getRevence, args=(9,)),
             'jlr_qt': tdf['index'].apply(getQuarterRevence, args=(9,)),

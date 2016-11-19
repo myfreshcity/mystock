@@ -175,15 +175,18 @@ def revenueJson():
         report_type = row['report_type'].strftime('%Y-%m-%d')
         s_jyjxjl_rate =  round(row['jyjxjl_grow_rate'] * 100, 2)
         s_jlr_rate = round(row['jlr_grow_rate'] * 100, 2)
+        s_yylr_rate = round(row['yylr_grow_rate'] * 100, 2)
         s_yysr_rate = round(row['zyysr_grow_rate'] * 100, 2)
 
         if pType==1:
             row_zyysr = row['zyysr_qt']
             row_jlr = row['jlr_qt']
+            row_yylr = row['yylr_qt']
             row_jyjxjl = row['jyjxjl_qt']
         else:
             row_zyysr = row['zyysr']
             row_jlr = row['jlr']
+            row_yylr = row['yylr']
             row_jyjxjl = row['jyjxjl']
 
         yysr.append([report_type, row_zyysr])
@@ -199,10 +202,12 @@ def revenueJson():
         tableData.append(
             [report_type,
              format(row_zyysr, ','),
-             format(row_jlr, ','),
+             str(format(row_yylr, ','))+'/'+str(format(row_jlr, ',')),
              format(row_jyjxjl, ','),
+             round(row_yylr * 100/row_zyysr, 2),
+             round(row_jyjxjl * 100/row_yylr, 2),
              s_yysr_rate,
-             s_jlr_rate,
+             str(s_yylr_rate)+'/'+str(s_jlr_rate),
              s_jyjxjl_rate
              ]
         )

@@ -136,11 +136,13 @@ function revenue(result){
         columns: [
             { title: "日期" },
             { title: "主营收入" },
-            { title: "净利润" },
+            { title: "营业利润／净利润" },
             { title: "经营性现金流" },
-            { title: "营收增长率" },
-            { title: "净利润增长率" },
-            { title: "经营性现金流增长率" }
+            { title: "营业利润率(%)" },
+            { title: "变现率(%)" },
+            { title: "营收增长率(%)" },
+            { title: "营业／净利润增长率(%)" },
+            { title: "现金流增长率(%)" }
         ]
     } );
 }
