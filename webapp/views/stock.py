@@ -48,7 +48,7 @@ def result_list_to_array(data):
              'dar': round(row.zfz * 100.0 / (row.zzc), 2),
              'jlr_rate': round(row['jlr_rate'] * 100.0, 2),
              'sh_rate': row['count'],
-             'cash_rate': round((row['xjye']) * 10000 * 100.0 / row.t_cap, 2),  # 企业可支配现金，包含现金借款
+             'cash_rate': round((row['xjye']) * 100.0 / row.zyysr_ttm, 2),  # 企业可支配现金，包含现金借款
              'trade_date': row.trade_date,
              'report_type': row.report_type
              }
@@ -74,29 +74,38 @@ def person_stockholder_rank():
 @blueprint.route('/<code>', methods=['GET'])
 def home(code):
     stock = ds.getStock(code[2:])
-    price = stock.current_price
+    #price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return render_template('stock/home.html', title=stock.name, mydate=date,code=code,price=price)
+    return render_template('stock/home.html', title=stock.name+'-成长', mydate=date,code=code)
+
+@blueprint.route('/cash/<code>', methods=['GET'])
+def cash(code):
+    stock = ds.getStock(code[2:])
+    return render_template('stock/cash.html', title=stock.name+'-现金', stock=stock,code=code)
 
 @blueprint.route('/holder/<code>', methods=['GET'])
 def holder(code):
     stock = ds.getStock(code)
-    return render_template('stock/holder.html', title=stock.name, stock=stock)
+    return render_template('stock/holder.html', title=stock.name+'-股东', stock=stock)
 
+@blueprint.route('/debet/<code>', methods=['GET'])
+def debet(code):
+    stock = ds.getStock(code)
+    return render_template('stock/debet.html', title=stock.name+'-负债', stock=stock)
 
 @blueprint.route('/blog/<code>', methods=['GET'])
 def blog(code):
     stock = ds.getMyStock(code)
     #price = stock.current_price
-    return render_template('stock/blog.html', title=stock.name, code=code)
+    return render_template('stock/blog.html', title=stock.name+'-日志', code=code)
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
     stock = ds.getMyStock(code)
     #price = stock.current_price
-    return render_template('stock/valuation.html', title=stock.name, code=code)
+    return render_template('stock/valuation.html', title=stock.name+'-估值', code=code)
 
 @blueprint.route('/valuationJson', methods=['POST'])
 def valuationJson():
@@ -189,9 +198,9 @@ def revenueJson():
             row_yylr = row['yylr']
             row_jyjxjl = row['jyjxjl']
 
-        yysr.append([report_type, row_zyysr])
-        jlr.append([report_type, row_jlr])
-        jyjxjl.append([report_type, row_jyjxjl])
+        yysr.append([report_type, row['zyysr_ttm']])
+        jlr.append([report_type, row['jlr_ttm']])
+        jyjxjl.append([report_type, row['jyjxjl_ttm']])
 
         yysr_rate.append([report_type,s_yysr_rate])
         jlr_rate.append([report_type, s_jlr_rate])
@@ -201,9 +210,9 @@ def revenueJson():
 
         tableData.append(
             [report_type,
-             format(row_zyysr, ','),
-             str(format(row_yylr, ','))+'/'+str(format(row_jlr, ',')),
-             format(row_jyjxjl, ','),
+             round(row_zyysr/10000, 2),
+             str(round(row_yylr/10000, 2))+'/'+str(round(row_jlr/10000, 2)),
+             round(row_jyjxjl/10000, 2),
              round(row_yylr * 100/row_zyysr, 2),
              round(row_jyjxjl * 100/row_yylr, 2),
              s_yysr_rate,
@@ -215,6 +224,88 @@ def revenueJson():
     return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'yysr_rate':yysr_rate,\
                          'jlr_rate':jlr_rate,'jyjxjl_rate':jyjxjl_rate,'roe':roe},tableData=tableData)
 
+
+@blueprint.route('/cashJson', methods=['GET'])
+def cashJson():
+    tableData = []
+    yysr = [] #营业收入TTM
+    jlr = [] #净利润TTM
+    jyjxjl = [] #经营性净现金流TTM
+
+    cash_live_rate = [] #现金支持率
+    cash_produce_rate = [] #现金生产率
+    cash_jlr_rate = []  #利润含现比
+    jyjxjl_rate = [] #经营性净现金流
+
+    xjye = []  # 期末现金余额
+    xjjze_qt = []  # 现金净增加额
+    jlr_qt = []  # 净利润净增加额
+    jyjxjl_qt = []  # 经营性现金净增加额
+
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_quarter_stock_revenue(code, quarter,pType)
+
+    i = 0
+
+    for index, row in df.iterrows():
+        i = i+1
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+
+        s_jyjxjl_rate =  round(row['jyjxjl_grow_rate'] * 100, 2)
+        s_cash_live_rate = round(row['xjye'] * 100/row['zyysr_ttm'], 2)
+        s_cash_produce_rate = round(row['jyjxjl_ttm'] * 100/row['zyysr_ttm'], 2)
+
+        yysr.append([report_type, row['zyysr_ttm']])
+        jlr.append([report_type, row['jlr_ttm']])
+        jyjxjl.append([report_type, row['jyjxjl_ttm']])
+
+        jyjxjl_rate.append([report_type,s_jyjxjl_rate])
+        cash_live_rate.append([report_type,s_cash_live_rate])
+        cash_produce_rate.append([report_type, s_cash_produce_rate])
+        cash_jlr_rate.append([report_type,
+                              round(row['jyjxjl_ttm'] * 100 / row['jlr_ttm'], 2)])
+
+        # 只取前10*4条数据图形显示
+        if i <= 40:
+            xjye.append([report_type,row['xjye']])
+            xjjze_qt.append([report_type, row['xjjze_qt']])
+            jlr_qt.append([report_type, row['jlr_qt']])
+            jyjxjl_qt.append([report_type, row['jyjxjl_qt']])
+
+        if pType==1:
+            row_zyysr = row['zyysr_qt']
+            row_jlr = row['jlr_qt']
+            row_xjjze = row['xjjze_qt']
+            row_jyjxjl = row['jyjxjl_qt']
+        else:
+            row_zyysr = row['zyysr']
+            row_jlr = row['jlr']
+            row_xjjze = row['xjjze']
+            row_jyjxjl = row['jyjxjl']
+
+        tableData.append(
+            [report_type,
+             round(row['xjye']/10000, 2),
+             round(row_zyysr/10000, 2),
+             round(row_xjjze/10000, 2),
+             round(row_jyjxjl/10000, 2),
+             round(row_jyjxjl * 100/row_xjjze, 2),
+             round(row_jyjxjl * 100/row_zyysr, 2),
+             round(row_jyjxjl * 100/row_jlr, 2),
+             s_jyjxjl_rate,
+             round(row['jyjxjl_ttm'] * 100 / row['jlr_ttm'], 2)
+             ]
+        )
+
+    return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'cash_live_rate':cash_live_rate,\
+                         'cash_produce_rate':cash_produce_rate,'cash_jlr_rate':cash_jlr_rate,\
+                         'xjye':xjye,'xjjze_qt':xjjze_qt,'jlr_qt':jlr_qt,'jyjxjl_qt':jyjxjl_qt},\
+                            tableData=tableData)
 
 @blueprint.route('/add', methods=['GET', 'POST'])
 def add():

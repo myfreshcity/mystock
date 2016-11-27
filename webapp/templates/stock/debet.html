@@ -1,0 +1,214 @@
+{% extends "layout.html" %}
+{% block body %}
+<div>
+  <div class="modal-header">
+    <h4 class="modal-title" id="debetModalLabel"></h4>
+    <input type="hidden" class="form-control" id="sel-code"/>
+  </div>
+  <div class="modal-body">
+    <div class="container-fluid">
+
+      <div class="row">
+        <div class="row">
+          <table id="data_table" class="display" cellspacing="0" width="90%"></table>
+        </div>
+      </div>
+      <div class="row">
+        <div id="chart_1" class="col-md-12"></div>
+        <div id="chart_2" class="col-md-12"></div>
+      </div>
+
+      <div class="row">
+        <div class="btn-group" data-toggle="buttons">
+            <label class="btn btn-default active">
+                <input type="radio" name="quarters" autocomplete="off" id="dm_q0"> 全年
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="quarters" autocomplete="off" id="dm_q1"> 第一季度
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="quarters" autocomplete="off" id="dm_q2"> 第二季度
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="quarters" autocomplete="off" id="dm_q3"> 第三季度
+            </label>
+            <label class="btn btn-default">
+                <input type="radio" name="quarters" autocomplete="off" id="dm_q4"> 第四季度
+            </label>
+        </div>
+
+
+        <div id="chart_3" class="col-md-12"></div>
+        <div id="chart_4" class="col-md-12"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type=text/javascript>
+var debetModal = {};
+debetModal.quarter = 0;
+
+//加载完毕自动执行
+$(function(){
+
+    var code = '{{ stock.code|safe }}' // Extract info from data-* attributes
+    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
+    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+    var modal = $(this)
+    modal.find('.modal-title').text('债务结构 -' + '{{ stock.name|safe }}'+'-'+code );
+    var data_table = modal.find('.modal-body #data_table');
+
+    modal.find('.modal-body #dm_q0').on("change",{q:0},getData);
+    modal.find('.modal-body #dm_q1').on("change",{q:1},getData);
+    modal.find('.modal-body #dm_q2').on("change",{q:2},getData);
+    modal.find('.modal-body #dm_q3').on("change",{q:3},getData);
+    modal.find('.modal-body #dm_q4').on("change",{q:4},getData);
+
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/detail/debetJson',
+    data:{
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:valuation
+    });
+
+  loadData(); //初始加载
+
+  function getData(val){
+   debetModal.quarter = val;
+   loadData();
+  }
+
+  function loadData() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/detail/debetExJson',
+    data:{
+             quarter : debetModal.quarter,
+             code : code
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+
+    var zyysr = {'name':'营业收入TTM',yAxis: 1,marker: {enabled: false}};
+    zyysr['data'] = result.data.zyysr;
+
+    var chb = {'name':'存货比',type: 'column',marker: {enabled: false}};
+    chb['data'] = result.data.chb;
+
+    var ch = {'name':'存货',yAxis: 1,marker: {enabled: false}};
+    ch['data'] = result.data.ch;
+
+    var yszkb = {'name':'应收帐款比',type: 'column',marker: {enabled: false}};
+    yszkb['data'] = result.data.yszkb;
+
+    var yszk = {'name':'应收帐款',yAxis: 1,marker: {enabled: false}};
+    yszk['data'] = result.data.yszk;
+
+    modal.find('.modal-body #chart_3').highcharts({
+        chart: {zoomType: 'xy'},
+        title: {text:  '存货比（存货/营业收入TTM）'},
+        xAxis: {categories: []},
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '比例'},
+        labels: {
+                format: '{value} %'
+                }
+        },
+        {// Secondary yAxis
+        title: {text: '数值'},
+        labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
+        credits: {enabled: false},
+        series: [chb,ch,zyysr],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+    modal.find('.modal-body #chart_4').highcharts({
+        chart: {zoomType: 'xy'},
+        title: {text:  '应收帐款比（应收帐款/营业收入TTM）'},
+        xAxis: {categories: []},
+        yAxis: [
+        {// Primary yAxis
+        title: {text: '比例'},
+        labels: {
+                format: '{value} %'
+                }
+        },
+        {// Secondary yAxis
+        title: {text: '数值'},
+        labels: {
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+        opposite: true
+        }],
+        credits: {enabled: false},
+        series: [yszkb,yszk,zyysr],
+        tooltip:{
+           crosshairs: true,
+           shared: true
+        }
+    });
+
+    }
+
+    });
+  };
+
+  function valuation(result){
+    var valuation_data = {'name':'总负债率',type: 'column',marker: {enabled: false}};
+    valuation_data['data'] = result.data.fzl;
+
+    var dqfz = {'name':'短期负债率',type: 'column',marker: {enabled: false}};
+    dqfz['data'] = result.data.dqfz;
+
+
+    //显示数据
+    modal.find('.modal-body').show();
+    if(debetModal.datatable)debetModal.datatable.destroy();
+
+    debetModal.datatable = data_table.DataTable( {
+        scrollY: 300,
+        paging: false,
+        data: result.data.tableData,
+        "order": [[ 0, "desc" ]],
+        searching: false,
+        aoColumnDefs: [
+        { "sWidth": "12%", "aTargets": [ 0 ] }
+        ],
+        columns: [
+            { title: "日期" },
+            { title: "总资产" },
+            { title: "总负债" },
+            { title: "股东权益" },
+            { title: "存货" },
+            { title: "应收账款" },
+            { title: "总负债率(%)" },
+            { title: "短期负债率(%)" },
+            { title: "流动比" }
+        ]
+    } );
+
+}
+
+
+});
+</script>
+{% endblock %}

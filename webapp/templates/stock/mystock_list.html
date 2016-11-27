@@ -21,14 +21,13 @@
             <th>编码</th>
             <th>名称</th>
             <th>类型</th>
-            <th>市盈率</th>
             <th>增长率(%)</th>
+            <th width="40"><a href="#" data-toggle="tooltip" title="可支配现金比营收TTM">可用现金率</a></th>
             <th width="40"><a href="#" data-toggle="tooltip" title="负债比总资产">负债率</a></th>
             <th width="40">机构持股</th>
+            <th>市盈率</th>
             <th>市销率</th>
             <th>市现率</th>
-            <th>市净率</th>
-            <th width="40"><a href="#" data-toggle="tooltip" title="可支配现金比市值">可用现金率</a></th>
             <th>市值(亿)</th>
             <th></th>
         </tr>
@@ -37,16 +36,15 @@
         {% for d in stocks: %}
         <tr id="row-{{d.code|e}}">
             <td>{{d.code|e}}</td>
-            <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
+            <td>{{d.name|e}}</td>
             <td>{{d.grow_type|e}}</td>
-            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
-            <td><a href="#growModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.jlr_rate|e}}</a></td>
-            <td><a href="#debetModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.dar|e}}</a></td>
+            <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.jlr_rate|e}}</a></td>
+            <td><a href='/stock/cash/{{d.ncode|e}}' target="_blank">{{d.cash_rate|e}}</a></td>
+            <td><a href='/stock/debet/{{d.code|e}}' target="_blank">{{d.dar|e}}</a></td>
             <td><a href='/stock/holder/{{d.code|e}}' target="_blank">{{d.sh_rate|e}}</a></td>
+            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
             <td><a href="#psModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.ps|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
-            <td>{{d.pb|e}}</td>
-            <td>{{d.cash_rate|e}}</td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td>
                 <div class="btn-group pull-right">

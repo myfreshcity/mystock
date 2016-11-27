@@ -35,6 +35,7 @@ $(function(){
 
     var button = $(event.relatedTarget)
     var holder_name = button.data('holder-name') // Extract info from data-* attributes
+    var stock_code = button.data('stock')
     // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 
@@ -42,7 +43,7 @@ $(function(){
     modal.find('.modal-title').text('股东持股历史 -' + holder_name );
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
-    var ajaxParams = {name : holder_name};
+    track_modal.ajaxParams = {name : holder_name};
 
     //显示数据
     modal.find('.modal-body').show();
@@ -52,14 +53,18 @@ $(function(){
     else{
     track_modal.modal_datatable = modal.find('.modal-body #data_table_2').DataTable( {
         paging: false,
-        serverSide: true,
         "ajax": {
           url:$SCRIPT_ROOT + '/detail/holderTrackJson',
           type:'get',
           cache:false,
           dataType:'json',
-          data:ajaxParams,
+          data:function(data) { // add request parameters before submit
+                $.each(track_modal.ajaxParams, function(key, value) {
+                    data[key] = value;
+                });
+          },
           "dataSrc": function(res) {
+          track_modal.modal_datatable.search( stock_code ).draw();
             return res.data.tableData;
           }
         },

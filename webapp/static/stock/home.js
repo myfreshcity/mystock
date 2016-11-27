@@ -80,14 +80,15 @@ function getData() {
 
 //营收
 function revenue(result){
-    var yysrs = [{'name':'营业收入','data':result.data.yysr,type:'column',marker: {enabled: false}}];
-    var jlrs = [{'name':'营业利润','data':result.data.jlr ,marker: {enabled: false}}];
-    var jyjxjls = [{'name':'经营净现金流','data':result.data.jyjxjl,marker: {enabled: false} }];
+    var yysrs = [{'name':'营业收入TTM','data':result.data.yysr,marker: {enabled: false}}];
+    var jlrs = [{'name':'净利润TTM','data':result.data.jlr,marker: {enabled: false}}];
+    var jyjxjls = [{'name':'经营净现金流TTM','data':result.data.jyjxjl,marker: {enabled: false} }];
     var roe = [{'name':'净资产收益率','data':result.data.roe,marker: {enabled: false}}];
 
 
     $('#revenue_0').highcharts({
-        title: {text: '整体营收'},
+        chart: {zoomType: 'xy'},
+        title: {text: '整体营收TTM'},
         xAxis: {categories: []},
         credits: {enabled: false},
         series: yysrs.concat(jlrs).concat(jyjxjls),
@@ -97,23 +98,23 @@ function revenue(result){
         }
     });
     $('#revenue_1').highcharts({
-        chart: {type: 'column'},
-        title: {text: '营业收入'},
+        chart: {zoomType: 'xy',type:'column'},
+        title: {text: '营业收入TTM'},
         xAxis: {categories: []},
         credits: {enabled: false},
         series: yysrs
     });
     $('#revenue_2').highcharts({
-        chart: {type: 'column'},
+        chart: {zoomType: 'xy',type:'column'},
         xAxis: {categories: []},
-        title: {text: '净利润'},
+        title: {text: '净利润TTM'},
         credits: {enabled: false},
         series: jlrs
     });
     $('#revenue_3').highcharts({
-        chart: {type: 'column'},
+        chart: {zoomType: 'xy',type:'column'},
         xAxis: {categories: []},
-        title: {text: '经营净现金流'},
+        title: {text: '经营净现金流TTM'},
         credits: {enabled: false},
         series: jyjxjls
     });
@@ -136,13 +137,19 @@ function revenue(result){
         columns: [
             { title: "日期" },
             { title: "主营收入" },
-            { title: "营业利润／净利润" },
+            { title: "营业利润|净利润" },
             { title: "经营性现金流" },
-            { title: "营业利润率(%)" },
-            { title: "变现率(%)" },
+            { title: "营业利润(营业利润/营收)%" },
+            { title: "现金含量(营业现金／营业利润)%" },
             { title: "营收增长率(%)" },
-            { title: "营业／净利润增长率(%)" },
+            { title: "营业利润／净利润增长率(%)" },
             { title: "现金流增长率(%)" }
+        ],
+        columnDefs: [
+                  {
+                      "targets": [0],
+                      "width": "10%"
+                  }
         ]
     } );
 }

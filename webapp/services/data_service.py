@@ -283,6 +283,7 @@ def updateFinanceData(code):
             'jyjxjl_ttm': tdf['index'].apply(getRevence, args=(11,)),
             'jyjxjl_qt': tdf['index'].apply(getQuarterRevence, args=(11,)),
             'xjjze': tdf[12].apply(fixNaN),
+            'xjjze_qt': tdf['index'].apply(getQuarterRevence, args=(12,)),
             'zzc': tdf[13].apply(fixNaN),
             'ldzc': tdf[14].apply(fixNaN),
             'zfz': tdf[15].apply(fixNaN),

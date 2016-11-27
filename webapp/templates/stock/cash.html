@@ -26,33 +26,8 @@
 {% endblock %}
 
 {% block body %}
-<div class="panel panel-default">
-    <div class="panel-body">
-        <form class="form-horizontal">
-            <div class="form-group">
-                <div class="col-md-1">
-                    <label for="growType">成长类型</label>
-                </div>
-                 <div class="col-md-4">
-                    <select class="form-control" id="growType">
-                      <option value="">请选择</option>
-                      <option value="A">A快速增长型</option>
-                      <option value="B">B稳定增长型</option>
-                      <option value="C">C困境反转型</option>
-                      <option value="D">D周期型</option>
-                      <option value="E">E隐蔽资产型</option>
-                      <option value="F">F缓慢增长型</option>
-                    </select>
-                 </div>
-                 <div class="col-md-1">
-                    <button type="button" class="btn btn-default" onclick="updateStockData('{{ code|safe }}')">提交</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
-<p class="container-fluid">
+<div class="container-fluid">
     <p class="row">
         <div class="btn-group" data-toggle="buttons">
             <label class="btn btn-default active">
@@ -95,9 +70,9 @@
     </p>
 
 </div>
-<script type="text/javascript" src="{{ url_for('static', filename='stock/home.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/cash.js') }}"></script>
 <script type="text/javascript">
-var homePage = {
+var cashPage = {
   code : '{{ code|safe }}',
   quarter : 0,
   pType : 1

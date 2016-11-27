@@ -73,39 +73,20 @@ def debetJson():
 
         tableData.append(
             [report_type,
-             format(row['zzc'], ','),
-             format(row['zfz'], ','),
+             round(row['zzc']/10000, 2),
+             round(row['zfz']/10000, 2),
              #format(row['ldzc'], ','),
              #format(row['ldfz'], ','),
-             format(row['gdqy'], ','),
-             format(row['ch'], ','),
-             format(row['yszk'], ','),
+             round(row['gdqy']/10000, 2),
+             round(row['ch']/10000, 2),
+             round(row['yszk']/10000, 2),
              fzl,
              dqfz,
              ldb
              ]
         )
 
-    chArray = []
-    chRateArray = []
-    yszkArray = []
-    yszkRateArray = []
-
-    valueDf2 = ds.get_quarter_stock_revenue(code)
-    for index, row in valueDf2.iterrows():
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-
-        chRate = round(row.ch * 100.0 / row.zyysr, 2)  # 存货比
-        yszkRate = round(row.yszk * 100.0 / row.zyysr, 2)  # 应收帐款比
-
-        chRateArray.append([report_type, chRate])
-        yszkRateArray.append([report_type, yszkRate])
-        chArray.append([report_type, row.ch])
-        yszkArray.append([report_type, row.yszk])
-
-
-    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'ch': chArray,'yszk': yszkArray,'chb': \
-        chRateArray,'yszkb': yszkRateArray, 'ldb': ldbArray, 'tableData':tableData})
+    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'ldb': ldbArray, 'tableData':tableData})
 
 
 @blueprint.route('/debetExJson', methods=['GET'])
@@ -117,22 +98,24 @@ def debetExJson():
     chRateArray = []
     yszkArray = []
     yszkRateArray = []
+    zyysrArray = []
 
     valueDf = ds.get_quarter_stock_revenue(code,quarter)
     for index, row in valueDf.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
 
-        chRate = round(row.ch * 100.0 / row.zyysr, 2)  # 存货比
-        yszkRate = round(row.yszk * 100.0 / row.zyysr, 2)  # 应收帐款比
+        chRate = round(row.ch * 100.0 / row.zyysr_ttm, 2)  # 存货比
+        yszkRate = round(row.yszk * 100.0 / row.zyysr_ttm, 2)  # 应收帐款比
 
         chRateArray.append([report_type, chRate])
         yszkRateArray.append([report_type, yszkRate])
+
         chArray.append([report_type, row.ch])
         yszkArray.append([report_type, row.yszk])
+        zyysrArray.append([report_type, row.zyysr_ttm])
 
 
-    return jsonify(data={'ch': chArray,'yszk': yszkArray,'chb': \
-        chRateArray,'yszkb': yszkRateArray})
+    return jsonify(data={'zyysr':zyysrArray,'ch': chArray,'yszk': yszkArray,'chb': chRateArray,'yszkb': yszkRateArray})
 
 
 @blueprint.route('/pcfJson', methods=['GET'])
