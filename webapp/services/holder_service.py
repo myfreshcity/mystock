@@ -9,6 +9,7 @@ from flask import current_app as app
 from webapp.services import db,db_service as dbs
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
+import http.cookiejar
 from pandas.tseries.offsets import *
 from datetime import datetime
 import urllib2,re,html5lib
@@ -24,15 +25,18 @@ def getLatestStockHolder():
         #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
     return group_stockholder_rate
 
-def refreshStockHolder(start_date='2016-03-31'):
+def refreshStockHolder(start_date='2016-06-30'):
     #获得所有股票代码列表
-    #stocks = db.session.query(Stock).filter(and_(Stock.latest_report < start_date,Stock.launch_date < start_date)).all()
-    stocks = stocks = db.session.query(MyStock).all()
+    stocks = db.session.query(Stock).filter(and_(Stock.latest_report < start_date,Stock.launch_date < start_date)).all()
+    #stocks = stocks = db.session.query(MyStock).all()
+    heads = getHeaders('http://xueqiu.com')
     for st in stocks:
         app.logger.info('checking stock holder for:' + st.code)
-        latest_report = updateStockHolder(st.code)
+        latest_report = updateStockHolder(st.code,heads)
         st.latest_report = latest_report
         db.session.flush()
+        app.logger.info('update done. the latest report date is:' + latest_report)
+
 
 def refreshStockHolderSum(gdf):
     #gdf = getLatestStockHolder()
@@ -43,7 +47,7 @@ def refreshStockHolderSum(gdf):
     t1_gdf = t1_gdf.reset_index()
     t2_gdf = a1gdf['rate'].agg({'sum': np.sum})
     t2_gdf = t2_gdf.reset_index()
-    t3_gdf = gdf.drop_duplicates(['report_date','code'])
+    t3_gdf = gdf.drop_duplicates(['code'])
 
     t3_gdf = pd.merge(t3_gdf, t2_gdf, on='code')
     t3_gdf = pd.merge(t3_gdf, t1_gdf, on='code')
@@ -96,51 +100,41 @@ def getStockHolderRank():
     t7_df = pd.merge(t6_df, bdf, on='code')
     return t7_df
 
-def updateStockHolder(code):
-    latest_val = ''
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
-    url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
+def getHeaders(url):
+    CookieJar = http.cookiejar.CookieJar()
+    CookieProcessor = urllib2.HTTPCookieProcessor(CookieJar)
+    opener = urllib2.build_opener(CookieProcessor)
+    urllib2.install_opener(opener)
+
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0'}
+    request = urllib2.Request(url, headers=headers)
+    httpf = opener.open(request)
+    return headers
+
+
+def updateStockHolder(code,headers):
+    mc = 'SH' if code[:2] == '60' else 'SZ'
+    url = "https://xueqiu.com/stock/f10/otsholder.json?symbol=" + mc + code + "&page=1&size=4"
     req = urllib2.Request(url=url, headers=headers)
     feeddata = urllib2.urlopen(req).read()
-    soup = BeautifulSoup(feeddata, "html5lib")
-    paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
 
-    report_date = []
-    holder_name = []
-    amount = []
-    rate = []
-    holder_type = []
-    holder_parent = []
-    rdate = ''
-    i = 0
-    for e in paper_name:
-        t = e.find_all('td')
-        s = e.find_all('strong')
-        if len(s) > 0:
-            if s[0].string == '截止日期':
-                rdate = t[1].string
-                i += 1
-                if i ==1:
-                    latest_val = rdate
+    fd = json.loads(feeddata)
+    fArray = []
+    for e in fd['list']:
+        fArray = fArray + e['list']
+    ndf = pd.DataFrame(fArray)
 
-        if t[0].div:
-            if t[0].div.string:
-                if t[0].div.string.isdigit():
-                    hname = t[1].div.text
-                    report_date.append(rdate)
-                    holder_name.append(hname)
-                    amount.append(float(t[2].div.string))
-                    rate.append(float(t[3].div.string))
-                    holder_type.append(t[4].div.string)
-                    holder_parent.append(hname.split('-')[0])
     df1 = pd.DataFrame({
         'code': code,
-        'report_date': report_date,
-        'holder_name': holder_name,
-        'amount': amount,
-        'rate': rate,
-        'holder_type': holder_type,
-        'holder_parent': holder_parent
+        'report_date': ndf['enddate'].map(lambda x: pd.to_datetime(x).strftime("%Y-%m-%d")),
+        'rank': ndf['rank2'],
+        'holder_name': ndf['shholdername'],
+        'holder_code': ndf['shholdercode'],
+        'amount': ndf['holderamt'],
+        'rate': ndf['holderrto'],
+        'holder_nature': ndf['shholdertype'],
+        'holder_type': ndf['shholdernature'],
+        'holder_parent': ndf['shholdername'].map(lambda x: x.split('-')[0])
 
     })
 
@@ -159,15 +153,37 @@ def updateStockHolder(code):
         #更新汇总信息
         refreshStockHolderSum(df2)
 
-    return latest_val
+    return df1['report_date'].max()
 
 #近期持股情况比较
-def getStockHolder(code):
-    hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate,amount \
-                                from stock_holder where code=%(name)s order by report_date desc", db.engine,\
-                            params={'name': code})
-    n_holder = pd.Series(hdf['holder_name'].apply(lambda x: x.replace('-', '').replace('－', '').replace(' ', '').strip()),
-                         name='holder_name_new')
+def getStockHolder(code,report_date,direction):
+    sql = "select max(report_date) from stock_holder where code=:code";
+    resultProxy = db.session.execute(text(sql), {'code': code})
+    _max_date = resultProxy.scalar()
+    if report_date == '':
+        if (_max_date == None):
+            _max_date = dbs.getStock(code).launch_date  # 取上市日期
+        _next_date = pd.to_datetime(_max_date)
+    else:
+        _next_date = pd.to_datetime(report_date)
+
+    if direction == 'next':
+        if (_next_date.date()-_max_date).days <= 0:
+            _next_date = QuarterEnd().rollforward(_next_date + DateOffset(days=1))
+    elif direction == 'pre':
+        _next_date = QuarterEnd().rollback(_next_date - DateOffset(days=1))
+
+    submit_date = QuarterEnd().rollback(_next_date - DateOffset(days=1))
+
+    app.logger.debug('query holder data from ' + submit_date.strftime('%Y-%m-%d') +' to '+ _next_date.strftime('%Y-%m-%d'))
+
+    hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,holder_code,rate,amount \
+                                from stock_holder where code=%(name)s and report_date>=%(submit_date)s and report_date<=%(report_date)s \
+                                order by report_date desc,rank asc", db.engine, \
+                            params={'name': code, 'submit_date': submit_date, 'report_date': _next_date})
+    n_holder = pd.Series(
+        hdf['holder_name'].apply(lambda x: x.replace('-', '').replace('－', '').replace(' ', '').strip()),
+        name='holder_name_new')
     hdf = pd.concat([hdf, n_holder], axis=1)
 
     t2_df = hdf[:10]
@@ -207,19 +223,20 @@ def getStockHolder(code):
 
     m2_df = pd.DataFrame({
         'name': m1_df['holder_name_new'].apply(getValue, args=('holder_name',)),
+        'code': m1_df['holder_name_new'].apply(getValue, args=('holder_code',)),
         'report_date': m1_df['holder_name_new'].apply(getValue, args=('report_date',)),
         'amount': m1_df['holder_name_new'].apply(getValue, args=('amount',)),
         'rate': m1_df['holder_name_new'].apply(getValue, args=('rate',)),
         'var': m1_df['holder_name_new'].apply(countVar)
     })
 
-    return m2_df
+    return (_next_date.strftime('%Y-%m-%d'),m2_df)
 
 #指定股东的持股历史
-def getStockHolderTrack(holder_name):
+def getStockHolderTrack(holder_code):
     hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate,amount \
-                                from stock_holder where holder_name=%(name)s", db.engine,\
-                            params={'name': holder_name})
+                                from stock_holder where holder_code=%(code)s", db.engine,\
+                            params={'code': holder_code})
 
     bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
     t3_df = pd.merge(hdf, bdf, on='code')

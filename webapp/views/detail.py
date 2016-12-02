@@ -194,14 +194,18 @@ def psJson():
 @blueprint.route('/holderJson', methods=['GET'])
 def holderJson():
     code = request.args.get('code')
+    reportDate = request.args.get('report_date')
+    direction = request.args.get('forward_dirc')
+
 
     tableData = []
-    latestDf = hs.getStockHolder(code)
-    for index, row in latestDf.iterrows():
+    (_report_date,_result_df) = hs.getStockHolder(code,reportDate,direction)
+    for index, row in _result_df.iterrows():
         report_date = row['report_date'].strftime('%Y-%m-%d')
         tableData.append(
             [report_date,
              row['name'],
+             row['code'],
              row['rate'],
              format(row['amount'], ','),
              row['var']
@@ -217,14 +221,14 @@ def holderJson():
     for index, row in it_2:
         sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
 
-    return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData})
+    return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData,'reportDate':_report_date})
 
 @blueprint.route('/holderTrackJson', methods=['GET'])
 def holderTrackJson():
-    holder_name = request.args.get('name')
+    holder_code = request.args.get('hcode')
 
     tableData = []
-    df = hs.getStockHolderTrack(holder_name)
+    df = hs.getStockHolderTrack(holder_code)
     for index, row in df.iterrows():
         report_date = row['report_date'].strftime('%Y-%m-%d')
         tableData.append(

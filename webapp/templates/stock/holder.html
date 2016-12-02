@@ -9,7 +9,11 @@
     <div class="container-fluid">
       <div class="row">
         <div class="row">
-          <div class="col-md-2 col-md-offset-10"><a id="m1_link" href='#'>更新数据</a></div>
+          <div class="col-md-2 col-md-offset-10">
+            <a id="m1_link_next" href="#">下一期</a>
+            <a id="m1_link" href='#'>更新数据</a>
+            <a id="m1_link_pre" href="#">前一期</a>
+          </div>
           <table id="data_table" class="display" cellspacing="0" width="90%"></table>
         </div>
         <div id="value_chart" class="col-md-12"></div>
@@ -24,8 +28,10 @@
 </div>
 
 <script type=text/javascript>
-
-var modal_datatable;
+var holderPage = {
+  report_date:'',
+  forward_dirc:''
+}
 //加载完毕自动执行
 $(function(){
 
@@ -40,6 +46,21 @@ $(function(){
     var holder_data_table = modal.find('.modal-body #data_table');
 
     modal.find('.modal-body #m1_link').on("click",updateData);
+    modal.find('.modal-body #m1_link_pre').on("click",preData);
+    modal.find('.modal-body #m1_link_next').on("click",nextData);
+
+    var holder_ajax_option =  {
+    url:$SCRIPT_ROOT + '/detail/holderJson',
+    data:{
+             code : code,
+             report_date: holderPage.report_date,
+             forward_dirc: holderPage.forward_dirc
+    },
+    type:'get',
+    cache:false,
+    dataType:'json',
+    success:valuation
+    };
 
     function updateData(){
         var aj = $.ajax( {
@@ -61,16 +82,26 @@ $(function(){
 
      };
 
-    var holder_ajax_option =  {
-    url:$SCRIPT_ROOT + '/detail/holderJson',
-    data:{
-             code : code
-    },
-    type:'get',
-    cache:false,
-    dataType:'json',
-    success:valuation
-    };
+    function  preData(){
+      holderPage.forward_dirc = 'pre';
+      holder_ajax_option.data = {
+             code : code,
+             report_date: holderPage.report_date,
+             forward_dirc: holderPage.forward_dirc
+      };
+      $.ajax(holder_ajax_option);
+    }
+
+    function  nextData(){
+      holderPage.forward_dirc = 'next';
+      holder_ajax_option.data = {
+             code : code,
+             report_date: holderPage.report_date,
+             forward_dirc: holderPage.forward_dirc
+      };
+      $.ajax(holder_ajax_option);
+    }
+
     $.ajax(holder_ajax_option);
 
   function valuation(result){
@@ -80,12 +111,16 @@ $(function(){
     var c2_data = {'name':'持股比例',type: 'column',marker: {enabled: false}};
     c2_data['data'] = result.data.holderSum;
 
+    holderPage.report_date = result.data.reportDate
+    modal.find('.modal-title').text('机构持股情况 -' + '{{ stock.name|safe }}'+'-'+holderPage.report_date );
 
     //显示数据
     modal.find('.modal-body').show();
-    if(modal_datatable)modal_datatable.destroy();
+    if(holderPage.modal_datatable){
+      holderPage.modal_datatable.destroy();
+    }
 
-    modal_datatable = holder_data_table.DataTable( {
+    holderPage.modal_datatable = holder_data_table.DataTable( {
         paging: false,
         data: result.data.tableData,
         "order": [[ 0, "desc" ]],
@@ -93,6 +128,7 @@ $(function(){
         columns: [
             { title: "报告日期"},
             { title: "流通股东" },
+            { title: "流通股东编码" },
             { title: "持有比例(%)" },
             { title: "持有数量" },
             { title: "持股变动(%)" }
@@ -106,8 +142,12 @@ $(function(){
                       "targets": [1],
                       "render": function(data, type, full) {
                           //return '<a href="#holderTrackModal" >'+data+'</a>';
-                          return '<a href="#holderTrackModal" data-stock="'+code+'" data-holder-name="'+data+'" data-toggle="modal">'+data+'</a>';
+                          return '<a href="#holderTrackModal" data-stock="'+code+'" data-holder-name="'+full[1]+'" data-holder-code="'+full[2]+'" data-toggle="modal">'+data+'</a>';
                       }
+                  },
+                  {
+                    "targets": [2],
+                    "visible": false
                   }
         ]
     } );
