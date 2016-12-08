@@ -454,10 +454,11 @@ def getPerStockHighPrice(df):
 def getMyStocks(flag):
     global global_tdf,global_fdf
     if flag == '0' or flag == '1':
-        global_bdf = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,ms.flag,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+        global_bdf = pd.read_sql_query("select ms.id,ms.code,ms.name,ms.market,ms.flag,sb.zgb,sb.launch_date,ms.in_price,ms.in_date,ms.created_time,sb.grow_type from my_stocks ms,stock_basic sb " \
                                "where ms.code=sb.code and ms.code != '000001'", db.engine, \
                                index_col='code')
         bdf = global_bdf[global_bdf['flag'] == int(flag)]
+        bdf = bdf.sort_index(by='created_time',ascending=False)
     else:
         tf1 = pd.read_sql_query("select sb.* from relation_stocks rs,stock_basic sb " \
                                "where rs.relation_stock=sb.code and rs.main_stock=%(name)s", db.engine, params={'name': flag}, \
