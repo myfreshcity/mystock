@@ -18,6 +18,7 @@
     <table id="example" class="display" cellspacing="0" width="98%">
         <thead>
         <tr>
+            <th></th>
             <th>编码</th>
             <th>名称</th>
             <th>类型</th>
@@ -35,6 +36,7 @@
         <tbody>
         {% for d in stocks: %}
         <tr id="row-{{d.code|e}}">
+            <td><span class="label label-warning">{{d.tag|e}}</span></td>
             <td>{{d.code|e}}</td>
             <td>{{d.name|e}}</td>
             <td>{{d.grow_type|e}}</td>
@@ -64,10 +66,12 @@
                         <li><a href="#" onclick="javascript:delRelation('{{code|e}}','{{d.code|e}}',this);return false;">从相关股清除</a></li>
                         {% endif %}
                         <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
+                        <li><a href="#editTagModal" data-stock="{{d.code|e}}" data-tag="{{d.tag|e}}" data-toggle="modal">标注</a></li>
                         <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
                         <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
                         <li><a href='/stock/mystock/{{d.code|e}}' target="_blank">相关股票</a></li>
                         <li><a href='http://data.eastmoney.com/report/{{d.ncode|e}}.html' target="_blank">研报</a></li>
+                        <li><a href='http://stockdata.stock.hexun.com/2009_gg_{{d.code|e}}.shtml' target="_blank">高管资料</a></li>
                         <li><a href='http://data.eastmoney.com/notice/{{d.code|e}}.html' target="_blank">公告</a></li>
                         <li><a href='http://soft-f9.eastmoney.com/soft/gp30.php?code={{d.pcode|e}}' target="_blank">业务分析</a></li>
                         <li><a href="#relationModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">行业对比</a></li>
@@ -195,9 +199,10 @@ $(function(){
     "order": [],
     scrollY: 600,
     aoColumnDefs: [
-        { "sWidth": "6%", "aTargets": [ 0 ] },
-        { "sWidth": "8%", "aTargets": [ 1 ] },
-        { "sWidth": "2%", "aTargets": [ 2 ] }
+        { "sWidth": "1%", "aTargets": [ 0 ] },
+        { "sWidth": "6%", "aTargets": [ 1 ] },
+        { "sWidth": "10%", "aTargets": [ 2 ] },
+        { "sWidth": "2%", "aTargets": [ 3 ] }
         ],
     });
 });
@@ -205,6 +210,7 @@ $(function(){
 </script>
 
 {% include 'stock/partion/buy_stock.html' %}
+{% include 'stock/partion/edit_tag.html' %}
 {% include 'stock/partion/pe.html' %}
 {% include 'stock/partion/ps.html' %}
 {% include 'stock/partion/pcf.html' %}

@@ -6,8 +6,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import os
 from flask import Flask, render_template, abort, url_for, session
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask.ext.script import Manager, Shell
+from flask_sqlalchemy import SQLAlchemy
+from flask_script import Manager, Shell
 from webapp import app, db, config_app,register_blueprints
 from webapp.services import db_service as ds,data_service as dts,holder_service as hs
 
@@ -32,9 +32,9 @@ def test():
 def refresh():
     config_app(app, 'scriptfan.cfg')
     ctx = app.app_context()
-    #ctx.push()
-    #hs.refreshStockHolder()
-    dts.refreshStockData()
+    ctx.push()
+    hs.refreshStockHolder()
+    #dts.refreshStockData()
     print "hello"
 
 

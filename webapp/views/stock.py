@@ -35,6 +35,7 @@ def result_list_to_array(data):
         sdata.append(
             {'name': row['name'],
              'code': row.code,
+             'tag': row.tag,
              'grow_type': row.grow_type,
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
@@ -365,6 +366,13 @@ def saveInPrice():
     price = request.form['price']
     in_date = request.form['date']
     ds.updateStockInPrice(code,price,in_date)
+    return jsonify(msg='true')
+
+@blueprint.route('/saveTag', methods=['POST'])
+def saveTag():
+    code = request.form['code']
+    tag = request.form['tag']
+    ds.updateStockTag(code,tag)
     return jsonify(msg='true')
 
 @blueprint.route('/remove', methods=['POST'])

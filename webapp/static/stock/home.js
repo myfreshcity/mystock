@@ -136,9 +136,9 @@ function revenue(result){
         searching: false,
         columns: [
             { title: "日期" },
-            { title: "主营收入" },
-            { title: "营业利润|净利润" },
-            { title: "经营性现金流" },
+            { title: "主营收入(亿)" },
+            { title: "营业利润 | 净利润(亿)" },
+            { title: "经营性现金流(亿)" },
             { title: "营业利润(营业利润/营收)%" },
             { title: "现金含量(营业现金／营业利润)%" },
             { title: "营收增长率(%)" },

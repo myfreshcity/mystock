@@ -289,6 +289,11 @@ def updateStockInPrice(code,price,in_date):
     mystock.in_date = in_date
     return db.session.flush()
 
+def updateStockTag(code,tag):
+    mystock = db.session.query(MyStock).filter_by(code = code).first()
+    mystock.tag = tag
+    return db.session.flush()
+
 def updateStock(code,desc,grow_type):
     st = db.session.query(Stock).filter_by(code=code).first()
     st.desc = desc

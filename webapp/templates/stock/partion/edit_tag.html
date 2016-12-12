@@ -1,0 +1,78 @@
+<div class="modal fade" id="editTagModal" tabindex="-1" role="dialog" aria-labelledby="editTagModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="editTagModalLabel">设置标记</h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="tag" class="control-label">标记内容</label>
+            <input type="text" class="form-control" id="tag">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary add-tag" onclick="addTag()">添加标记</button>
+        <button type="button" class="btn btn-primary remove-tag" onclick="removeTag()">取消标记</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+     $('#editTagModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget)
+      var recipient = button.data('stock')
+
+      var modal = $(this)
+      modal.find('.modal-title').text('标注股票 ' + recipient);
+
+      modal.find('.modal-footer .add-tag').on("click",addTag);
+      modal.find('.modal-footer .remove-tag').on("click",removeTag);
+
+      var tagVal = button.data('tag');
+      if(tagVal==='')tagVal='关注';
+      modal.find('.modal-body #tag').val(tagVal);
+
+      function addTag(){
+          save({
+            code : recipient,
+            tag: $('#tag').val()
+          });
+      }
+
+      function removeTag(){
+        save({
+            code : recipient,
+            tag: ''
+          });
+      }
+
+      function save(submitData) {
+          var aj = $.ajax( {
+          url:$SCRIPT_ROOT + '/stock/saveTag',
+          data:submitData,
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(data) {
+              if(data.msg =="true" ){
+                  window.location.reload();
+              }else{
+                  console.warn("server result is:"+data.msg);
+              }
+           }
+          });
+        }
+
+
+    });
+});
+</script>

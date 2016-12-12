@@ -38,21 +38,21 @@ def refreshStockHolder(start_date='2016-06-30'):
         app.logger.info('update done. the latest report date is:' + latest_report)
 
 
-def refreshStockHolderSum(gdf):
+def refreshStockHolderSum(gdf,code):
     #gdf = getLatestStockHolder()
+
     agdf = gdf[gdf['holder_type'] != '自然人股']
-    a1gdf = agdf.groupby(['code'])
+    a1gdf = agdf.groupby(['report_date'])
 
     t1_gdf = a1gdf['rate'].agg({'size': np.size})
     t1_gdf = t1_gdf.reset_index()
     t2_gdf = a1gdf['rate'].agg({'sum': np.sum})
     t2_gdf = t2_gdf.reset_index()
-    t3_gdf = gdf.drop_duplicates(['code'])
 
-    t3_gdf = pd.merge(t3_gdf, t2_gdf, on='code')
-    t3_gdf = pd.merge(t3_gdf, t1_gdf, on='code')
-
-    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
+    t3_gdf = pd.merge(t1_gdf, t2_gdf, on='report_date')
+    t3_gdf = t3_gdf.sort_values(by='report_date', ascending=False).head(1)
+    t3_gdf['code'] = code
+    bdf = pd.read_sql_query("select * from stock_basic where code =%(code)s", db.engine, params={'code': code})
     t3_df = pd.merge(t3_gdf, bdf, on='code')
 
     m2_df = pd.DataFrame({
@@ -151,7 +151,7 @@ def updateStockHolder(code,headers):
     if not df2.empty:
         df2.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
         #更新汇总信息
-        refreshStockHolderSum(df2)
+        refreshStockHolderSum(df2,code)
 
     return df1['report_date'].max()
 
