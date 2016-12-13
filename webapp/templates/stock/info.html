@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% block nav %}
+    <li>
+        <a href='/stock/blog/{{code|e}}' target="_blank">日志</a>
+    </li>
+    <li>
+        <a href='http://quotes.money.163.com/f10/zycwzb_{{code[2:]|e}},year.html' target="_blank">财务指标</a>
+    </li>
+    <li>
+        <a href='http://stockdata.stock.hexun.com/2009_gg_{{code[2:]|e}}.shtml' target="_blank">高管资料</a>
+    </li>
+
+    <li><a href='http://data.eastmoney.com/report/{{code[2:]|e}}.html' target="_blank">研报</a></li>
+    <li>
+        {% if code[:2]=='sz' %}
+        <a href="http://disclosure.szse.cn/m/drgg_search.htm?secode={{code[2:]}}" target="_blank">公司公告</a>
+        {% else %}
+        <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}"
+           target="_blank">公司公告</a>
+        {% endif %}
+    </li>
+    <li>
+        <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code[2:]}}.shtml" target="_blank">股东人数变化</a>
+    </li>
+    <li>
+        {% if code[:2]=='sz' %}
+        <a href="http://irm.cninfo.com.cn/ssessgs/S{{code[2:]}}/index.html" target="_blank">IR活动记录</a>
+        {% else %}
+        <a href="http://sns.sseinfo.com/search.do?keyword={{code[2:]}}"
+           target="_blank">IR活动记录</a>
+        {% endif %}
+    </li>
+     <li><a href='http://stockhtm.finance.qq.com/sstock/quotpage/q/{{code[2:]}}.htm#news' target="_blank">新闻资讯(腾讯)</a></li>
+{% endblock %}
+
+{% block body %}
+<p class="container-fluid">
+    <p class="row">
+    </p>
+
+    <p class="row">
+        <table id="example" class="display" cellspacing="0" width="90%"></table>
+    </p>
+
+    <p class="row">
+        <div id="revenue_0"></div>
+        <div id="revenue_1"></div>
+        <div id="revenue_2"></div>
+        <div id="revenue_3"></div>
+        <div id="revenue_4"></div>
+    </p>
+
+</div>
+<script type="text/javascript">
+var infoPage = {
+  code : '{{ code|safe }}'
+};
+
+$(function(){
+});
+</script>
+
+{% endblock %}

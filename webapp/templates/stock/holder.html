@@ -1,4 +1,11 @@
 {% extends "layout.html" %}
+
+{% block nav %}
+<li><a href="http://quotes.money.163.com/f10/fhpg_{{ stock.code|safe }}.html#01d05" target="_blank">分红配股</a></li>
+<li><a href="http://quotes.money.163.com/f10/nbcg_{{ stock.code|safe }}.html#01d04" target="_blank">内部持股</a></li>
+<li><a href="http://stockdata.stock.hexun.com/gszl/ggml-{{ stock.code|safe }}.shtml" target="_blank">高管持股</a></li>
+{% endblock %}
+
 {% block body %}
 
 <div>

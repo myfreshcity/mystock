@@ -81,6 +81,11 @@ def home(code):
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
     return render_template('stock/home.html', title=stock.name+'-成长', mydate=date,code=code)
 
+@blueprint.route('/info/<code>', methods=['GET'])
+def info(code):
+    stock = ds.getStock(code[2:])
+    return render_template('stock/info.html', title=stock.name+'-资讯', stock=stock,code=code)
+
 @blueprint.route('/cash/<code>', methods=['GET'])
 def cash(code):
     stock = ds.getStock(code[2:])

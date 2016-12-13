@@ -38,7 +38,7 @@
         <tr id="row-{{d.code|e}}">
             <td><span class="label label-warning">{{d.tag|e}}</span></td>
             <td>{{d.code|e}}</td>
-            <td>{{d.name|e}}</td>
+            <td><a href='/stock/info/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.jlr_rate|e}}</a></td>
             <td><a href='/stock/cash/{{d.ncode|e}}' target="_blank">{{d.cash_rate|e}}</a></td>
@@ -70,13 +70,10 @@
                         <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
                         <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
                         <li><a href='/stock/mystock/{{d.code|e}}' target="_blank">相关股票</a></li>
-                        <li><a href='http://data.eastmoney.com/report/{{d.ncode|e}}.html' target="_blank">研报</a></li>
-                        <li><a href='http://stockdata.stock.hexun.com/2009_gg_{{d.code|e}}.shtml' target="_blank">高管资料</a></li>
                         <li><a href='http://data.eastmoney.com/notice/{{d.code|e}}.html' target="_blank">公告</a></li>
                         <li><a href='http://soft-f9.eastmoney.com/soft/gp30.php?code={{d.pcode|e}}' target="_blank">业务分析</a></li>
                         <li><a href="#relationModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">行业对比</a></li>
                         <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
-                        <li><a href='http://gu.qq.com/{{d.ncode|e}}' target="_blank">新闻资讯</a></li>
                     </ul>
                 </div>
             </td>
