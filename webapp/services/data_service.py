@@ -193,6 +193,15 @@ def getRelationStock(code):
     })
     return df1
 
+def get163News(code):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    url = "http://quotes.money.163.com/f10/gsxw_" + code + ".html#01e03"
+    app.logger.info('query stock(' + code + ') stock news url is:' + url)
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(feeddata, "html5lib")
+    paper_name = soup.html.body.select("#newsTabs table tbody")
+    return paper_name[0].prettify()
 
 def updateFinanceData(code):
     # 获得开始日期

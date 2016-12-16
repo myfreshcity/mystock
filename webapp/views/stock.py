@@ -84,7 +84,9 @@ def home(code):
 @blueprint.route('/info/<code>', methods=['GET'])
 def info(code):
     stock = ds.getStock(code[2:])
-    return render_template('stock/info.html', title=stock.name+'-资讯', stock=stock,code=code)
+    news_163 = dts.get163News(code[2:])
+    return render_template('stock/info.html', title=stock.name+'-资讯', stock=stock,code=code,
+                           news_163=news_163)
 
 @blueprint.route('/cash/<code>', methods=['GET'])
 def cash(code):

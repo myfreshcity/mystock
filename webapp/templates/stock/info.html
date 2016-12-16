@@ -35,28 +35,43 @@
 
 {% block body %}
 <p class="container-fluid">
-    <p class="row">
-    </p>
 
-    <p class="row">
-        <table id="example" class="display" cellspacing="0" width="90%"></table>
-    </p>
+<div class="row">
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">163新闻 <a
+                    href='http://stockhtm.finance.qq.com/sstock/quotpage/q/{{code[2:]}}.htm#news' target="_blank">更多</a>
+            </div>
+            <table class="table">{{news_163|safe}}</table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading">163新闻 <a
+                    href='http://stockhtm.finance.qq.com/sstock/quotpage/q/{{code[2:]}}.htm#news' target="_blank">更多</a>
+            </div>
+            <table class="table">{{news_163|safe}}</table>
+        </div>
+    </div>
+</div>
 
-    <p class="row">
-        <div id="revenue_0"></div>
-        <div id="revenue_1"></div>
-        <div id="revenue_2"></div>
-        <div id="revenue_3"></div>
-        <div id="revenue_4"></div>
-    </p>
 
 </div>
+<style>
+
+</style>
 <script type="text/javascript">
 var infoPage = {
   code : '{{ code|safe }}'
 };
 
 $(function(){
+
+
+
+
 });
 </script>
 
