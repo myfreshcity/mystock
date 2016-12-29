@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db
-from webapp.models import MyStock,Stock,DataItem,Comment,RelationStock
+from webapp.models import *
 import json
 
 from pandas.tseries.offsets import *
@@ -218,6 +218,10 @@ def getMyStock(code):
     stock = db.session.query(MyStock).filter_by(code = code[2:].strip()).first()
     return stock
 
+def getMyStockNews(code):
+    news = db.session.query(MyStockFavor).filter_by(code = code)
+    return news
+
 def addMystock(code):
     code = code.strip()
     if len(code) != 6:
@@ -241,6 +245,16 @@ def addMystock(code):
             return None
     else:
         return "'"+code+"'股票已存在"
+
+def addMystockFavor(code,title,url,pub_date,src_type):
+    code = code.strip()
+    myfavor = db.session.query(MyStockFavor).filter_by(url = url).first()
+    if not myfavor:
+        myfavor = MyStockFavor(code,title,url,pub_date,src_type)
+        db.session.add(myfavor)
+        return "收藏成功"
+    else:
+        return "该收藏已存在"
 
 def addRelationStock(mcode,scode):
     code = scode.strip()
@@ -272,6 +286,11 @@ def removeMystock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()
     mystock.flag = '1'
     return db.session.flush()
+
+def removeMystockFavor(fid):
+    mystock = db.session.query(MyStockFavor).get(fid)
+    return db.session.delete(mystock)
+
 
 def hardRemoveMystock(code):
     mystock = db.session.query(MyStock).filter_by(code = code).first()

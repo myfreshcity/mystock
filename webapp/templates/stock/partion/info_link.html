@@ -1,0 +1,87 @@
+<div class="modal fade" id="infoModal" tabindex="-1" role="dialog" aria-labelledby="infoModalLabel" width="98%">
+  <div class="modal-dialog modal-lg" role="document" style="width:99%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="infoModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+        <button type="button" class="btn btn-primary">收藏</button>
+        <a href="#" id="info_src" target="_blank">资讯原文</a>
+        <p class="text-danger" id="flash_msg"></p>
+      </div>
+    </div>
+  </div>
+</div>
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+
+
+  $('#infoModal').on('shown.bs.modal', function (event) {
+
+    var button = $(event.relatedTarget)
+    var url = button.data('href')
+    var title = button.data('title')
+    var dateTime = button.data('datetime')
+    var code = button.data('stock')
+    var news_src = button.data('src')
+
+    var modal = $(this)
+    modal.find('.modal-title').text(title);
+    modal.find('.modal-footer #info_src').attr('href',url);
+
+    var holder_ajax_option =  {
+      url:$SCRIPT_ROOT + '/detail/linkContent',
+      data:{
+               url : url,
+               src: news_src
+      },
+      type:'get',
+      success:function(data) {
+      modal.find('.modal-body').html(data)
+      modal.find('.modal-body').show();
+      }
+    };
+    $.ajax(holder_ajax_option);
+
+
+
+    modal.find('.modal-footer .btn-primary').on("click",function (event) {
+      var aj = $.ajax( {
+      url:$SCRIPT_ROOT + '/detail/addFavoriate',
+      data:{
+               code : code,
+               title: title,
+               url: url,
+               dateTime: dateTime,
+               src:news_src
+      },
+      type:'post',
+      cache:false,
+      dataType:'json',
+      success:function(data) {
+      modal.find('.modal-footer #flash_msg').text(data.msg);
+       }
+      });
+
+    });
+
+
+    });
+
+  // 隐藏后消失
+  $('#infoModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find('.modal-body').hide();
+    modal.find('.modal-footer #flash_msg').text('');
+  });
+
+});
+</script>

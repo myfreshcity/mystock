@@ -1,4 +1,5 @@
 from .mystock import MyStock
+from .mystock_favor import MyStockFavor
 from .stock import Stock
 from .comment import Comment
 from .data_item import DataItem

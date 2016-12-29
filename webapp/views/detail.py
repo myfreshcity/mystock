@@ -245,7 +245,6 @@ def holderTrackJson():
 @blueprint.route('/relationJson', methods=['GET'])
 def relationJson():
     code = request.args.get('code')
-
     tableData = []
     try:
         df = dts.getRelationStock(code)
@@ -295,3 +294,44 @@ def cashRateJson():
         actualRateArray.append([report_type,jlr_grow_rate])
 
     return jsonify(data={'cashRate':actualRateArray,'cash': actualArray})
+
+@blueprint.route('/163News', methods=['GET'])
+def get163News():
+    code = request.args.get('code')[2:]
+    index = request.args.get('index')
+    tableData = dts.get163News(code,index)
+    return jsonify(data={'tableData':tableData})
+
+@blueprint.route('/QQNews', methods=['GET'])
+def getQQNews():
+    code = request.args.get('code')
+    index = request.args.get('index')
+    tableData = dts.getQQNews(code,index)
+    return jsonify(data={'tableData':tableData})
+
+@blueprint.route('/linkContent', methods=['GET'])
+def getLinkContent():
+    url = request.args.get('url')
+    src = request.args.get('src')
+    content = dts.getLinkContent(url,src)
+    return content
+
+@blueprint.route('/addFavoriate', methods=['GET', 'POST'])
+def addFavoriate():
+    code = request.form['code']
+    title = request.form['title']
+    url = request.form['url']
+    dateTime = request.form['dateTime']
+    src = request.form['src']
+
+    app.logger.debug('url:' + url)
+    msg = ds.addMystockFavor(code,title,url,dateTime,src)
+
+    return jsonify(msg=msg)
+
+@blueprint.route('/removeFavoriate', methods=['GET', 'POST'])
+def removeFavoriate():
+    id = request.form['id']
+    ds.removeMystockFavor(id)
+
+    return jsonify(msg="true")

@@ -11,6 +11,7 @@ from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 from pandas.tseries.offsets import *
 from datetime import datetime
+from urllib2 import unquote
 import urllib2,re,html5lib
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
@@ -193,15 +194,57 @@ def getRelationStock(code):
     })
     return df1
 
-def get163News(code):
+def getLinkContent(url,src):
+    url = unquote(url)
     headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
-    url = "http://quotes.money.163.com/f10/gsxw_" + code + ".html#01e03"
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(feeddata, "html5lib")
+    [s.extract() for s in soup(['script', 'iframe'])]  # 去除一些不必要的标签
+
+    if src == 'qq':
+        paper_name = soup.html.body.find(id="Cnt-Main-Article-QQ")
+        return paper_name.prettify()
+    elif src == '163':
+        paper_name = soup.html.body.find(id="endText").find_all("p")
+        s = ''
+        for e in paper_name:
+            s = s + e.prettify()
+        return s
+    else:
+        return ''
+
+def get163News(code,index):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    url = "http://quotes.money.163.com/f10/gsxw_" + code +","+index+ ".html#01e03"
     app.logger.info('query stock(' + code + ') stock news url is:' + url)
     req = urllib2.Request(url=url, headers=headers)
     feeddata = urllib2.urlopen(req).read()
     soup = BeautifulSoup(feeddata, "html5lib")
-    paper_name = soup.html.body.select("#newsTabs table tbody")
-    return paper_name[0].prettify()
+    paper_name = soup.html.body.find(id="newsTabs").table.tbody.find_all('tr')
+    tableData = []
+    for e in paper_name:
+        t = e.find_all('td')
+        tableData.append([
+            code,
+            t[0].a.string,
+            t[0].a['href'],
+            t[1].string
+        ])
+    return tableData
+
+
+def getQQNews(code,index):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    url = "http://news2.gtimg.cn/lishinews.php?name=finance_news&symbol="+code+"&page="+index
+    app.logger.info('query stock(' + code + ') qq news url is:' + url)
+
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    feeddata = re.sub('var finance_news=', "", feeddata)
+    fd = json.loads(feeddata)
+    return fd['data']
+
 
 def updateFinanceData(code):
     # 获得开始日期

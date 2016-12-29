@@ -42,7 +42,7 @@
                 });
                 console.debug('start');
               });
-              $(document).ajaxSuccess(function(){
+              $(document).ajaxStop(function(){
                 $.unblockUI();
                 console.debug('end');
               });

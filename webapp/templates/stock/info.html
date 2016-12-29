@@ -34,45 +34,106 @@
 {% endblock %}
 
 {% block body %}
-<p class="container-fluid">
-
-<div class="row">
-    <div class="col-md-6">
+<div class="container-fluid">
+    <div class="row">
         <div class="panel panel-default">
             <!-- Default panel contents -->
-            <div class="panel-heading">163新闻 <a
-                    href='http://stockhtm.finance.qq.com/sstock/quotpage/q/{{code[2:]}}.htm#news' target="_blank">更多</a>
-            </div>
-            <table class="table">{{news_163|safe}}</table>
+            <div class="panel-heading">收藏的资讯</div>
+            <table id="mynews_table" class="display" cellspacing="0" width="90%">
+                <thead>
+                <tr>
+                    <th>操作</th>
+                    <th>标题</th>
+                    <th>日期</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for d in news: %}
+                <tr id="row-{{d.code|e}}">
+                    <td><a href="#" onclick="javascript:removeFav('{{d.id|e}}',this);return false;">删除</a></td>
+                    <td><a data-href='{{d.url|e}}' data-stock='{{d.code|e}}' data-toggle='modal' data-title='{{d.title|e}}' data-datetime='{{d.pub_date|e}}' data-src='{{d.src_type|e}}' href='#infoModal'>{{d.title|e}}</a></td>
+                    <td>{{d.pub_date|e}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="panel panel-default">
+
+    <div class="row">
+        <div class="panel panel-default" id="163_news">
             <!-- Default panel contents -->
-            <div class="panel-heading">163新闻 <a
-                    href='http://stockhtm.finance.qq.com/sstock/quotpage/q/{{code[2:]}}.htm#news' target="_blank">更多</a>
+            <div class="panel-heading">163新闻</div>
+            <table id="163_table" class="display" cellspacing="0" width="90%"></table>
+            <nav>
+                <ul class="pager">
+                    <li class="previous disabled"><a href="#">&larr; 向前</a></li>
+                    <li class="next"><a href="#">向后 &rarr;</a></li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
+        <div class="panel panel-default" id="qq_news">
+            <!-- Default panel contents -->
+            <div class="panel-heading">腾讯新闻
             </div>
-            <table class="table">{{news_163|safe}}</table>
+            <table id="qq_table" class="display" cellspacing="0" width="90%"></table>
+            <nav>
+                <ul class="pager">
+                    <li class="previous disabled"><a href="#">&larr; 向前</a></li>
+                    <li class="next"><a href="#">向后 &rarr;</a></li>
+                </ul>
+            </nav>
         </div>
     </div>
 </div>
 
+{% include 'stock/partion/info_link.html' %}
 
-</div>
-<style>
-
-</style>
 <script type="text/javascript">
 var infoPage = {
   code : '{{ code|safe }}'
 };
 
+
+// 去掉收藏
+function removeFav(id,el) {
+    var r=confirm("确认删除收藏记录吗？")
+    if (r==true){
+        var aj = $.ajax( {
+        url:$SCRIPT_ROOT + '/detail/removeFavoriate',
+        data:{
+                 id : id
+        },
+        type:'post',
+        cache:false,
+        dataType:'json',
+        success:function(data) {
+            if(data.msg =="true" ){
+            list_table.row($(el).parents('tr')).remove().draw(false);
+            }else{
+                console.warn("server result is:"+data.msg);
+            }
+         }
+        });
+    }
+
+  };
+
+//加载完毕自动执行
 $(function(){
-
-
-
-
+ list_table = $('#mynews_table').DataTable({
+    "order": [[ 2, "desc" ]],
+    searching: false,
+    aoColumnDefs: [
+        { "sWidth": "1%", "aTargets": [ 0 ] },
+        { "sWidth": "10%", "aTargets": [ 2 ] }
+        ],
+    });
 });
 </script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/info_163.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/info_qq.js') }}"></script>
 
 {% endblock %}
