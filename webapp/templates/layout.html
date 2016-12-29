@@ -26,7 +26,7 @@
             $(document).ajaxStart(function(){
                 $.blockUI({
                     message: '加载中...',
-                    baseZ: 1000,
+                    baseZ: 20000,
                     css: {
                         border: '1px solid #ddd',
                         padding: '7px',
@@ -40,11 +40,11 @@
                         cursor: 'wait'
                     }
                 });
-                console.debug('start');
+                // console.debug('start');
               });
               $(document).ajaxStop(function(){
                 $.unblockUI();
-                console.debug('end');
+                // console.debug('end');
               });
         });
     </script>

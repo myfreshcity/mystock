@@ -6,17 +6,27 @@
         <h4 class="modal-title" id="infoModalLabel"></h4>
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
-      <div class="modal-body">
+      <div class="modal-body modal-abc">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
         <button type="button" class="btn btn-primary">收藏</button>
-        <a href="#" id="info_src" target="_blank">资讯原文</a>
+        <a href="#" id="info_src" target="_blank">查看原文</a>
         <p class="text-danger" id="flash_msg"></p>
       </div>
     </div>
   </div>
 </div>
+
+<style>
+  .modal-abc {
+    height: 400px;
+    margin-top: 10px;
+    overflow: auto;
+}
+</style>
+
+
 <script type=text/javascript>
 
 
@@ -67,6 +77,7 @@ $(function(){
       cache:false,
       dataType:'json',
       success:function(data) {
+      infoPage.list_table.ajax.reload();
       modal.find('.modal-footer #flash_msg').text(data.msg);
        }
       });
@@ -79,7 +90,7 @@ $(function(){
   // 隐藏后消失
   $('#infoModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
-    modal.find('.modal-body').hide();
+    modal.find('.modal-body').empty();
     modal.find('.modal-footer #flash_msg').text('');
   });
 

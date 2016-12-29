@@ -333,5 +333,18 @@ def addFavoriate():
 def removeFavoriate():
     id = request.form['id']
     ds.removeMystockFavor(id)
-
     return jsonify(msg="true")
+
+@blueprint.route('/favorList/<code>', methods=['GET'])
+def favorList(code):
+    mynews = ds.getMyStockNews(code[2:])
+    sdata = []
+    for ne in mynews:
+        sdata.append({
+            'id': ne.id,
+            'url': ne.url,
+            'title': ne.title,
+            'pub_date': ne.pub_date.strftime('%Y-%m-%d'),
+            'src_type': ne.src_type
+        })
+    return jsonify(sdata)

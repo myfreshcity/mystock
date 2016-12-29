@@ -39,54 +39,40 @@
         <div class="panel panel-default">
             <!-- Default panel contents -->
             <div class="panel-heading">收藏的资讯</div>
-            <table id="mynews_table" class="display" cellspacing="0" width="90%">
-                <thead>
-                <tr>
-                    <th>操作</th>
-                    <th>标题</th>
-                    <th>日期</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for d in news: %}
-                <tr id="row-{{d.code|e}}">
-                    <td><a href="#" onclick="javascript:removeFav('{{d.id|e}}',this);return false;">删除</a></td>
-                    <td><a data-href='{{d.url|e}}' data-stock='{{d.code|e}}' data-toggle='modal' data-title='{{d.title|e}}' data-datetime='{{d.pub_date|e}}' data-src='{{d.src_type|e}}' href='#infoModal'>{{d.title|e}}</a></td>
-                    <td>{{d.pub_date|e}}</td>
-                </tr>
-                {% endfor %}
-                </tbody>
-            </table>
+            <table id="mynews_table" class="display" cellspacing="0" width="90%"></table>
         </div>
     </div>
 
     <div class="row">
-        <div class="panel panel-default" id="163_news">
-            <!-- Default panel contents -->
-            <div class="panel-heading">163新闻</div>
-            <table id="163_table" class="display" cellspacing="0" width="90%"></table>
-            <nav>
-                <ul class="pager">
-                    <li class="previous disabled"><a href="#">&larr; 向前</a></li>
-                    <li class="next"><a href="#">向后 &rarr;</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-    <div class="row">
-        <div class="panel panel-default" id="qq_news">
-            <!-- Default panel contents -->
-            <div class="panel-heading">腾讯新闻
+        <!-- Nav tabs -->
+        <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation"><a href="#163_news" role="tab" data-toggle="tab">163新闻</a></li>
+            <li role="presentation"><a href="#qq_news" role="tab" data-toggle="tab">腾讯新闻</a></li>
+        </ul>
+
+        <!-- Tab panes -->
+        <div class="tab-content">
+            <div role="tabpanel" class="tab-pane" id="163_news">
+                <table id="163_table" class="display" cellspacing="0" width="90%"></table>
+                <nav>
+                    <ul class="pager">
+                        <li class="previous disabled"><a href="#">&larr; 向前</a></li>
+                        <li class="next"><a href="#">向后 &rarr;</a></li>
+                    </ul>
+                </nav>
             </div>
-            <table id="qq_table" class="display" cellspacing="0" width="90%"></table>
-            <nav>
-                <ul class="pager">
-                    <li class="previous disabled"><a href="#">&larr; 向前</a></li>
-                    <li class="next"><a href="#">向后 &rarr;</a></li>
-                </ul>
-            </nav>
+            <div role="tabpanel" class="tab-pane" id="qq_news">
+                <table id="qq_table" class="display" cellspacing="0" width="90%"></table>
+                <nav>
+                    <ul class="pager">
+                        <li class="previous disabled"><a href="#">&larr; 向前</a></li>
+                        <li class="next"><a href="#">向后 &rarr;</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
+
 </div>
 
 {% include 'stock/partion/info_link.html' %}
@@ -111,7 +97,7 @@ function removeFav(id,el) {
         dataType:'json',
         success:function(data) {
             if(data.msg =="true" ){
-            list_table.row($(el).parents('tr')).remove().draw(false);
+            infoPage.list_table.row($(el).parents('tr')).remove().draw(false);
             }else{
                 console.warn("server result is:"+data.msg);
             }
@@ -123,13 +109,52 @@ function removeFav(id,el) {
 
 //加载完毕自动执行
 $(function(){
- list_table = $('#mynews_table').DataTable({
-    "order": [[ 2, "desc" ]],
+    $('#myTab a:first').tab('show');
+
+ infoPage.list_table = $('#mynews_table').DataTable({
+    "order": false,
     searching: false,
-    aoColumnDefs: [
-        { "sWidth": "1%", "aTargets": [ 0 ] },
-        { "sWidth": "10%", "aTargets": [ 2 ] }
+    paging: false,
+    "ajax": {
+          url:$SCRIPT_ROOT + '/detail/favorList/{{ code|safe }}',
+          type:'get',
+          cache:false,
+          dataType:'json',
+          data:function(data) { // add request parameters before submit
+                $.each(infoPage.ajaxParams, function(key, value) {
+                    data[key] = value;
+                });
+          },
+          "dataSrc": function(res) {
+            return res;
+          }
+        },
+    columns: [
+            { title: "标题",data:"title" },
+            { title: "链接",data:"url" },
+            { title: "日期",data:"pub_date"},
+            { title: "操作",data:"id"}
         ],
+     columnDefs: [
+              {
+                  "targets": [0],
+                  "render": function(data, type, full) {
+                      return "<a data-href='"+full.url+"' data-stock='"+full.code+"' data-toggle='modal' data-title='"
+                        +full.title+"' data-datetime='"+full.pub_date+"' data-src='"+full.src_type+"' href='#infoModal'>"
+                        +full.title+"</a>&nbsp;"
+                   }
+              },
+              {
+                  "targets": [1],
+                  "visible": false
+              },
+              {
+                  "targets": [3],
+                  "render": function(data, type, full) {
+                      return "<a href='#' onclick='javascript:removeFav(" + data + ",this);return false;'>"+'删除'+"</a>&nbsp;"
+                  }
+              }
+        ]
     });
 });
 </script>

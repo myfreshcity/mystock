@@ -17,7 +17,7 @@ var _163_ajax_option =  {
     _163_table = $('#163_table').DataTable( {
         paging: false,
         data: result.data.tableData,
-        "order": [[ 2, "desc" ]],
+        ordering: false,
         searching: false,
         columns: [
             {},{},
@@ -58,8 +58,8 @@ $('#163_news').find('.next').on('click', function (event) {
     $.ajax(_163_ajax_option);
   });
 
-$(function(){
-    $.ajax(_163_ajax_option);
+$('a[href="#163_news"]').on('show.bs.tab', function (e) {
+  $.ajax(_163_ajax_option);
 });
 
 

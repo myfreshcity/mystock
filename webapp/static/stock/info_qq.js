@@ -58,8 +58,8 @@ $('#qq_news').find('.next').on('click', function (event) {
   });
 
 
-$(function(){
-    $.ajax(_qq_ajax_option);
+$('a[href="#qq_news"]').on('show.bs.tab', function (e) {
+  $.ajax(_qq_ajax_option);
 });
 
 
