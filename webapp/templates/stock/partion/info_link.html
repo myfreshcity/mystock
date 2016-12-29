@@ -77,7 +77,10 @@ $(function(){
       cache:false,
       dataType:'json',
       success:function(data) {
+      if(data.msg==='收藏成功'){
       infoPage.list_table.ajax.reload();
+      }
+
       modal.find('.modal-footer #flash_msg').text(data.msg);
        }
       });
@@ -92,6 +95,7 @@ $(function(){
     var modal = $(this)
     modal.find('.modal-body').empty();
     modal.find('.modal-footer #flash_msg').text('');
+    modal.find('.modal-footer .btn-primary').unbind("click");
   });
 
 });
