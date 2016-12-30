@@ -211,6 +211,12 @@ def getLinkContent(url,src):
         for e in paper_name:
             s = s + e.prettify()
         return s
+    elif src == 'sina':
+        paper_name = soup.html.body.find(id="artibody").find_all("p")
+        s = ''
+        for e in paper_name:
+            s = s + e.prettify()
+        return s
     else:
         return ''
 
@@ -244,6 +250,26 @@ def getQQNews(code,index):
     feeddata = re.sub('var finance_news=', "", feeddata)
     fd = json.loads(feeddata)
     return fd['data']
+
+def getSinaNews(code,index):
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    url = "http://vip.stock.finance.sina.com.cn/corp/view/vCB_AllNewsStock.php?symbol="+code+"&Page=" + index
+    app.logger.info('query stock(' + code + ') stock news url is:' + url)
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = urllib2.urlopen(req).read()
+    soup = BeautifulSoup(feeddata, "html5lib")
+    paper_name = soup.html.body.select('div .datelist')[0].ul.find_all('a')
+    tableData = []
+    for e in paper_name:
+        b = e.previous_sibling
+        a = re.search(r'\d{4}(\-)\d{1,2}(\-)\d{1,2}', b)
+        tableData.append({
+            'symbol':code,
+            'title':e.string,
+            'url':e['href'],
+            'datetime':a.group()
+        })
+    return tableData
 
 
 def updateFinanceData(code):

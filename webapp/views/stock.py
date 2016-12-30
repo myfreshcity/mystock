@@ -35,7 +35,7 @@ def result_list_to_array(data):
         sdata.append(
             {'name': row['name'],
              'code': row.code,
-             'tag': row.tag,
+             'tag': row.tag if hasattr(row, 'tag') else '',
              'grow_type': row.grow_type,
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),

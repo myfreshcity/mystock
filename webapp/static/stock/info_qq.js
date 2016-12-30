@@ -11,6 +11,7 @@
     cache:false,
     dataType:'json',
     success:function(result) {
+    infoPage.qqLoad=true;
     if(_qq_table)_qq_table.destroy();
 
     _qq_table = $('#qq_table').DataTable( {
@@ -59,7 +60,9 @@ $('#qq_news').find('.next').on('click', function (event) {
 
 
 $('a[href="#qq_news"]').on('show.bs.tab', function (e) {
+  if(infoPage.qqLoad==false){
   $.ajax(_qq_ajax_option);
+  }
 });
 
 

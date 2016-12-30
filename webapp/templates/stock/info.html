@@ -46,6 +46,7 @@
     <div class="row">
         <!-- Nav tabs -->
         <ul class="nav nav-tabs" role="tablist" id="myTab">
+            <li role="presentation"><a href="#sina_news" role="tab" data-toggle="tab">新浪新闻</a></li>
             <li role="presentation"><a href="#163_news" role="tab" data-toggle="tab">163新闻</a></li>
             <li role="presentation"><a href="#qq_news" role="tab" data-toggle="tab">腾讯新闻</a></li>
         </ul>
@@ -70,6 +71,15 @@
                     </ul>
                 </nav>
             </div>
+            <div role="tabpanel" class="tab-pane" id="sina_news">
+                <table id="sina_table" class="display" cellspacing="0" width="90%"></table>
+                <nav>
+                    <ul class="pager">
+                        <li class="previous disabled"><a href="#">&larr; 向前</a></li>
+                        <li class="next"><a href="#">向后 &rarr;</a></li>
+                    </ul>
+                </nav>
+            </div>
         </div>
     </div>
 
@@ -79,7 +89,10 @@
 
 <script type="text/javascript">
 var infoPage = {
-  code : '{{ code|safe }}'
+  code: '{{ code|safe }}',
+  yeahLoad: false, // 网易
+  qqLoad: false,
+  sinaLoad: false
 };
 
 
@@ -160,5 +173,6 @@ $(function(){
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/info_163.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/info_qq.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/info_sina.js') }}"></script>
 
 {% endblock %}

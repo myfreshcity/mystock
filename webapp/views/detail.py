@@ -309,6 +309,14 @@ def getQQNews():
     tableData = dts.getQQNews(code,index)
     return jsonify(data={'tableData':tableData})
 
+@blueprint.route('/sinaNews', methods=['GET'])
+def getSinaNews():
+    code = request.args.get('code')
+    index = request.args.get('index')
+    tableData = dts.getSinaNews(code,index)
+    return jsonify(data={'tableData':tableData})
+
+
 @blueprint.route('/linkContent', methods=['GET'])
 def getLinkContent():
     url = request.args.get('url')

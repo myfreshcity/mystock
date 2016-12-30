@@ -12,6 +12,7 @@ var _163_ajax_option =  {
     cache:false,
     dataType:'json',
     success:function(result) {
+    infoPage.yeahLoad=true;
     if(_163_table)_163_table.destroy();
 
     _163_table = $('#163_table').DataTable( {
@@ -59,7 +60,9 @@ $('#163_news').find('.next').on('click', function (event) {
   });
 
 $('a[href="#163_news"]').on('show.bs.tab', function (e) {
+if(infoPage.yeahLoad==false){
   $.ajax(_163_ajax_option);
+  }
 });
 
 

@@ -10,6 +10,7 @@ import json
 
 from pandas.tseries.offsets import *
 from datetime import datetime
+from sqlalchemy import desc
 import urllib2,re
 
 from pymongo import MongoClient
@@ -219,7 +220,7 @@ def getMyStock(code):
     return stock
 
 def getMyStockNews(code):
-    news = db.session.query(MyStockFavor).filter_by(code = code)
+    news = db.session.query(MyStockFavor).filter_by(code = code).order_by(desc(MyStockFavor.pub_date))
     return news
 
 def addMystock(code):
