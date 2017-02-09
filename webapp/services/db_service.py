@@ -184,6 +184,7 @@ def getStockValuationN(code,peroid):
         'jyjxjl': tdf['trade_date'].apply(getRevence, args=('jyjxjl',)),
         'jyjxjl_ttm': tdf['trade_date'].apply(getRevence, args=('jyjxjl_ttm',)),
         'gdqy':tdf['trade_date'].apply(getRevence, args=('gdqy',)),
+        'roe': tdf['trade_date'].apply(getRevence, args=('roe',)),
         'code': code
     })
     df = df.fillna(method='bfill')

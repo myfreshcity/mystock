@@ -191,6 +191,79 @@ def psJson():
         )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
+@blueprint.route('/pbJson', methods=['GET'])
+def pbJson():
+    code = request.args.get('code')
+    period = 5 #最近5年
+
+    valuationArray = []
+    valuationDf = ds.getStockValuationN(code,period)
+    for index, row in valuationDf.iterrows():
+        tcp = row['t_cap']
+        spe = 0 if row['gdqy']== 0 else round(tcp/row['gdqy'],2)
+        tdate = row['trade_date'].strftime('%Y-%m-%d')
+        valuationArray.append([tdate,spe])
+
+    actualArray = []
+    actualRateArray = []
+    tableData = []
+
+    valueDf = ds.get_quarter_stock_revenue(code)
+    for index, row in valueDf.iterrows():
+        jlr_grow_rate = round(row['zyysr_grow_rate'] * 100, 2)
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+        actualArray.append([report_type, row['zyysr']])
+        actualRateArray.append([report_type,jlr_grow_rate])
+
+        tableData.append(
+            [report_type,
+             format(row['zyysr'], ','),
+             format(row['jlr'], ','),
+             format(row['jyjxjl'], ','),
+             round(row['zyysr_grow_rate']*100,2),
+             round(row['jlr_grow_rate'] * 100, 2),
+             round(row['jyjxjl_grow_rate'] * 100, 2)
+             ]
+        )
+    return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
+
+@blueprint.route('/roeJson', methods=['GET'])
+def roeJson():
+    code = request.args.get('code')
+    period = 5 #最近5年
+
+    valuationArray = []
+    valuationDf = ds.getStockValuationN(code,period)
+    for index, row in valuationDf.iterrows():
+        tcp = row['t_cap']
+        spe = 0 if row['roe']== 0 else round(row['jlr_ttm']*100.0/row['gdqy'],2)
+        tdate = row['trade_date'].strftime('%Y-%m-%d')
+        valuationArray.append([tdate,spe])
+
+    actualArray = []
+    actualRateArray = []
+    tableData = []
+
+    valueDf = ds.get_quarter_stock_revenue(code)
+    for index, row in valueDf.iterrows():
+        jlr_grow_rate = round(row['zyysr_grow_rate'] * 100, 2)
+        report_type = row['report_type'].strftime('%Y-%m-%d')
+        actualArray.append([report_type, row['zyysr']])
+        actualRateArray.append([report_type,jlr_grow_rate])
+
+        tableData.append(
+            [report_type,
+             format(row['zyysr'], ','),
+             format(row['jlr'], ','),
+             format(row['jyjxjl'], ','),
+             round(row['zyysr_grow_rate']*100,2),
+             round(row['jlr_grow_rate'] * 100, 2),
+             round(row['jyjxjl_grow_rate'] * 100, 2)
+             ]
+        )
+    return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
+
+
 @blueprint.route('/holderJson', methods=['GET'])
 def holderJson():
     code = request.args.get('code')

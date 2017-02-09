@@ -23,12 +23,12 @@
             <th>名称</th>
             <th>类型</th>
             <th>增长率(%)</th>
-            <th width="40"><a href="#" data-toggle="tooltip" title="可支配现金比营收TTM">可用现金率</a></th>
-            <th width="40"><a href="#" data-toggle="tooltip" title="负债比总资产">负债率</a></th>
+            <th width="40"><a href="#" data-toggle="tooltip" title="经营现金比净利润">现金利润比(%PCF/PE)</a></th>
+            <th width="40"><a href="#" data-toggle="tooltip" title="净资产收益率">ROE(PE/PB)</a></th>
+            <th>市现率(PCF)</th>
+            <th>市盈率(PE)</th>
+            <th>市净率(PB)</th>
             <th width="40">机构持股</th>
-            <th>市盈率</th>
-            <th>市销率</th>
-            <th>市现率</th>
             <th>市值(亿)</th>
             <th></th>
         </tr>
@@ -42,11 +42,11 @@
             <td>{{d.grow_type|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.jlr_rate|e}}</a></td>
             <td><a href='/stock/cash/{{d.ncode|e}}' target="_blank">{{d.cash_rate|e}}</a></td>
-            <td><a href='/stock/debet/{{d.code|e}}' target="_blank">{{d.dar|e}}</a></td>
-            <td><a href='/stock/holder/{{d.code|e}}' target="_blank">{{d.sh_rate|e}}</a></td>
-            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
-            <td><a href="#psModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.ps|e}}</a></td>
+            <td><a href="#roeModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.roe|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
+            <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
+            <td><a href="#pbModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pb|e}}</a></td>
+            <td><a href='/stock/holder/{{d.code|e}}' target="_blank">{{d.sh_rate|e}}</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td>
                 <div class="btn-group pull-right">
@@ -209,8 +209,9 @@ $(function(){
 {% include 'stock/partion/buy_stock.html' %}
 {% include 'stock/partion/edit_tag.html' %}
 {% include 'stock/partion/pe.html' %}
-{% include 'stock/partion/ps.html' %}
+{% include 'stock/partion/pb.html' %}
 {% include 'stock/partion/pcf.html' %}
+{% include 'stock/partion/roe.html' %}
 {% include 'stock/partion/debet.html' %}
 {% include 'stock/partion/grow.html' %}
 {% include 'stock/partion/relation.html' %}

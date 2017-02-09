@@ -143,7 +143,6 @@ function revenue(result){
             }
         },
         {
-        labels: {format: '{value} %'},
         opposite: true
         }
         ],
@@ -161,15 +160,15 @@ function revenue(result){
         searching: false,
         columns: [
             { title: "日期" },
-            { title: "期末现金余额" },
-            { title: "主营收入" },
-            { title: "现金净增加额" },
-            { title: "经营性现金净增加额" },
+            { title: "期末现金余额(亿)" },
+            { title: "主营收入(亿)" },
+            { title: "现金净增加额(亿)" },
+            { title: "经营性现金净增加额(亿)" },
             { title: "经营性现金／现金增加额(%)" },
             { title: "经营性现金／营收(%)" },
             { title: "经营性现金／利润(%)" },
             { title: "经营性现金增长率(%)" },
-            { title: "经营性现金／利润TTM(%)" }
+            { title: "经营性现金／利润TTM" }
         ],
         columnDefs: [
                   {

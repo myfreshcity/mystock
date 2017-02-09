@@ -15,8 +15,8 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary add-tag" onclick="addTag()">添加标记</button>
-        <button type="button" class="btn btn-primary remove-tag" onclick="removeTag()">取消标记</button>
+        <button type="button" class="btn btn-primary add-tag">更新标记</button>
+        <button type="button" class="btn btn-primary remove-tag">取消标记</button>
         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
       </div>
     </div>
@@ -64,6 +64,7 @@ $(function(){
           dataType:'json',
           success:function(data) {
               if(data.msg =="true" ){
+                  // list_table.row(button.parents('tr')).data(data.stock);
                   window.location.reload();
               }else{
                   console.warn("server result is:"+data.msg);

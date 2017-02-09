@@ -49,7 +49,7 @@ def result_list_to_array(data):
              'dar': round(row.zfz * 100.0 / (row.zzc), 2),
              'jlr_rate': round(row['jlr_rate'] * 100.0, 2),
              'sh_rate': row['count'],
-             'cash_rate': round((row['xjye']) * 100.0 / row.zyysr_ttm, 2),  # 企业可支配现金，包含现金借款
+             'cash_rate': round(row.jyjxjl_ttm * 1.0 / row.jlr_ttm, 2),  # 现金净利润比
              'trade_date': row.trade_date,
              'report_type': row.report_type
              }
@@ -276,7 +276,7 @@ def cashJson():
         cash_live_rate.append([report_type,s_cash_live_rate])
         cash_produce_rate.append([report_type, s_cash_produce_rate])
         cash_jlr_rate.append([report_type,
-                              round(row['jyjxjl_ttm'] * 100 / row['jlr_ttm'], 2)])
+                              round(row['jyjxjl_ttm'] * 1.0 / row['jlr_ttm'], 2)])
 
         # 只取前10*4条数据图形显示
         if i <= 40:
@@ -306,7 +306,7 @@ def cashJson():
              round(row_jyjxjl * 100/row_zyysr, 2),
              round(row_jyjxjl * 100/row_jlr, 2),
              s_jyjxjl_rate,
-             round(row['jyjxjl_ttm'] * 100 / row['jlr_ttm'], 2)
+             round(row['jyjxjl_ttm'] * 1.0 / row['jlr_ttm'], 2)
              ]
         )
 
@@ -380,7 +380,8 @@ def saveTag():
     code = request.form['code']
     tag = request.form['tag']
     ds.updateStockTag(code,tag)
-    return jsonify(msg='true')
+    data = dts.getMyStocks(code,True)
+    return jsonify(msg='true',stock=result_list_to_array(data))
 
 @blueprint.route('/remove', methods=['POST'])
 def remove():
