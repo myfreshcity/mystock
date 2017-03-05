@@ -7,7 +7,7 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
-from webapp.services import db_service as ds,data_service as dts,holder_service as  hs
+from webapp.services import getHeaders, db_service as ds,data_service as dts,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.models import MyStock
 from webapp import functions as fn
 from flask import current_app as app
@@ -323,8 +323,13 @@ def add():
     if msg:
         return jsonify(msg=msg)
     else:
-        dts.updateFinanceData(code)  # 更新财务数据
-        dts.updateTradeData(code)  # 更新交易数据
+        ns.updateFinanceData(code)  # 更新财务数据
+        ns.updateTradeData(code)  # 更新交易数据
+        headers = getHeaders("http://xueqiu.com")
+        xues.updateAssetWebData(code, headers)
+        xues.updateIncomeWebData(code, headers)
+        xues.updateCashWebData(code, headers)
+
         dts.global_bdf, dts.global_tdf, dts.global_fdf = (None, None, None)
     return jsonify(msg='true')
 

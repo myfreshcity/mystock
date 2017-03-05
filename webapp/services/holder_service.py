@@ -6,7 +6,7 @@ from flask import g
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db,db_service as dbs
+from webapp.services import db,getHeaders,db_service as dbs
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 import http.cookiejar
@@ -99,17 +99,6 @@ def getStockHolderRank():
     bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
     t7_df = pd.merge(t6_df, bdf, on='code')
     return t7_df
-
-def getHeaders(url):
-    CookieJar = http.cookiejar.CookieJar()
-    CookieProcessor = urllib2.HTTPCookieProcessor(CookieJar)
-    opener = urllib2.build_opener(CookieProcessor)
-    urllib2.install_opener(opener)
-
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; WOW64; rv:38.0) Gecko/20100101 Firefox/38.0'}
-    request = urllib2.Request(url, headers=headers)
-    httpf = opener.open(request)
-    return headers
 
 
 def updateStockHolder(code,headers):

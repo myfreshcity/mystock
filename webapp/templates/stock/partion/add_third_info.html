@@ -67,8 +67,15 @@ $(function(){
            }
           });
         }
+    });
 
+    $('#thirdInfoModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this);
+    modal.find('#title').val('');
+    modal.find('#link_address').val('');
+    modal.find('#send_date').val('');
 
     });
+
 });
 </script>

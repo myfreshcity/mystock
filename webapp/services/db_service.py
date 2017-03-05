@@ -60,18 +60,6 @@ def getPerStockPriceV2():
     df = tdf.groupby([tdf['code']]).first()
     return df
 
-#获取每股收益,每股净资产,每股经营现金流
-def getPerStockRevenue():
-    df = pd.read_sql_query("select code,report_type,mgsy_ttm,mgjzc,mgjyxjl_ttm from stock_finance_basic", db.engine)
-    i = df['report_type'].map(lambda x: pd.to_datetime(x))
-    df = df.set_index(i)
-    df = df.sort_index(ascending=False)
-
-    df = df.groupby([df['code']]).first()
-    df = df.reset_index()
-    return df.set_index(df['code'])
-
-
 #获取每季度现金变化情况
 def get_cash_rate(code):
     valueDf = get_revenue_df(code)
@@ -113,10 +101,26 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
             if v2.empty:
                 return None
             else:
-                return (float(v1) - float(v2)) / abs(float(v2))
+                try:
+                    return (float(v1) - float(v2)) / abs(float(v2))
+                except Exception, ex:
+                    app.logger.error(ex)
+                    return 0
 
-    df = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
-                           db.engine, params={'name': code})
+    df1 = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
+                           db.engine, params={'name': code},index_col=['report_type'])
+
+    df2 = pd.read_sql_query("select report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
+                            from xueqiu_finance_cash where code=%(name)s order by report_type",
+                            db.engine, params={'name': code}, index_col=['report_type'])
+
+    df3 = pd.read_sql_query("select report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
+                            from xueqiu_finance_asset where code=%(name)s order by report_type",
+                            db.engine, params={'name': code}, index_col=['report_type'])
+
+    df = pd.concat([df1,df2,df3],join='inner',axis=1)
+    df = df.reset_index()
+
     if pType == 0:
         zyysr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('zyysr',)), name='zyysr_grow_rate')
         jlr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('jlr',)), name='jlr_grow_rate')
@@ -139,7 +143,7 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
 def getStockValuationN(code,peroid):
     #获取收益数据
     df = pd.read_sql_query(
-        "select code,report_type,zyysr,zyysr_ttm,kjlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
+        "select code,report_type,zyysr,zyysr_ttm,all_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
         from stock_finance_data \
         where code=%(name)s",
         db.engine, params={'name': code})
@@ -178,7 +182,7 @@ def getStockValuationN(code,peroid):
         'm_cap': tdf['m_cap'],
         'zyysr': tdf['trade_date'].apply(getRevence, args=('zyysr',)),
         'zyysr_ttm': tdf['trade_date'].apply(getRevence, args=('zyysr_ttm',)),
-        'kjlr': tdf['trade_date'].apply(getRevence, args=('kjlr',)),
+        'all_jlr': tdf['trade_date'].apply(getRevence, args=('all_jlr',)),
         'jlr': tdf['trade_date'].apply(getRevence, args=('jlr',)),
         'jlr_ttm': tdf['trade_date'].apply(getRevence, args=('jlr_ttm',)),
         'jyjxjl': tdf['trade_date'].apply(getRevence, args=('jyjxjl',)),

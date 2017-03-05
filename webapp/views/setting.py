@@ -10,7 +10,7 @@ import pandas as pd
 import time
 from datetime import datetime
 from webapp.models import MyStock,Stock,DataItem,Comment
-from webapp.services import data_service as dts,db_service as dbs,db,holder_service as hs
+from webapp.services import getHeaders, data_service as dts,db_service as dbs,db,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from flask import current_app as app
 
 blueprint = Blueprint('setting', __name__)
@@ -22,9 +22,15 @@ def index():
 
 @blueprint.route('/update/', methods = ['GET','POST'])
 def update():
-    code = request.form['code']
-    flag = dts.updateFinanceData(code[2:]) #更新财务数据
-    dts.updateTradeData(code[2:]) #更新交易数据
+    code = request.form['code'][2:]
+    # 更新财务数据
+    flag = ns.updateFinanceData(code)
+    headers = getHeaders("http://xueqiu.com")
+    xues.updateAssetWebData(code,headers)
+    xues.updateIncomeWebData(code,headers)
+    xues.updateCashWebData(code,headers)
+    # 更新交易数据
+    ns.updateTradeData(code)
     dts.global_bdf, dts.global_tdf, dts.global_fdf = (None,None,None)
     return jsonify(msg=flag)
 

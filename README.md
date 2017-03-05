@@ -28,7 +28,6 @@ pip install -r requirements.txt
 安装
   pip install jupyter
 调试工具
-   ipython notebook
    jupyter notebook
 
 

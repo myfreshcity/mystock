@@ -2,7 +2,7 @@ from webapp.services import db
 from datetime import datetime
 
 class FinanceBasic(db.Model):
-    __tablename__ = 'stock_finance_basic'
+    __tablename__ = 'hexun_finance_basic'
 
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(255))
