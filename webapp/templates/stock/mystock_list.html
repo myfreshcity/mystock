@@ -37,7 +37,7 @@
         {% for d in stocks: %}
         <tr id="row-{{d.code|e}}">
             <td><span class="label label-warning">{{d.tag|e}}</span></td>
-            <td>{{d.code|e}}</td>
+            <td><a href='/stock/report/{{d.ncode|e}}' target="_blank">{{d.code|e}}</a></td>
             <td><a href='/stock/info/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
             <td>{{d.grow_type|e}}</td>
             <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.jlr_rate|e}}</a></td>

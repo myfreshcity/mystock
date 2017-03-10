@@ -179,7 +179,7 @@ def saveData(tdf,code,table_name):
     df = df.loc[:sd]
 
     if not df.empty:
-        f1 = lambda x: 1 if (x == '--' or x == '0' or x == 0 or x != x or x == '' or x == None) else round(int(x) / 10000)
+        f1 = lambda x: 1 if (x == '--' or x == '0' or x == 0 or x != x or x == '' or x == None) else round(int(x)*1.0/10000)
         df = df.applymap(f1)  # 以万元为单位计算。控制0除不尽的情况
         edf = df.reset_index()
 

@@ -71,6 +71,72 @@ def get_cash_rate(code):
     df1 = pd.concat([cash_rate, cash_rate_var], axis=1)
     return df1
 
+# 获取每季度资产负债信息
+# pType 0-按报告期，1-按单季度
+def get_stock_asset(code, quarter=None, pType=0):
+    df = pd.read_sql_query("select * from xueqiu_finance_asset where code=%(name)s order by report_type",
+                           db.engine, params={'name': code})
+
+    f1 = lambda x: round(x, 2)
+    f2 = lambda x: round(x / 10000, 2)
+    #df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
+
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df = df.set_index(i)
+    df = df.sort_index(ascending=False).fillna(0)
+
+    if quarter > 0:
+        tdate = df.index[df.index.quarter == quarter]
+        df = df.iloc[df.index.isin(tdate)]
+
+    return df
+
+# 获取每季度利润信息
+# pType 0-按报告期，1-按单季度
+def get_stock_income(code, quarter=None, pType=0):
+    df = pd.read_sql_query("select * from xueqiu_finance_income where code=%(name)s order by report_type",
+                           db.engine, params={'name': code})
+
+    f1 = lambda x: round(x, 2)
+    f2 = lambda x: round(x / 10000, 2)
+    #df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
+    #df['jy_in_sffh_percent'] = (df['jy_in_sffh'] * 100.0 / df['jy_in_all']).apply(f1)
+    #df['jy_in_other_percent'] = (df['jy_in_other'] * 100.0 / df['jy_in_all']).apply(f1)
+    #df['jy_in_all'] = df['jy_in_all'].apply(f2)
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df = df.set_index(i)
+    df = df.sort_index(ascending=False).fillna(0)
+
+    if quarter > 0:
+        tdate = df.index[df.index.quarter == quarter]
+        df = df.iloc[df.index.isin(tdate)]
+
+    return df
+
+
+# 获取每季度现金流信息
+# pType 0-按报告期，1-按单季度
+def get_stock_cash(code, quarter=None, pType=0):
+    df = pd.read_sql_query("select * from xueqiu_finance_cash where code=%(name)s order by report_type",
+                           db.engine, params={'name': code})
+
+    f1 = lambda x: round(x, 2)
+    f2 = lambda x: round(x / 10000, 2)
+    df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['jy_in_sffh_percent'] = (df['jy_in_sffh'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['jy_in_other_percent'] = (df['jy_in_other'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['jy_in_all'] = df['jy_in_all'].apply(f2)
+
+    i = df['report_type'].map(lambda x: pd.to_datetime(x))
+    df = df.set_index(i)
+    df = df.sort_index(ascending=False).fillna(0)
+
+    if quarter>0:
+        tdate = df.index[df.index.quarter == quarter]
+        df = df.iloc[df.index.isin(tdate)]
+
+    return df
+
 #获取每季度营收
 #pType 0-按报告期，1-按单季度
 def get_quarter_stock_revenue(code,quarter=None,pType=0):

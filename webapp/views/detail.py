@@ -117,6 +117,132 @@ def debetExJson():
 
     return jsonify(data={'zyysr':zyysrArray,'ch': chArray,'yszk': yszkArray,'chb': chRateArray,'yszkb': yszkRateArray})
 
+@blueprint.route('/report/mainJson', methods=['GET'])
+def report_main():
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_quarter_stock_revenue(code, quarter,pType)
+    df = df.T
+
+    cols = df.loc['report_type'].map(lambda x: x.strftime('%Y-%m-%d')).tolist()
+    mainData = [
+        ['主营业务收入'] + df.loc['zyysr'].tolist(),
+        ['主营业务利润'] + df.loc['zyylr'].tolist(),
+        ['营业利润'] + df.loc['yylr'].tolist(),
+        ['投资收益'] + df.loc['tzsy'].tolist(),
+        ['营业外收支净额'] + df.loc['ywszje'].tolist(),
+        ['利润总额'] + df.loc['lrze'].tolist(),
+        ['净利润'] + df.loc['all_jlr'].tolist(),
+        ['净利润(扣除非经常性损益后)'] + df.loc['jlr'].tolist(),
+        ['经营活动产生的现金流量净额'] + df.loc['jyjxjl'].tolist(),
+        ['净资产收益率加权'] + df.loc['roe'].tolist(),
+    ]
+    return jsonify(cols =cols,tableData=mainData)
+
+@blueprint.route('/report/assetJson', methods=['GET'])
+def report_asset():
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_stock_asset(code, quarter,pType)
+    df = df.T
+
+    cols = df.loc['report_type'].map(lambda x: x.strftime('%Y-%m-%d')).tolist()
+
+    assetData = [
+        ['货币资金'] + df.loc['ldzc_hbzj'].tolist(),
+        ['应收票据'] + df.loc['ldzc_yspj'].tolist(),
+        ['应收账款'] + df.loc['ldzc_yszk'].tolist(),
+        ['预付款项'] + df.loc['ldzc_yfkx'].tolist(),
+    ]
+
+    return jsonify(cols =cols,tableData=assetData)
+
+@blueprint.route('/report/incomeJson', methods=['GET'])
+def report_income():
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_stock_income(code, quarter,pType)
+    df = df.T
+
+    cols = df.loc['report_type'].map(lambda x: x.strftime('%Y-%m-%d')).tolist()
+
+    incomeData = [
+        ['营业总收入'] + df.loc['in_all'].tolist(),
+        ['营业收入'] + df.loc['in_yysr'].tolist(),
+        ['利息收入'] + df.loc['in_lx'].tolist(),
+        ['营业总收入'] + df.loc['in_all'].tolist(),
+        ['营业收入'] + df.loc['in_yysr'].tolist(),
+        ['利息收入'] + df.loc['in_lx'].tolist(),
+    ]
+    return jsonify(cols =cols,tableData=incomeData)
+
+@blueprint.route('/report/cashJson', methods=['GET'])
+def report_cash():
+    code = request.args.get('code')[2:]
+    quarter = int(request.args.get('quarter'))
+    if request.args.get('pType'):
+        pType = int(request.args.get('pType'))
+    else:
+        pType = 0
+    df = ds.get_stock_cash(code, quarter,pType)
+    df = df.T
+
+    cols = df.loc['report_type'].map(lambda x: x.strftime('%Y-%m-%d')).tolist()
+
+    cashData = [
+        ['销售商品、提供劳务收到的现金(%)'] + df.loc['jy_in_splwxj_percent'].tolist(),
+        ['收到的税费返还(%)'] + df.loc['jy_in_sffh_percent'].tolist(),
+        ['收到的其他与经营活动有关的现金(%)'] + df.loc['jy_in_other_percent'].tolist(),
+        ['经营活动现金流入小计(亿)'] + df.loc['jy_in_all'].tolist(),
+        ['购买商品、接受劳务支付的现金'] + df.loc['jy_out_splwxj'].tolist(),
+        ['支付给职工以及为职工支付的现金'] + df.loc['jy_out_gzfl'].tolist(),
+        ['支付的各项税费'] + df.loc['jy_out_sf'].tolist(),
+        ['支付的其他与经营活动有关的现金'] + df.loc['jy_out_other'].tolist(),
+        ['经营活动现金流出小计'] + df.loc['jy_out_all'].tolist(),
+        ['经营活动产生的现金流量净额'] + df.loc['jy_net'].tolist(),
+        ['收回投资所收到的现金'] + df.loc['tz_in_tz'].tolist(),
+        ['取得投资收益收到的现金'] + df.loc['tz_in_tzsy'].tolist(),
+        ['处置固定资产、无形资产和其他长期资产所回收的现金净额'] + df.loc['tz_in_gdtz'].tolist(),
+        ['处置子公司及其他营业单位收到的现金净额'] + df.loc['tz_in_zgs'].tolist(),
+        ['收到的其他与投资活动有关的现金'] + df.loc['tz_in_other'].tolist(),
+        ['投资活动现金流入小计'] + df.loc['tz_in_all'].tolist(),
+        ['购建固定资产、无形资产和其他长期资产所支付的现金'] + df.loc['tz_out_gdtz'].tolist(),
+        ['投资所支付的现金'] + df.loc['tz_out_tz'].tolist(),
+        ['取得子公司及其他营业单位支付的现金净额'] + df.loc['tz_out_zgs'].tolist(),
+        ['支付的其他与投资活动有关的现金'] + df.loc['tz_out_other'].tolist(),
+        ['投资活动现金流出小计'] + df.loc['tz_out_all'].tolist(),
+        ['投资活动产生的现金流量净额'] + df.loc['tz_net'].tolist(),
+        ['吸收投资收到的现金'] + df.loc['cz_in_tz'].tolist(),
+        ['其中：子公司吸收少数股东投资收到的现金'] + df.loc['cz_in_zgstz'].tolist(),
+        ['取得借款收到的现金'] + df.loc['cz_in_jk'].tolist(),
+        ['收到其他与筹资活动有关的现金'] + df.loc['cz_in_other'].tolist(),
+        ['筹资活动现金流入小计'] + df.loc['cz_in_all'].tolist(),
+        ['偿还债务支付的现金'] + df.loc['cz_out_zw'].tolist(),
+        ['分配股利、利润或偿付利息所支付的现金'] + df.loc['cz_out_lx'].tolist(),
+        ['其中：子公司支付给少数股东的股利，利润'] + df.loc['cz_out_zgslx'].tolist(),
+        ['支付其他与筹资活动有关的现金'] + df.loc['cz_out_other'].tolist(),
+        ['筹资活动现金流出小计'] + df.loc['cz_out_all'].tolist(),
+        ['筹资活动产生的现金流量净额'] + df.loc['cz_net'].tolist(),
+        ['汇率变动对现金及现金等价物的影响'] + df.loc['lvbd'].tolist(),
+        ['现金及现金等价物净增加额'] + df.loc['xj_net'].tolist(),
+        ['期初现金及现金等价物余额'] + df.loc['qc_xj_ye'].tolist(),
+        ['期末现金及现金等价物余额'] + df.loc['qm_xj_ye'].tolist(),
+    ]
+
+    return jsonify(cols =cols,tableData=cashData)
+
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():

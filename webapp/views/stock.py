@@ -79,7 +79,16 @@ def home(code):
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return render_template('stock/home.html', title=stock.name+'-成长', mydate=date,code=code)
+    return render_template('stock/home.html', title=stock.name+'-成长分析', mydate=date,code=code)
+
+@blueprint.route('/report/<code>', methods=['GET'])
+def report(code):
+    stock = ds.getStock(code[2:])
+    #price = stock.current_price
+    #app.logger.info('stock current price is:'+stock.current_price)
+    dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
+    date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
+    return render_template('stock/report.html', title=stock.name+'-财报', mydate=date,code=code)
 
 @blueprint.route('/info/<code>', methods=['GET'])
 def info(code):
@@ -231,7 +240,6 @@ def revenueJson():
 
     return jsonify(data={'yysr':yysr,'jlr':jlr,'jyjxjl':jyjxjl,'yysr_rate':yysr_rate,\
                          'jlr_rate':jlr_rate,'jyjxjl_rate':jyjxjl_rate,'roe':roe},tableData=tableData)
-
 
 @blueprint.route('/cashJson', methods=['GET'])
 def cashJson():
