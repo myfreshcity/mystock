@@ -12,10 +12,10 @@ var columnList = [{'title':'报告日期'}];
 
 var tableOption = {
         deferRender:    true,
-        scrollY:        300,
+        scrollY:        400,
         scrollX:        true,
-        scrollCollapse: true,
-        scroller:       true,
+        //scrollCollapse: true,
+        //scroller:       true,
         //fixedHeader: true,
         //fixedColumns: true,
         paging: false,
@@ -172,7 +172,12 @@ function renderNewTable(result){
 
         // then load the data into the table
         $.each(result.tableData, function(key, row) {
+             if(row[0].indexOf("(亿)")<0){
              newTable += "<tr>";
+             }else{
+             newTable += "<tr style=\"background-color:rgba(171, 231, 237, 0.19)\">";
+             }
+
               $.each(row, function(key, fieldValue) {
                    newTable += "<td>" + fieldValue + "</td>";
               });
@@ -202,7 +207,7 @@ $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
       }
 });
 
-$('#myTab a:last').tab('show');
+$('#myTab a:first').tab('show');
 
 });
 

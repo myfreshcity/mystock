@@ -55,7 +55,7 @@
 <p class="container-fluid">
     <p class="row">
         <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default active">
+            <label class="btn btn-default">
                 <input type="radio" name="quarters" autocomplete="off" onchange="changePeriod(0)"> 全年
             </label>
             <label class="btn btn-default">
@@ -73,10 +73,10 @@
         </div>
 
         <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-primary">
+            <label class="btn btn-primary active">
                 <input type="radio" name="options" id="option2" autocomplete="off" onchange="changePtype(0)"> 按报告期
             </label>
-            <label class="btn btn-primary active">
+            <label class="btn btn-primary">
                 <input type="radio" name="options" id="option3" autocomplete="off" onchange="changePtype(1)"> 按单季度
             </label>
         </div>
@@ -99,8 +99,7 @@
 <script type="text/javascript">
 var homePage = {
   code : '{{ code|safe }}',
-  quarter : 0,
-  pType : 1
+  pType : 0
 };
 
 $(function(){

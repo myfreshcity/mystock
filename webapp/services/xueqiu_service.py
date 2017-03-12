@@ -105,6 +105,8 @@ def updateAssetWebData(code, headers):
         'fz_yfzq': tdf['应付债券'],
         'fz_cqyfk': tdf['长期应付款'],
         'fz_zxyfk': tdf['专项应付款'],
+        'fz_yjffz': tdf['预计非流动负债'],
+        'fz_dysy': tdf['长期递延收益'],
         'fz_dysdsfz': tdf['递延所得税负债'],
         'fz_other': tdf['非流动负债合计'],
         'fz_all': tdf['负债合计'],
@@ -179,8 +181,10 @@ def saveData(tdf,code,table_name):
     df = df.loc[:sd]
 
     if not df.empty:
-        f1 = lambda x: 1 if (x == '--' or x == '0' or x == 0 or x != x or x == '' or x == None) else round(int(x)*1.0/10000)
-        df = df.applymap(f1)  # 以万元为单位计算。控制0除不尽的情况
+        f1 = lambda x: round(x * 1.0 / 10000) # 以万元为单位计算
+        f2 = lambda x: 1 if (x == '--' or x == '0' or x == 0 or x != x or x == '' or x is None) else x # 控制0除不尽的情况
+        df = df.applymap(f1)
+        df = df.applymap(f2)
         edf = df.reset_index()
 
         edf['code'] = code

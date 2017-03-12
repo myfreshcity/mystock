@@ -190,7 +190,7 @@ def revenueJson():
     roe = [] #净资产收益率
 
     code = request.args.get('code')[2:]
-    quarter = int(request.args.get('quarter'))
+    quarter = int(request.args.get('quarter')) if request.args.get('quarter') else None
     if request.args.get('pType'):
         pType = int(request.args.get('pType'))
     else:
@@ -228,13 +228,12 @@ def revenueJson():
         tableData.append(
             [report_type,
              round(row_zyysr/10000, 2),
-             str(round(row_yylr/10000, 2))+'/'+str(round(row_jlr/10000, 2)),
-             round(row_jyjxjl/10000, 2),
-             round(row_yylr * 100/row_zyysr, 2),
-             round(row_jyjxjl * 100/row_yylr, 2),
              s_yysr_rate,
-             str(s_yylr_rate)+'/'+str(s_jlr_rate),
-             s_jyjxjl_rate
+             round(row_jlr / 10000, 2),
+             s_jlr_rate,
+             round(row_jyjxjl/10000, 2),
+             s_jyjxjl_rate,
+             round(row_jyjxjl/row_jlr, 2),
              ]
         )
 
@@ -304,16 +303,20 @@ def cashJson():
             row_xjjze = row['xjjze']
             row_jyjxjl = row['jyjxjl']
 
+        #自由现金流
+        row_free_jyjxjl = row['jyjxjl']-row['tz_out_gdtz']+row['tz_in_gdtz']
+
+
         tableData.append(
             [report_type,
              round(row['xjye']/10000, 2),
              round(row_zyysr/10000, 2),
              round(row_xjjze/10000, 2),
              round(row_jyjxjl/10000, 2),
-             round(row_jyjxjl * 100/row_xjjze, 2),
-             round(row_jyjxjl * 100/row_zyysr, 2),
-             round(row_jyjxjl * 100/row_jlr, 2),
              s_jyjxjl_rate,
+             round(row_free_jyjxjl / 10000, 2),
+             round(row_free_jyjxjl*100 /row['jyjxjl'], 2),
+             round(row_jyjxjl * 1.0/row_jlr, 2),
              round(row['jyjxjl_ttm'] * 1.0 / row['jlr_ttm'], 2)
              ]
         )

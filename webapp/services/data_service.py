@@ -231,7 +231,7 @@ def getMyStocks(flag,isSingle=False):
 
     # 获取财务数据
     if global_fdf is None:
-        fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,all_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
+        fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
                                         from stock_finance_data order by report_type desc limit 6000", db.engine,
                                  index_col=['code', 'report_type'])
         fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
@@ -248,7 +248,8 @@ def getMyStocks(flag,isSingle=False):
     df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
 
     bdf = bdf.reset_index()
-    df3 = df3.reset_index()
+    if not df3.empty: #若交易数据或财务数据为空，会导致错误。判断以过滤这种情况。
+        df3 = df3.reset_index()
     df4 = pd.merge(bdf, df3, how='left',on='code')
 
     #加入机构持股比例

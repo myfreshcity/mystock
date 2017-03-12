@@ -79,7 +79,72 @@ def get_stock_asset(code, quarter=None, pType=0):
 
     f1 = lambda x: round(x, 2)
     f2 = lambda x: round(x / 10000, 2)
-    #df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
+
+    df['fz_rate'] = (df['fz_all'] * 100.0 / df['zc_all']).apply(f1)
+    df['sd_rate'] = ((df['ldzc_all']-df['ldzc_ch'])/ df['ldfz_all']).apply(f1)
+
+    df['ldzc_hbzj'] = (df['ldzc_hbzj'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_yspj'] = (df['ldzc_yspj'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_yszk'] = (df['ldzc_yszk'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_yfkx'] = (df['ldzc_yfkx'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_yslx'] = (df['ldzc_yslx'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_ysgl'] = (df['ldzc_ysgl'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_o_ysk'] = (df['ldzc_o_ysk'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_ch'] = (df['ldzc_ch'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_o'] = (df['ldzc_o'] * 100.0 / df['ldzc_all']).apply(f1)
+    df['ldzc_all'] = df['ldzc_all'].apply(f2)
+
+    df['fld_jrzc'] = (df['fld_jrzc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_dqtz'] = (df['fld_dqtz'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_ysk'] = (df['fld_ysk'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_gqtz'] = (df['fld_gqtz'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_tzfdc'] = (df['fld_tzfdc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_gdzc'] = (df['fld_gdzc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_zjgc'] = (df['fld_zjgc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_gcwz'] = (df['fld_gcwz'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_gdzcql'] = (df['fld_gdzcql'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_wxzc'] = (df['fld_wxzc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_kfzc'] = (df['fld_kfzc'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_sy'] = (df['fld_sy'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_cqtpfy'] = (df['fld_cqtpfy'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_dysds'] = (df['fld_dysds'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_other'] = (df['fld_other'] * 100.0 / df['fld_all']).apply(f1)
+    df['fld_all'] = df['fld_all'].apply(f2)
+
+    df['zc_all'] = df['zc_all'].apply(f2)
+
+    df['ldfz_tqjk'] = (df['ldfz_tqjk'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yfpj'] = (df['ldfz_yfpj'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yfzk'] = (df['ldfz_yfzk'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yszk'] = (df['ldfz_yszk'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_zgxc'] = (df['ldfz_zgxc'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yjsf'] = (df['ldfz_yjsf'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yflx'] = (df['ldfz_yflx'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_yfgl'] = (df['ldfz_yfgl'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_o_yfk'] = (df['ldfz_o_yfk'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_ynfldfz'] = (df['ldfz_ynfldfz'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_other'] = (df['ldfz_other'] * 100.0 / df['ldfz_all']).apply(f1)
+    df['ldfz_all'] = df['ldfz_all'].apply(f2)
+
+    df['fz_cqjk'] = (df['fz_cqjk'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_yfzq'] = (df['fz_yfzq'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_cqyfk'] = (df['fz_cqyfk'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_zxyfk'] = (df['fz_zxyfk'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_yjffz'] = (df['fz_yjffz'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_dysy'] = (df['fz_dysy'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_dysdsfz'] = (df['fz_dysdsfz'] * 100.0 / df['fz_other']).apply(f1)
+    df['fz_other'] = df['fz_other'].apply(f2)
+
+    df['fz_all'] = df['fz_all'].apply(f2)
+
+    df['gq_sszb'] = df['gq_sszb'].apply(f2)
+    df['gd_zbgj'] = df['gd_zbgj'].apply(f2)
+    df['gd_yygj'] = df['gd_yygj'].apply(f2)
+    df['gd_wflr'] = df['gd_wflr'].apply(f2)
+    df['gd_mqy'] = df['gd_mqy'].apply(f2)
+    df['gd_ssgd'] = df['gd_ssgd'].apply(f2)
+    df['gd_all'] = df['gd_all'].apply(f2)
+
 
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df = df.set_index(i)
@@ -99,10 +164,40 @@ def get_stock_income(code, quarter=None, pType=0):
 
     f1 = lambda x: round(x, 2)
     f2 = lambda x: round(x / 10000, 2)
-    #df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
-    #df['jy_in_sffh_percent'] = (df['jy_in_sffh'] * 100.0 / df['jy_in_all']).apply(f1)
-    #df['jy_in_other_percent'] = (df['jy_in_other'] * 100.0 / df['jy_in_all']).apply(f1)
-    #df['jy_in_all'] = df['jy_in_all'].apply(f2)
+
+    df['gross_rate'] = ((df['in_yysr']-df['out_yycb']) * 100.0 / df['in_yysr']).apply(f1)
+    df['sale_rate'] = ((df['in_yysr'] - df['out_yycb']- df['out_yys']- df['out_ss']- df['out_gl']- df['out_cw']) * 100.0 / df['in_yysr']).apply(f1)
+
+    df['in_yysr'] = (df['in_yysr'] * 100.0 / df['in_all']).apply(f1)
+    df['in_lx'] = (df['in_lx'] * 100.0 / df['in_all']).apply(f1)
+    df['in_sxyj'] = (df['in_sxyj'] * 100.0 / df['in_all']).apply(f1)
+
+    df['in_all'] = df['in_all'].apply(f2)
+
+    df['out_yycb'] = (df['out_yycb'] * 100.0 / df['out_all']).apply(f1)
+    df['out_lx'] = (df['out_lx'] * 100.0 / df['out_all']).apply(f1)
+    df['out_sxyj'] = (df['out_sxyj'] * 100.0 / df['out_all']).apply(f1)
+    df['out_yys'] = (df['out_yys'] * 100.0 / df['out_all']).apply(f1)
+    df['out_ss'] = (df['out_ss'] * 100.0 / df['out_all']).apply(f1)
+    df['out_gl'] = (df['out_gl'] * 100.0 / df['out_all']).apply(f1)
+    df['out_cw'] = (df['out_cw'] * 100.0 / df['out_all']).apply(f1)
+    df['out_zcjz'] = (df['out_zcjz'] * 100.0 / df['out_all']).apply(f1)
+    df['out_gyjz'] = (df['out_gyjz'] * 100.0 / df['out_all']).apply(f1)
+
+    df['out_all'] = df['out_all'].apply(f2)
+    df['out_tzsy'] = df['out_tzsy'].apply(f2)
+    df['out_lh_tzsy'] = df['out_lh_tzsy'].apply(f2)
+    df['lr_all'] = df['lr_all'].apply(f2)
+
+    df['lr_fldzccz'] = df['lr_fldzccz'].apply(f2)
+    df['lr_total'] = df['lr_total'].apply(f2)
+    df['lr_sdfy'] = df['lr_sdfy'].apply(f2)
+    df['lr_m_net'] = (df['lr_m_net']*100/df['lr_net']).apply(f1)
+    df['lr_net'] = df['lr_net'].apply(f2)
+
+    df['lr_o_net'] = (df['lr_o_in'] - df['lr_o_out']).apply(f2)
+
+
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df = df.set_index(i)
     df = df.sort_index(ascending=False).fillna(0)
@@ -122,10 +217,54 @@ def get_stock_cash(code, quarter=None, pType=0):
 
     f1 = lambda x: round(x, 2)
     f2 = lambda x: round(x / 10000, 2)
-    df['jy_in_splwxj_percent'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
-    df['jy_in_sffh_percent'] = (df['jy_in_sffh'] * 100.0 / df['jy_in_all']).apply(f1)
-    df['jy_in_other_percent'] = (df['jy_in_other'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['kg_jy_net'] = (df['jy_net']-df['tz_out_gdtz']+df['tz_in_gdtz']).apply(f2)
+
+
+    df['jy_in_splwxj'] = (df['jy_in_splwxj'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['jy_in_sffh'] = (df['jy_in_sffh'] * 100.0 / df['jy_in_all']).apply(f1)
+    df['jy_in_other'] = (df['jy_in_other'] * 100.0 / df['jy_in_all']).apply(f1)
     df['jy_in_all'] = df['jy_in_all'].apply(f2)
+
+    df['jy_out_splwxj'] = (df['jy_out_splwxj'] * 100.0 / df['jy_out_all']).apply(f1)
+    df['jy_out_gzfl'] = (df['jy_out_gzfl'] * 100.0 / df['jy_out_all']).apply(f1)
+    df['jy_out_sf'] = (df['jy_out_sf'] * 100.0 / df['jy_out_all']).apply(f1)
+    df['jy_out_other'] = (df['jy_out_other'] * 100.0 / df['jy_out_all']).apply(f1)
+    df['jy_out_all'] = df['jy_out_all'].apply(f2)
+    df['jy_net'] = df['jy_net'].apply(f2)
+
+
+    df['tz_in_tz'] = (df['tz_in_tz'] * 100.0 / df['tz_in_all']).apply(f1)
+    df['tz_in_tzsy'] = (df['tz_in_tzsy'] * 100.0 / df['tz_in_all']).apply(f1)
+    df['tz_in_gdtz'] = (df['tz_in_gdtz'] * 100.0 / df['tz_in_all']).apply(f1)
+    df['tz_in_zgs'] = (df['tz_in_zgs'] * 100.0 / df['tz_in_all']).apply(f1)
+    df['tz_in_other'] = (df['tz_in_other'] * 100.0 / df['tz_in_all']).apply(f1)
+    df['tz_in_all'] = df['tz_in_all'].apply(f2)
+
+    df['tz_out_gdtz'] = (df['tz_out_gdtz'] * 100.0 / df['tz_out_all']).apply(f1)
+    df['tz_out_tz'] = (df['tz_out_tz'] * 100.0 / df['tz_out_all']).apply(f1)
+    df['tz_out_zgs'] = (df['tz_out_zgs'] * 100.0 / df['tz_out_all']).apply(f1)
+    df['tz_out_other'] = (df['tz_out_other'] * 100.0 / df['tz_out_all']).apply(f1)
+    df['tz_out_all'] = df['tz_out_all'].apply(f2)
+    df['tz_net'] = df['tz_net'].apply(f2)
+
+
+    df['cz_in_tz'] = (df['cz_in_tz'] * 100.0 / df['cz_in_all']).apply(f1)
+    df['cz_in_zgstz'] = (df['cz_in_zgstz'] * 100.0 / df['cz_in_all']).apply(f1)
+    df['cz_in_jk'] = (df['cz_in_jk'] * 100.0 / df['cz_in_all']).apply(f1)
+    df['cz_in_other'] = (df['cz_in_other'] * 100.0 / df['cz_in_all']).apply(f1)
+    df['cz_in_all'] = df['cz_in_all'].apply(f2)
+
+    df['cz_out_zw'] = (df['cz_out_zw'] * 100.0 / df['cz_out_all']).apply(f1)
+    df['cz_out_lx'] = (df['cz_out_lx'] * 100.0 / df['cz_out_all']).apply(f1)
+    df['cz_out_zgslx'] = (df['cz_out_zgslx'] * 100.0 / df['cz_out_all']).apply(f1)
+    df['cz_out_other'] = (df['cz_out_other'] * 100.0 / df['cz_out_all']).apply(f1)
+    df['cz_out_all'] = df['cz_out_all'].apply(f2)
+    df['cz_net'] = df['cz_net'].apply(f2)
+
+    df['lvbd'] = (df['lvbd']* 100.0 / df['xj_net']).apply(f1)
+    df['xj_net'] = df['xj_net'].apply(f2)
+    df['qc_xj_ye'] = df['qc_xj_ye'].apply(f2)
+    df['qm_xj_ye'] = df['qm_xj_ye'].apply(f2)
 
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df = df.set_index(i)
@@ -200,6 +339,22 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
 
     df1 = pd.concat([df, zyysr_ttm, jlr_ttm, yylr_ttm, jyjxjl_ttm], axis=1)
 
+    f1 = lambda x: round(x, 2)
+    f2 = lambda x: round(x / 10000, 2)
+    df1['tzsy_rate'] = (df1['tzsy'] * 100.0 / df1['jlr']).apply(f1)
+    df1['kf_lr_rate'] = (df1['kf_jlr'] * 100.0 / df1['jlr']).apply(f1)
+    df1['ywszje_rate'] = (df1['ywszje'] * 100.0 / df1['jlr']).apply(f1)
+
+    df1['zyysr_f'] = df1['zyysr'].apply(f2) #变更计量单位为亿
+    df1['zyylr_f'] = df1['zyylr'].apply(f2)
+    df1['yylr_f'] = df1['yylr'].apply(f2)
+    df1['tzsy_f'] = df1['tzsy'].apply(f2)
+    df1['ywszje_f'] = df1['ywszje'].apply(f2)
+    df1['lrze_f'] = df1['lrze'].apply(f2)
+    df1['kf_jlr_f'] = df1['kf_jlr'].apply(f2)
+    df1['jlr_f'] = df1['jlr'].apply(f2)
+    df1['jyjxjl_f'] = df1['jyjxjl'].apply(f2)
+
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
     df2 = df1.set_index(i)
     df2 = df2.sort_index(ascending=False).fillna(0)
@@ -209,7 +364,7 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
 def getStockValuationN(code,peroid):
     #获取收益数据
     df = pd.read_sql_query(
-        "select code,report_type,zyysr,zyysr_ttm,all_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
+        "select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
         from stock_finance_data \
         where code=%(name)s",
         db.engine, params={'name': code})
@@ -248,7 +403,7 @@ def getStockValuationN(code,peroid):
         'm_cap': tdf['m_cap'],
         'zyysr': tdf['trade_date'].apply(getRevence, args=('zyysr',)),
         'zyysr_ttm': tdf['trade_date'].apply(getRevence, args=('zyysr_ttm',)),
-        'all_jlr': tdf['trade_date'].apply(getRevence, args=('all_jlr',)),
+        'kf_jlr': tdf['trade_date'].apply(getRevence, args=('kf_jlr',)),
         'jlr': tdf['trade_date'].apply(getRevence, args=('jlr',)),
         'jlr_ttm': tdf['trade_date'].apply(getRevence, args=('jlr_ttm',)),
         'jyjxjl': tdf['trade_date'].apply(getRevence, args=('jyjxjl',)),

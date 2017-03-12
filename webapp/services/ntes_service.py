@@ -35,8 +35,8 @@ def updateFinanceData(code):
         x = s_dt.get(10).any()
         y = s_dt.get(9).any()
 
-        v1 = y if (x == '--' or x == '0' or x != x or x == '' or x == None) else x
-        v2 = '1' if (v1 == '--' or v1 == '0' or v1 != v1 or v1 == '' or v1 == None) else v1
+        v1 = y if (x == '--' or x == '0' or x != x or x == '' or x is None) else x
+        v2 = '1' if (v1 == '--' or v1 == '0' or v1 != v1 or v1 == '' or v1 is None) else v1
         return v2
 
     def getRevence(x, attri):
@@ -102,8 +102,8 @@ def updateFinanceData(code):
             'tzsy': tdf[6].apply(fixNaN),
             'ywszje': tdf[7].apply(fixNaN),
             'lrze': tdf[8].apply(fixNaN),
-            'all_jlr': tdf[9].apply(fixNaN),
-            'jlr': tdf['index'].apply(fixJlr),
+            'jlr': tdf[9].apply(fixNaN),
+            'kf_jlr': tdf['index'].apply(fixJlr),
             'jyjxjl': tdf[11].apply(fixNaN),
             'jyjxjl_ttm': tdf['index'].apply(getRevence, args=(11,)),
             'jyjxjl_qt': tdf['index'].apply(getQuarterRevence, args=(11,)),
