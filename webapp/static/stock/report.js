@@ -70,6 +70,7 @@ function changePtype(pType){
 function getMainData() {
     homePage.getData=getMainData;
     if(homePage.t0table){
+        renderByColumn(homePage.quarter);
         homePage.t0table.draw();
         currentTable = homePage.t0table;
     }else{
@@ -93,6 +94,7 @@ function getMainData() {
 function getAssetData() {
     homePage.getData=getAssetData;
     if(homePage.t1table){
+        renderByColumn(homePage.quarter);
         homePage.t1table.draw();
         currentTable = homePage.t1table;
     }else{
@@ -116,6 +118,7 @@ function getAssetData() {
 function getIncomeData() {
     homePage.getData=getIncomeData;
     if(homePage.t2table){
+        renderByColumn(homePage.quarter);
         homePage.t2table.draw();
         currentTable = homePage.t2table;
     }else{
@@ -142,6 +145,7 @@ function getIncomeData() {
 function getCashData() {
     homePage.getData = getCashData;
     if(homePage.t3table){
+        renderByColumn(homePage.quarter);
         homePage.t3table.draw();
         currentTable = homePage.t3table;
     }else{

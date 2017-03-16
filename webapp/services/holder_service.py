@@ -101,13 +101,15 @@ def getStockHolderRank():
     return t7_df
 
 
-def updateStockHolder(code,headers):
+def updateStockHolder(code,session,headers):
     mc = 'SH' if code[:2] == '60' else 'SZ'
     url = "https://xueqiu.com/stock/f10/otsholder.json?symbol=" + mc + code + "&page=1&size=4"
-    req = urllib2.Request(url=url, headers=headers)
-    feeddata = urllib2.urlopen(req).read()
+    app.logger.debug('stock holder url is:' + url)
+    #req = urllib2.Request(url=url, headers=headers)
+    #feeddata = urllib2.urlopen(req).read()
+    res1 = session.get(url, headers=headers)
 
-    fd = json.loads(feeddata)
+    fd = json.loads(res1.content)
     fArray = []
     for e in fd['list']:
         fArray = fArray + e['list']

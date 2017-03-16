@@ -10,7 +10,7 @@ import pandas as pd
 import time
 from datetime import datetime
 from webapp.models import MyStock,Stock,DataItem,Comment
-from webapp.services import getHeaders, data_service as dts,db_service as dbs,db,holder_service as hs,ntes_service as ns,xueqiu_service as xues
+from webapp.services import getHeaders,getXueqiuHeaders, data_service as dts,db_service as dbs,db,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from flask import current_app as app
 
 blueprint = Blueprint('setting', __name__)
@@ -37,8 +37,9 @@ def update():
 @blueprint.route('/updateHolder/', methods = ['GET','POST'])
 def updateHolder():
     code = request.args.get('code')
-    heads = hs.getHeaders('http://xueqiu.com')
-    hs.updateStockHolder(code,heads)
+    #heads = getHeaders('https://xueqiu.com')
+    (session,heads) = getXueqiuHeaders()
+    hs.updateStockHolder(code,session,heads)
     return jsonify(msg=True)
 
 @blueprint.route('/updateAll/<int:cat>', methods = ['GET','POST'])
