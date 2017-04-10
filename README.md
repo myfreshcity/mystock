@@ -3,16 +3,14 @@
 启动程序
  python manage.py runserver -H localhost
 
+virtualenvs 配置：
+ virtualenv venv
+
 激活 virtualenvs：
  source venv/bin/activate
 
 退出 virtualenvs：
  deactivate
-
-
-virtualenvs 配置：
- virtualenv venv
-
 
 
 环境安装：
