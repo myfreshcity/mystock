@@ -79,7 +79,7 @@ def home(code):
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return render_template('stock/home.html', title=stock.name+'-成长分析', mydate=date,code=code)
+    return render_template('stock/home.html', title=stock.name+'-成长', mydate=date,code=code)
 
 @blueprint.route('/report/<code>', methods=['GET'])
 def report(code):
@@ -109,7 +109,7 @@ def holder(code):
 
 @blueprint.route('/debet/<code>', methods=['GET'])
 def debet(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     return render_template('stock/debet.html', title=stock.name+'-负债', stock=stock)
 
 @blueprint.route('/blog/<code>', methods=['GET'])

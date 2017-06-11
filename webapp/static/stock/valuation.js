@@ -52,6 +52,7 @@ function valuation(result){
     } );
 
     $('#pe').highcharts({
+        chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市盈率'},
         xAxis: {categories: []},
         credits: {enabled: false},
@@ -62,6 +63,7 @@ function valuation(result){
         }
     });
     $('#ps').highcharts({
+        chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市销率'},
         xAxis: {categories: []},
         credits: {enabled: false},
@@ -72,6 +74,7 @@ function valuation(result){
         }
     });
     $('#pcf').highcharts({
+        chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市现率'},
         xAxis: {categories: []},
         credits: {enabled: false},
@@ -82,6 +85,7 @@ function valuation(result){
         }
     });
     $('#pb').highcharts({
+        chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市净率'},
         xAxis: {categories: []},
         credits: {enabled: false},

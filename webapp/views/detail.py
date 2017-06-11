@@ -32,23 +32,6 @@ def peJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code)
-    for index, row in valueDf.iterrows():
-        jlr_grow_rate = round(row['jlr_grow_rate'] * 100, 2)
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-        actualArray.append([report_type, row['jlr']])
-        actualRateArray.append([report_type,jlr_grow_rate])
-
-        tableData.append(
-            [report_type,
-             format(row['zyysr'], ','),
-             format(row['jlr'], ','),
-             format(row['jyjxjl'], ','),
-             round(row['zyysr_grow_rate']*100,2),
-             round(row['jlr_grow_rate'] * 100, 2),
-             round(row['jyjxjl_grow_rate'] * 100, 2)
-             ]
-        )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
 @blueprint.route('/debetJson', methods=['GET'])
@@ -328,7 +311,7 @@ def report_cash():
 
 @blueprint.route('/pcfJson', methods=['GET'])
 def pcfJson():
-    code = request.args.get('code')
+    code = request.args.get('code')[2:]
     period = 5 #最近5年
 
 
@@ -344,23 +327,6 @@ def pcfJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code)
-    for index, row in valueDf.iterrows():
-        jlr_grow_rate = round(row['jyjxjl_grow_rate'] * 100, 2)
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-        actualArray.append([report_type, row['jyjxjl']])
-        actualRateArray.append([report_type,jlr_grow_rate])
-
-        tableData.append(
-            [report_type,
-             format(row['zyysr'], ','),
-             format(row['jlr'], ','),
-             format(row['jyjxjl'], ','),
-             round(row['zyysr_grow_rate']*100,2),
-             round(row['jlr_grow_rate'] * 100, 2),
-             round(row['jyjxjl_grow_rate'] * 100, 2)
-             ]
-        )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
 @blueprint.route('/psJson', methods=['GET'])
@@ -401,7 +367,7 @@ def psJson():
 
 @blueprint.route('/pbJson', methods=['GET'])
 def pbJson():
-    code = request.args.get('code')
+    code = request.args.get('code')[2:]
     period = 5 #最近5年
 
     valuationArray = []
@@ -416,23 +382,6 @@ def pbJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code)
-    for index, row in valueDf.iterrows():
-        jlr_grow_rate = round(row['zyysr_grow_rate'] * 100, 2)
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-        actualArray.append([report_type, row['zyysr']])
-        actualRateArray.append([report_type,jlr_grow_rate])
-
-        tableData.append(
-            [report_type,
-             format(row['zyysr'], ','),
-             format(row['jlr'], ','),
-             format(row['jyjxjl'], ','),
-             round(row['zyysr_grow_rate']*100,2),
-             round(row['jlr_grow_rate'] * 100, 2),
-             round(row['jyjxjl_grow_rate'] * 100, 2)
-             ]
-        )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
 @blueprint.route('/roeJson', methods=['GET'])
@@ -452,23 +401,6 @@ def roeJson():
     actualRateArray = []
     tableData = []
 
-    valueDf = ds.get_quarter_stock_revenue(code)
-    for index, row in valueDf.iterrows():
-        jlr_grow_rate = round(row['zyysr_grow_rate'] * 100, 2)
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-        actualArray.append([report_type, row['zyysr']])
-        actualRateArray.append([report_type,jlr_grow_rate])
-
-        tableData.append(
-            [report_type,
-             format(row['zyysr'], ','),
-             format(row['jlr'], ','),
-             format(row['jyjxjl'], ','),
-             round(row['zyysr_grow_rate']*100,2),
-             round(row['jlr_grow_rate'] * 100, 2),
-             round(row['jyjxjl_grow_rate'] * 100, 2)
-             ]
-        )
     return jsonify(data={'actualRate':actualRateArray,'actual': actualArray, 'valuation': valuationArray, 'tableData':tableData},period=period)
 
 

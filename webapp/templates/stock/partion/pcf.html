@@ -9,9 +9,12 @@
       <div class="modal-body">
         <div class="container-fluid">
           <div class="row">
+            <div class="col-md-2 col-md-offset-10"><a id="m1_link" href='#' target="_blank">更多&gt;&gt;</a></div>
             <div id="valuation_chart" class="col-md-12"></div>
           </div>
           <div class="row">
+            <div class="col-md-2 col-md-offset-10"><a id="m2_link" href='#' target="_blank">成长分析&gt;</a></div>
+            <div class="col-md-2 col-md-offset-10"><a id="m3_link" href='#' target="_blank">现金详情&gt;</a></div>
             <div id="value_chart" class="col-md-12"></div>
             <div class="row">
               <table id="data_table" class="display" cellspacing="0" width="90%"></table>
@@ -43,6 +46,10 @@ $(function(){
     var value_chart = modal.find('.modal-body #value_chart');
     var data_table = modal.find('.modal-body #data_table');
 
+    modal.find('.modal-body #m1_link').attr("href","/stock/valuation/"+code);
+    modal.find('.modal-body #m2_link').attr("href","/stock/"+code);
+    modal.find('.modal-body #m3_link').attr("href","/stock/cash/"+code);
+
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/detail/pcfJson',
     data:{
@@ -66,23 +73,7 @@ $(function(){
 
     //显示数据
     modal.find('.modal-body').show();
-    if(modal_datatable)modal_datatable.destroy();
-    modal_datatable = data_table.DataTable( {
-        scrollY: 300,
-        paging: false,
-        data: result.data.tableData,
-        "order": [[ 0, "desc" ]],
-        searching: false,
-        columns: [
-            { title: "日期" },
-            { title: "主营收入" },
-            { title: "净利润" },
-            { title: "经营性现金流" },
-            { title: "营收增长率(%)" },
-            { title: "净利润增长率(%)" },
-            { title: "经营性现金流增长率(%)" }
-        ]
-    } );
+
 
     valuation_chart.highcharts({
         chart: {zoomType: 'xy'},
@@ -95,33 +86,8 @@ $(function(){
            shared: true
         }
     });
-    value_chart.highcharts({
-        title: {text:  '成长'},
-        xAxis: [{categories: []}],
-        yAxis: [
-        {// Secondary yAxis
-        title: {text: '成长率'},
-        labels: {
-                format: '{value} %',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            }
-        },
-        {// Primary yAxis
-        title: {text: '数值'},
-        opposite: true
-        }
-        ],
-        credits: {enabled: false},
-        series: [actual_rate_data,actual_data],
-        tooltip:{
-           crosshairs: true,
-           shared: true
-        }
-    });
 
-  }
+ }
 
     });
 
