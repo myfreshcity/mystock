@@ -6,7 +6,7 @@ from flask import g
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db,getHeaders,db_service as dbs
+from webapp.services import db,getHeaders,getXueqiuHeaders,db_service as dbs
 from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
 import json,random,time
 import http.cookiejar
@@ -25,14 +25,15 @@ def getLatestStockHolder():
         #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
     return group_stockholder_rate
 
-def refreshStockHolder(start_date='2016-06-30'):
+def refreshStockHolder(start_date='2017-03-31'):
     #获得所有股票代码列表
     stocks = db.session.query(Stock).filter(and_(Stock.latest_report < start_date,Stock.launch_date < start_date)).all()
     #stocks = stocks = db.session.query(MyStock).all()
-    heads = getHeaders('http://xueqiu.com')
+    #heads = getHeaders('http://xueqiu.com')
+    (session, heads) = getXueqiuHeaders()
     for st in stocks:
         app.logger.info('checking stock holder for:' + st.code)
-        latest_report = updateStockHolder(st.code,heads)
+        latest_report = updateStockHolder(st.code,session,heads)
         st.latest_report = latest_report
         db.session.flush()
         app.logger.info('update done. the latest report date is:' + latest_report)
@@ -103,7 +104,7 @@ def getStockHolderRank():
 
 def updateStockHolder(code,session,headers):
     mc = 'SH' if code[:2] == '60' else 'SZ'
-    url = "https://xueqiu.com/stock/f10/otsholder.json?symbol=" + mc + code + "&page=1&size=4"
+    url = "https://xueqiu.com/stock/f10/shareholder.json?symbol=" + mc + code + "&page=1&size=4"
     app.logger.debug('stock holder url is:' + url)
     #req = urllib2.Request(url=url, headers=headers)
     #feeddata = urllib2.urlopen(req).read()
@@ -168,14 +169,21 @@ def getStockHolder(code,report_date,direction):
 
     app.logger.debug('query holder data from ' + submit_date.strftime('%Y-%m-%d') +' to '+ _next_date.strftime('%Y-%m-%d'))
 
-    hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,holder_code,rate,amount \
+    hdf = pd.read_sql_query("select id, code,report_date,holder_type,holder_name,holder_code,rate,amount \
                                 from stock_holder where code=%(name)s and report_date>=%(submit_date)s and report_date<=%(report_date)s \
                                 order by report_date desc,rank asc", db.engine, \
                             params={'name': code, 'submit_date': submit_date, 'report_date': _next_date})
-    n_holder = pd.Series(
-        hdf['holder_name'].apply(lambda x: x.replace('-', '').replace('－', '').replace(' ', '').strip()),
-        name='holder_name_new')
-    hdf = pd.concat([hdf, n_holder], axis=1)
+
+    def fixHolderName(x):
+        d1 = hdf[hdf['id'] == x]
+        v1 = d1.get('holder_code').item()
+        v2 = d1.get('holder_name').item()
+        if v1 == None:  # 空值判断
+            return v2
+        else:
+            return v1
+
+    hdf['holder_name_new'] = hdf['id'].apply(fixHolderName)
 
     t2_df = hdf[:10]
     t3_df = hdf[10:20]
