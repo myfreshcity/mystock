@@ -562,3 +562,11 @@ def updateComment(cid,content):
 def queryComment(code):
     #mystock = db.session.query(MyStock).filter_by(code = code).first()
     return Comment.find_by_code(code).all()
+
+def addUser(username,password):
+    user = User(username=username, password=password)
+    db.session.add(user)
+    return user
+
+def queryUser(username):
+    return db.session.query(User).filter_by(username = username).first()

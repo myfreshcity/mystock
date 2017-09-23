@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 from flask import current_app as app
 from webapp.services import db,getHeaders,getXueqiuHeaders,db_service as dbs
-from webapp.models import MyStock,Stock,data_item,Comment,FinanceBasic
+from webapp.models import Stock,Comment,FinanceBasic
 import json,random,time
 import http.cookiejar
 from pandas.tseries.offsets import *

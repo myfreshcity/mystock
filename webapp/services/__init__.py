@@ -8,6 +8,11 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+users_roles = db.Table(
+    'users_roles',
+    db.Column('user_id', db.String(45), db.ForeignKey('users.id')),
+    db.Column('role_id', db.String(45), db.ForeignKey('roles.id')))
+
 def getHeaders(url):
     CookieJar = http.cookiejar.CookieJar()
     CookieProcessor = urllib2.HTTPCookieProcessor(CookieJar)

@@ -1,0 +1,191 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>注册 - 投资笔记</title>
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+    <link rel="stylesheet" href="../static/styles/my.css?v=20160624">
+    <link rel="stylesheet" href="../static/styles/mainv2.css?v=20160318">
+    <script type="text/javascript" src="/static/jquery-1.12.4.min.js"></script>
+</head>
+
+<body class="whitebody">
+<div id="top" class="regtop">
+    <div class="wid wid2">
+        <div id="logo">
+            <a href="/">投资笔记</a>
+        </div>
+        <div id="rlogoright"><a href="/login">登录</a> <span>|</span> <a href="/register">注册</a></div>
+        <div class="clearfix"></div>
+    </div>
+</div>
+<div class="wid wid2">
+    <div id="regright" class="loginright">
+        <h1>欢迎注册投资笔记</h1>
+        <form>
+            <div class="formline">
+                <div class="labelright"><input type="text" name="mobile" class="roundinput" id="mobile"
+                                               placeholder="请输入您的手机号码"/></div>
+                <div class="flhint" id="mobilehint"></div>
+            </div>
+            <!--<div class="formline" id="verifycodeline">-->
+                <!--<div class="labelright"><input type="text" name="verifycode" class="roundinput" id="verifycode"-->
+                                               <!--placeholder="请输入6位手机验证码"/>-->
+                    <!--<input id="btncode" type="button" value="发送验证码" class="btn" onclick="sendMessage()"/></div>-->
+                <!--<div class="flhint" id="verifycodehint"></div>-->
+            <!--</div>-->
+            <div class="formline">
+                <div class="labelright"><input type="password" name="password" class="roundinput" id="password"
+                                               placeholder="请输入密码 8位以上"/></div>
+                <div class="flhint" id="passwordhint"><span class="red"></span> 8位以上</div>
+            </div>
+            <div class="formline">
+                <input type="hidden" name="hashcode" id="hashcode"
+                       value="VmNSPQVnDSAHNABmBjtedA03DTwDLFNgAzNRfVwwC2EKPgNkBWQMP1xsUzoFM1Zm"/>
+                <input type="hidden" name="fromurl" id="fromurl" value="index.php"/>
+                <input type="button" class="btn" id="regbtn" value="马上注册"/>
+                <div class="red" id="reghint"></div>
+            </div>
+            <div class="formline mcenter" id="regrbotline">
+                已有帐号？<a href="/login" class="bluea">立即登录</a>
+            </div>
+        </form>
+    </div>
+    <div class="clearfix"></div>
+</div>
+</div>
+<script type="text/javascript">
+var InterValObj;
+var count = 120;
+var curCount;
+
+function sendMessage() {
+    if($("#mobile").parent().hasClass('has-error')) return false;
+  　curCount = count;　　
+    $("#btncode").attr("disabled", "true");
+    $("#btncode").val("重新发送(" + curCount + ")");
+    InterValObj = window.setInterval(SetRemainTime, 1000);
+    $.getJSON("/my/reg.php?act=getsms&mobile="+$("#mobile").val()+"&hashcode="+$("#hashcode").val()+"&fromreg="+$("#hashcode").val(),function(data){
+    if(data.status == 0)
+    {
+    	$.zxxbox.remind('验证码已发送', null, {title:'提示',drag: true,bg: false,delay:3000});
+    }
+    else if(data.status == 2)
+    {
+    	window.location.reload();
+    }
+    else
+    {
+    	$.zxxbox.remind(data.msg, null, {title:'提示',drag: true,bg: false,delay:3000});
+    }
+    $("#hashcode").val(data.result.hashcode);
+    });
+}
+
+function SetRemainTime() {
+	if (curCount == 0) {
+		window.clearInterval(InterValObj);
+		$("#btncode").removeAttr("disabled");
+		$("#btncode").val("发送验证码");
+	}
+	else {
+		curCount--;
+		$("#btncode").val("重新发送(" + curCount + ")");
+	}
+}
+
+</script>
+<script type="text/javascript">
+function isEmail(val){
+ var reg = /^([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+.[a-zA-Z]{2,4}$/;
+ return reg.test(val);
+};
+function isMobile(val){
+ var reg = /^1[34578]\d{9}$/;
+ return reg.test(val);
+};
+
+function checkMobile(){
+	var mobile = $.trim($("#mobile").val());
+	if(!isMobile(mobile))
+	{
+		$("#mobile").parent().addClass('has-error');
+        $("#mobilehint").addClass('red').html('手机号有误');
+	}else{
+	    $("#mobilehint").removeClass('red').addClass('green').html('&#10003');
+	}
+};
+
+
+function checkPassword(){
+	var password = $.trim($("#password").val());
+	if(password.length<8)
+	{
+		$("#password").parent().addClass('has-error');
+		$("#passwordhint").html('<span class="red">8位以上</span>');
+	}else{
+	    $("#passwordhint").removeClass('red').addClass('green').html('&#10003');
+	}
+};
+
+function checkVerifycode(){
+    var verifycode = $.trim($("#verifycode").val());
+    var reg = /^\d{6}$/;
+	if(!reg.test(verifycode))
+	{
+		$("#verifycode").parent().addClass('has-error');
+		$("#verifycodehint").html('<span class="red">无效的验证码</span>');
+	}
+};
+
+
+$("#mobile").on('focus', function(){
+	$(this).parent().removeClass('has-error');
+	$("#mobilehint").html('');
+}).on('blur', checkMobile);
+
+$("#password").on('focus', function(){
+	$(this).parent().removeClass('has-error');
+	$("#passwordhint").html('');
+}).on('blur', checkPassword);
+
+
+$("#regbtn").on('click', function(){
+    $("#reghint").html('');
+    checkMobile();
+    checkPassword();
+    //checkVerifycode();
+
+	if($(".has-error").length>0) return false;
+
+	var email = $.trim($("#email").val());
+	var password = $.trim($("#password").val());
+	var mobile = $.trim($("#mobile").val());
+    var verifycode = $.trim($("#verifycode").val());
+    var hashcode = $.trim($("#hashcode").val());
+	$.post("/register",{password:password, mobile:mobile, verifycode:verifycode, hashcode:hashcode}, function(data,status){
+		if(data.status == 200)
+		{
+			document.location.href = '{{info["base_url"]|e}}'+'login';
+		}
+		else
+		{
+			$("#reghint").html(data.msg);
+			//$.zxxbox.remind(data.msg, null, {title:'提示',drag: true,bg: false,delay:3000});
+		}
+	},'json');
+})
+
+
+</script>
+<div class="wid" id="foot2">
+    <div class="wid2">
+        <p class="clear mtop15 mcenter">&copy; 2011-2015 浙ICP备13024337号</p>
+    </div>
+</div>
+</body>
+</html>

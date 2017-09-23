@@ -5,3 +5,5 @@ from .comment import Comment
 from .data_item import DataItem
 from .relation_stock import RelationStock
 from .finance_basic import FinanceBasic
+from .user import User
+from .role import Role

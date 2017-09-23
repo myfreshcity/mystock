@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>登录 - 投资笔记</title>
+    <meta name="description" content=""/>
+    <meta name="keywords" content=""/>
+    <link rel="stylesheet" href="../static/styles/my.css?v=20160624">
+    <link rel="stylesheet" href="../static/styles/mainv2.css?v=20160318">
+    <script type="text/javascript" src="/static/jquery-1.12.4.min.js"></script>
+</head>
+
+<body class="whitebody">
+<div id="top" class="regtop">
+    <div class="wid wid2">
+        <div id="logo">
+            <a href="/">投资笔记</a>
+        </div>
+        <div id="rlogoright"><a href="/login">登录</a> <span>|</span> <a href="/regiseter">注册</a></div>
+        <div class="clearfix"></div>
+    </div>
+</div>
+<div class="wid wid2">
+    <div id="regbox">
+        <div id="regleft">
+            <a href="#" target="_blank"><img src="../static/nadlogin.jpg"/></a>
+        </div>
+        <div id="regright">
+            <h1>欢迎登录投资笔记</h1>
+            <form>
+                <div class="formline">
+                    <div class="labelright"><input type="text" name="mobile" class="roundinput" id="mobile"
+                                                   placeholder="请输入手机号"/></div>
+                    <div class="flhint" id="mobilehint"></div>
+                </div>
+                <div class="formline">
+                    <div class="labelright"><input type="password" class="roundinput" id="password"
+                                                   placeholder="请输入密码"/></div>
+                    <div class="flhint" id="passwordhint"></div>
+                </div>
+                <!--<div class="formline" id="autologinline">-->
+                    <!--<label class="checkbox-group" id="checkboxgroup1">-->
+                        <!--<input type="checkbox" name="autologin" value="1" checked="checked"/>-->
+                        <!--<span>两周内自动登录</span>-->
+                    <!--</label>-->
+                    <!--<a href="/forgetPassword" class="bluea" id="forgeta">忘记密码</a>-->
+                <!--</div>-->
+                <div class="formline">
+                    <input type="hidden" name="fromurl" id="fromurl" value=""/>
+                    <input type="button" class="btn" id="regbtn" value="用户登录"/>
+                    <div class="red" id="loginhint"></div>
+                </div>
+                <div class="formline mcenter" id="regrbotline">
+                    还没有帐号？<a href="/register" class="bluea">立即注册</a>
+                </div>
+            </form>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>
+<script type="text/javascript">
+
+function isMobile(val){
+ var reg = /^1[34578]\d{9}$/;
+ return reg.test(val);
+};
+
+function checkMobile(){
+	var mobile = $.trim($("#mobile").val());
+	if(!isMobile(mobile))
+	{
+		$("#mobile").parent().addClass('has-error');
+        $("#mobilehint").addClass('red').html('无效');
+	}else{
+	    $("#mobilehint").removeClass('red').addClass('green').html('√');
+	}
+};
+
+function checkPassword(){
+	var password = $.trim($("#password").val());
+	if(password.length<8)
+	{
+		$("#password").parent().addClass('has-error');
+		$("#passwordhint").html('<span class="red">无效</span>');
+	}
+};
+
+$("#mobile").on('focus', function(){
+	$(this).parent().removeClass('has-error');
+	$("#mobilehint").html('');
+}).on('blur', checkMobile);
+
+$("#password").on('focus', function(){
+	$(this).parent().removeClass('has-error');
+	$("#passwordhint").html('');
+}).on('blur', checkPassword);
+
+
+$("#regbtn").on('click', function(){
+    $("#loginhint").html('');
+    checkMobile();
+    checkPassword();
+	if($(".has-error").length>0) return false;
+	var email = $.trim($("#email").val());
+	var password = $.trim($("#password").val());
+	var mobile = $.trim($("#mobile").val());
+	$.post("/my/login.php?act=login&rtype=json",{email:email, password:password, mobile:mobile}, function(data,status){
+		if(data.status == 0)
+		{
+			var fromurl = $("#fromurl").val();
+			if(!fromurl) fromurl = '/my/';
+			document.location = fromurl;
+		}
+		else
+		{
+			$("#loginhint").html(data.msg);
+		}
+	},'json');
+})
+
+
+</script>
+<div class="wid" id="foot2">
+    <div class="wid2">
+        <p class="clear mtop15 mcenter">&copy; 2011-2015 浙ICP备13024337号</p>
+    </div>
+</div>
+</body>
+</html>

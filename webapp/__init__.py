@@ -16,9 +16,11 @@ import os
 from flask import Flask, render_template, abort, url_for, session
 from views import home, stock, setting,macro,detail
 from services import db_service,db
+from extensions import bcrypt, login_manager, principals, cache
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
+app.config['SECRET_KEY'] = 'super-secret'
 app.config['SESSION_TYPE'] = 'filesystem'
 
 app.debug_log_format = '[%(levelname)s] %(message)s'
@@ -33,7 +35,16 @@ def config_app(app, config):
 
     app.logger.info('Setting up extensions...')
     db.init_app(app)
-    #login_manager.init_app(app)
+    # Init the Flask-Bcrypt via app object
+    bcrypt.init_app(app)
+
+    # Init the Flask-Login via app object
+    login_manager.init_app(app)
+    # Init the Flask-Prinicpal via app object
+    principals.init_app(app)
+    # Init the Flask-Cache via app object
+    cache.init_app(app)
+
 
     @app.after_request
     def after_request(response):
