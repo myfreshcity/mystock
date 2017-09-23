@@ -7,6 +7,7 @@ class RelationStock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     main_stock = db.Column(db.String(255))
     relation_stock = db.Column(db.String(255))
+    user_id = db.Column(db.String(45))
     created_time = db.Column(db.DateTime, default=datetime.now)
 
     def __init__(self, mcode, scode):
@@ -14,5 +15,5 @@ class RelationStock(db.Model):
         self.relation_stock = scode
 
     def __repr__(self):
-        return '<RelationStock %r>' % self.main_stock
+        return '<RelationStock %r>' % self.id
 

@@ -10,6 +10,7 @@ class MyStockFavor(db.Model):
     url = db.Column(db.String(255))
     src_type = db.Column(db.String(50))
     pub_date = db.Column(db.Date)
+    user_id = db.Column(db.String(45))
     created_time = db.Column(db.DateTime, default=datetime.now)
 
     def __init__(self, code, title, url,pub_date,src_type):
@@ -20,5 +21,5 @@ class MyStockFavor(db.Model):
         self.src_type = src_type
 
     def __repr__(self):
-        return '<Stock %r>' % self.name
+        return '<MyStockFavor %r>' % self.id
 

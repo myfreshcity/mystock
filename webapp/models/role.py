@@ -14,4 +14,4 @@ class Role(db.Model):
         self.id = str(uuid4())
 
     def __repr__(self):
-        return "<Model Role `{}`>".format(self.role_name)
+        return "<Model Role `{}`>".format(self.id)

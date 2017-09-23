@@ -8,6 +8,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     stock = db.Column(db.String(255))
     content = db.Column(db.String(255))
+    user_id = db.Column(db.String(45))
     created_time = db.Column(db.DateTime, default=datetime.now)
     updated_time = db.Column(db.DateTime, default=datetime.now)
 

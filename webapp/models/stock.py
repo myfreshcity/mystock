@@ -20,7 +20,7 @@ class Stock(db.Model):
         self.code = code
 
     def __repr__(self):
-        return '<Stock %r>' % self.name
+        return '<Stock %r>' % self.id
 
     @classmethod
     def find_by_code(self,cd):

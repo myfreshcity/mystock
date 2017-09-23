@@ -8,6 +8,7 @@ class MyStock(db.Model):
     code = db.Column(db.String(255))
     name = db.Column(db.String(255))
     market = db.Column(db.String(255))
+    user_id = db.Column(db.String(45))
     tag = db.Column(db.String(255))
     flag = db.Column(db.Integer,default=1)
     in_price = db.Column(db.Numeric,default=0)
@@ -22,7 +23,7 @@ class MyStock(db.Model):
         self.tag = ''
 
     def __repr__(self):
-        return '<Stock %r>' % self.name
+        return '<MyStock %r>' % self.id
 
     @property
     def ncode(self):

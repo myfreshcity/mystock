@@ -17,7 +17,7 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.String(45), primary_key=True)
-    username = db.Column(db.String(255))
+    username = db.Column(db.String(50))
     password = db.Column(db.String(255))
     last_login_time = db.Column(db.DateTime, default=datetime.now)
 
@@ -38,7 +38,7 @@ class User(db.Model):
 
     def __repr__(self):
         """Define the string format for instance of User."""
-        return "<Model User `{}`>".format(self.username)
+        return "<Model User `{}`>".format(self.id)
 
     def set_password(self, password):
         """Convert the password to cryptograph via flask-bcrypt"""
