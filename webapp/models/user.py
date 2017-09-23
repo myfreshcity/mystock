@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from datetime import datetime
 from flask import current_app
 from flask_login import AnonymousUserMixin
 from itsdangerous import SignatureExpired, BadSignature, Serializer
@@ -18,6 +19,7 @@ class User(db.Model):
     id = db.Column(db.String(45), primary_key=True)
     username = db.Column(db.String(255))
     password = db.Column(db.String(255))
+    last_login_time = db.Column(db.DateTime, default=datetime.now)
 
     # many to many: user <==> roles
     roles = db.relationship(

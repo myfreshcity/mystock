@@ -162,20 +162,19 @@ $("#regbtn").on('click', function(){
 
 	if($(".has-error").length>0) return false;
 
-	var email = $.trim($("#email").val());
-	var password = $.trim($("#password").val());
 	var mobile = $.trim($("#mobile").val());
-    var verifycode = $.trim($("#verifycode").val());
+	var password = $.trim($("#password").val());
+    //var verifycode = $.trim($("#verifycode").val());
     var hashcode = $.trim($("#hashcode").val());
-	$.post("/register",{password:password, mobile:mobile, verifycode:verifycode, hashcode:hashcode}, function(data,status){
+	$.post("/register",{password:password, mobile:mobile,hashcode:hashcode}, function(data,status){
 		if(data.status == 200)
 		{
-			document.location.href = '{{info["base_url"]|e}}'+'login';
+			$("#reghint").html("注册成功，正在跳转登录...");
+			setTimeout("document.location.href = '{{info["base_url"]|e}}'+'login';",3000);
 		}
 		else
 		{
 			$("#reghint").html(data.msg);
-			//$.zxxbox.remind(data.msg, null, {title:'提示',drag: true,bg: false,delay:3000});
 		}
 	},'json');
 })

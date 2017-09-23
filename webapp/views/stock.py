@@ -7,6 +7,9 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
+
+from flask_login import login_required
+
 from webapp.services import getHeaders, db_service as ds,data_service as dts,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.models import MyStock
 from webapp import functions as fn
@@ -15,6 +18,7 @@ from flask import current_app as app
 blueprint = Blueprint('stock', __name__)
 
 @blueprint.route('/mystock/<code>', methods=['GET'])
+@login_required
 def mystock(code):
     title = '自选股'
     if code == '1':
@@ -91,6 +95,7 @@ def report(code):
     return render_template('stock/report.html', title=stock.name+'-财报', mydate=date,code=code)
 
 @blueprint.route('/info/<code>', methods=['GET'])
+@login_required
 def info(code):
     stock = ds.getStock(code[2:])
     mynews = ds.getMyStockNews(code[2:])
@@ -113,6 +118,7 @@ def debet(code):
     return render_template('stock/debet.html', title=stock.name+'-负债', stock=stock)
 
 @blueprint.route('/blog/<code>', methods=['GET'])
+@login_required
 def blog(code):
     stock = ds.getMyStock(code)
     #price = stock.current_price

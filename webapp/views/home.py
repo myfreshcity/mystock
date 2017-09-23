@@ -1,31 +1,46 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+from datetime import datetime
 from flask import Flask, Blueprint,Response, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from flask import json, jsonify, render_template
 import pandas as pd
 import time
+
+from flask_login import login_required, login_user, logout_user
+
 from webapp.services import db_service as ds
 
 blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/', methods = ['GET'])
+@login_required
 def index():
-    return render_template('index.html')
+    title = '首页'
+    return render_template('index.html',title=title)
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     info = {}
-    info['message_l'] = '填写并登录'
-    info['m_name'] = 'logn'
+    info['base_url'] = request.url_root
+    info['m_name'] = session['name'] if 'name' in session else ''
     if request.method == 'POST':
-        formc = {}
-        formc['name_l'] = request.form.get('inputName')
-        formc['psw_l'] = request.form.get('inputPsw')
-        session['name'] = formc['name_l']
-        return jsonify(msg='',status='200')
+        username = request.form.get('mobile')
+        password = request.form.get('password')
+        user = ds.queryUser(username)
+        if (user is None):
+            return jsonify(msg='该用户不存在', status='402')
+        if not user.check_password(password):
+            return jsonify(msg='错误的用户名或密码', status='401')
+        user.last_login_time = datetime.now()
+
+        session['name'] = username
+        # Using the Flask-Login to processing and check the login status for
+        # user. Remember the user's login status.
+        remember = request.form.get('remember') == 'true'
+        login_user(user, remember)
+        return jsonify(msg='OK',status='200')
     return render_template('login.html', info=info)
 
 @blueprint.route('/register', methods=['GET', 'POST'])
@@ -42,8 +57,16 @@ def register():
         if user is None:
             return jsonify(msg='抱歉，注册失败',status='400')
         else:
+            session['name'] = username
             return jsonify(msg='OK', status='200')
     return render_template('register.html', info=info)
+
+@blueprint.route('/logout', methods=['GET', 'POST'])
+def logout():
+    session.pop('name')
+    # Using the Flask-Login to processing and check the logout status for user.
+    logout_user()
+    return redirect(url_for('home.login'))
 
 
 @blueprint.route('/test', methods = ['GET'])

@@ -32,8 +32,10 @@
             <h1>欢迎登录投资笔记</h1>
             <form>
                 <div class="formline">
-                    <div class="labelright"><input type="text" name="mobile" class="roundinput" id="mobile"
-                                                   placeholder="请输入手机号"/></div>
+                    <div class="labelright">
+                        <input type="text" name="mobile" class="roundinput" id="mobile" value='{{info["m_name"]|e}}'
+                               placeholder="请输入手机号"/>
+                    </div>
                     <div class="flhint" id="mobilehint"></div>
                 </div>
                 <div class="formline">
@@ -41,13 +43,13 @@
                                                    placeholder="请输入密码"/></div>
                     <div class="flhint" id="passwordhint"></div>
                 </div>
-                <!--<div class="formline" id="autologinline">-->
-                    <!--<label class="checkbox-group" id="checkboxgroup1">-->
-                        <!--<input type="checkbox" name="autologin" value="1" checked="checked"/>-->
-                        <!--<span>两周内自动登录</span>-->
-                    <!--</label>-->
+                <div class="formline" id="autologinline">
+                    <label class="checkbox-group" id="checkboxgroup1">
+                        <input type="checkbox" id="autologin" value="1" checked="checked"/>
+                        <span>自动登录</span>
+                    </label>
                     <!--<a href="/forgetPassword" class="bluea" id="forgeta">忘记密码</a>-->
-                <!--</div>-->
+                </div>
                 <div class="formline">
                     <input type="hidden" name="fromurl" id="fromurl" value=""/>
                     <input type="button" class="btn" id="regbtn" value="用户登录"/>
@@ -73,9 +75,9 @@ function checkMobile(){
 	if(!isMobile(mobile))
 	{
 		$("#mobile").parent().addClass('has-error');
-        $("#mobilehint").addClass('red').html('无效');
+        $("#mobilehint").addClass('red').html('输入错误');
 	}else{
-	    $("#mobilehint").removeClass('red').addClass('green').html('√');
+	    $("#mobilehint").removeClass('red').addClass('green').html('&#10003');
 	}
 };
 
@@ -84,7 +86,7 @@ function checkPassword(){
 	if(password.length<8)
 	{
 		$("#password").parent().addClass('has-error');
-		$("#passwordhint").html('<span class="red">无效</span>');
+		$("#passwordhint").html('<span class="red">输入错误</span>');
 	}
 };
 
@@ -104,15 +106,13 @@ $("#regbtn").on('click', function(){
     checkMobile();
     checkPassword();
 	if($(".has-error").length>0) return false;
-	var email = $.trim($("#email").val());
 	var password = $.trim($("#password").val());
 	var mobile = $.trim($("#mobile").val());
-	$.post("/my/login.php?act=login&rtype=json",{email:email, password:password, mobile:mobile}, function(data,status){
-		if(data.status == 0)
+	var remember = $('#autologin').is(':checked');
+	$.post("/login",{password:password, mobile:mobile, remember:remember}, function(data,status){
+		if(data.status == 200)
 		{
-			var fromurl = $("#fromurl").val();
-			if(!fromurl) fromurl = '/my/';
-			document.location = fromurl;
+			document.location.href = '{{info["base_url"]|e}}'+'';
 		}
 		else
 		{
