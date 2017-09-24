@@ -8,6 +8,8 @@ import pandas as pd
 import time
 import urllib
 from webapp.services import db_service as ds,data_service as dts,holder_service as hs
+from webapp.extensions import cache
+
 from webapp.models import MyStock
 from webapp import functions as fn
 from flask import current_app as app
@@ -101,6 +103,7 @@ def debetExJson():
     return jsonify(data={'zyysr':zyysrArray,'ch': chArray,'yszk': yszkArray,'chb': chRateArray,'yszkb': yszkRateArray})
 
 @blueprint.route('/report/mainJson', methods=['GET'])
+@cache.cached(timeout=3600*24*30, key_prefix=fn.make_cache_key)
 def report_main():
     code = request.args.get('code')[2:]
     quarter = int(request.args.get('quarter'))
@@ -130,6 +133,7 @@ def report_main():
     return jsonify(cols =cols,tableData=mainData)
 
 @blueprint.route('/report/assetJson', methods=['GET'])
+@cache.cached(timeout=3600*24*30, key_prefix=fn.make_cache_key)
 def report_asset():
     code = request.args.get('code')[2:]
     quarter = int(request.args.get('quarter'))
@@ -211,6 +215,7 @@ def report_asset():
     return jsonify(cols =cols,tableData=assetData)
 
 @blueprint.route('/report/incomeJson', methods=['GET'])
+@cache.cached(timeout=3600*24*30, key_prefix=fn.make_cache_key)
 def report_income():
     code = request.args.get('code')[2:]
     quarter = int(request.args.get('quarter'))
@@ -253,6 +258,7 @@ def report_income():
     return jsonify(cols =cols,tableData=incomeData)
 
 @blueprint.route('/report/cashJson', methods=['GET'])
+@cache.cached(timeout=3600*24*30, key_prefix=fn.make_cache_key)
 def report_cash():
     code = request.args.get('code')[2:]
     quarter = int(request.args.get('quarter'))

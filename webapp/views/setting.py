@@ -31,7 +31,11 @@ def update():
     xues.updateCashWebData(code,headers)
     # 更新交易数据
     ns.updateTradeData(code)
-    dts.global_bdf, dts.global_tdf, dts.global_fdf = (None,None,None)
+
+    dbs.get_global_trade_data()
+    dbs.get_global_finance_data()
+    dbs.get_global_basic_data()
+
     return jsonify(msg=flag)
 
 @blueprint.route('/updateHolder/', methods = ['GET','POST'])

@@ -5,6 +5,7 @@ from flask import Flask, Blueprint,Response, request, session, g, redirect, url_
     render_template, flash
 from flask import json, jsonify, render_template
 import pandas as pd
+from webapp.extensions import cache
 import time
 
 from flask_login import login_required, login_user, logout_user
@@ -15,9 +16,10 @@ blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/', methods = ['GET'])
 @login_required
+@cache.cached(timeout=3600*24*3)
 def index():
-    title = '首页'
-    return render_template('index.html',title=title)
+    #title = '首页'
+    return render_template('index.html')
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])

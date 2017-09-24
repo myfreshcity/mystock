@@ -7,8 +7,8 @@ function getData(period,code) {
              period : period,
              code : code
     },
-    type:'post',
-    cache:false,
+    type:'get',
+    cache:true,
     dataType:'json',
     success:valuation
     });

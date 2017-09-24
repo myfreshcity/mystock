@@ -13,3 +13,10 @@ def get_data_array(mydate,myvalue):
 
 def code_to_ncode(code):
     return 'sh' + code if code[:2] == '60'else 'sz' + code
+
+def make_cache_key(*args, **kwargs):
+    """Dynamic creation the request url."""
+
+    path = request.path
+    args = str(hash(frozenset(request.args.items())))
+    return (path + args).encode('utf-8')

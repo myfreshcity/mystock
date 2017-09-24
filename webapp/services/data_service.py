@@ -6,6 +6,7 @@ from bs4 import  BeautifulSoup,BeautifulStoneSoup
 from sqlalchemy import *
 from flask import g
 import pandas as pd
+from webapp.extensions import cache
 
 from flask import current_app as app
 from webapp.services import db,getHeaders,db_service as dbs,holder_service as hs,ntes_service as ns,xueqiu_service as xues
@@ -16,9 +17,6 @@ from urllib2 import unquote
 import urllib2,re,html5lib
 
 headers = {'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
-global_bdf = None #所有的基础数据
-global_tdf = None #所有股票最近的交易数据
-global_fdf = None #所有股票最近的财务数据
 
 
 def getStockHighPriceV2(code,market):
@@ -200,50 +198,36 @@ def getPerStockHighPrice(df):
     index = pd.Index(st_codes, name='code')
     return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
 
-def getMyStocks(flag,isSingle=False):
-    global global_tdf,global_fdf
+@cache.memoize(timeout=3600*24*30)
+def getMyStocks(flag,user_id,isSingle=False):
     if flag == '0' or flag == '1':
-        global_bdf = pd.read_sql_query("select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
-                               "where ms.code=sb.code and ms.code != '000001'", db.engine, \
-                               index_col='code')
+        global_bdf = pd.read_sql_query(
+            "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+            "where ms.code=sb.code and ms.code != '000001' and ms.user_id = %(uid)s", db.engine, \
+            params={'uid': user_id}, \
+            index_col='code')
         bdf = global_bdf[global_bdf['flag'] == int(flag)]
-        bdf = bdf.sort_values(by='created_time',ascending=False)
-    elif isSingle: #如果是股票代码
+        bdf = bdf.sort_values(by='created_time', ascending=False)
+    elif isSingle:  # 如果是股票代码
         bdf = pd.read_sql_query(
             "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
-            "where ms.code=sb.code and ms.code = %(code)s", db.engine, params={'code': flag}, \
+            "where ms.code=sb.code and ms.code = %(code)s and ms.user_id = %(uid)s", db.engine,
+            params={'code': flag, 'uid': user_id}, \
             index_col='code')
     else:
         tf1 = pd.read_sql_query("select sb.* from relation_stocks rs,stock_basic sb " \
-                               "where rs.relation_stock=sb.code and rs.main_stock=%(name)s", db.engine, params={'name': flag}, \
-                               index_col='code')
-        tf2 = pd.read_sql_query("select * from stock_basic sb " \
-                                "where sb.code=%(name)s", db.engine,
-                                params={'name': flag}, \
+                                "where rs.relation_stock=sb.code and rs.main_stock=%(name)s and rs.user_id=%(uid)s",
+                                db.engine,
+                                params={'name': flag, 'uid': user_id}, \
                                 index_col='code')
+        tf2 = dbs.get_global_basic_data()
+        tf2 = tf2[tf2.isin([flag])]
         bdf = pd.concat([tf1, tf2])
 
     #获取交易数据
-    if global_tdf is None:
-        tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
-                                    from stock_trade_data order by trade_date desc limit 6000", db.engine) #上市股票不足3000家，取两倍数值
-        global_tdf = tdf.groupby([tdf['code']]).first()
-
+    global_tdf = dbs.get_global_trade_data()
     # 获取财务数据
-    if global_fdf is None:
-        fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
-                                        from stock_finance_data order by report_type desc limit 6000", db.engine,
-                                 index_col=['code', 'report_type'])
-        fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                                        from xueqiu_finance_cash order by report_type desc limit 6000", db.engine,
-                                 index_col=['code', 'report_type'])
-        fdf3 = pd.read_sql_query("select code,report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                                        from xueqiu_finance_asset order by report_type desc limit 6000", db.engine,
-                                 index_col=['code', 'report_type'])
-
-        fdf = pd.concat([fdf1, fdf2, fdf3], axis=1, join='inner')
-        fdf = fdf.reset_index()
-        global_fdf = fdf.groupby([fdf['code']]).last()
+    global_fdf = dbs.get_global_finance_data()
 
     df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
 

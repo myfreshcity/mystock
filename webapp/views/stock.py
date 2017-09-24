@@ -5,10 +5,11 @@ from flask import Flask, Response, request, session, g, redirect, url_for, abort
     render_template, flash
 from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
+from webapp.extensions import cache
 import time
 import urllib
 
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from webapp.services import getHeaders, db_service as ds,data_service as dts,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.models import MyStock
@@ -21,14 +22,15 @@ blueprint = Blueprint('stock', __name__)
 @login_required
 def mystock(code):
     title = '自选股'
+    uid = current_user.id
     if code == '1':
-        data = dts.getMyStocks(code)
+        data = dts.getMyStocks(code,uid)
         title = '备选股'
     elif code == '0':
-        data = dts.getMyStocks(code)
+        data = dts.getMyStocks(code,uid)
         title = '自选股'
     else:
-        data = dts.getMyStocks(code)
+        data = dts.getMyStocks(code,uid)
         title = '相关股'
 
     return render_template('stock/mystock_list.html', title=title, code=code, stocks=result_list_to_array(data))
@@ -130,10 +132,11 @@ def valuation(code):
     #price = stock.current_price
     return render_template('stock/valuation.html', title=stock.name+'-估值', code=code)
 
-@blueprint.route('/valuationJson', methods=['POST'])
+@blueprint.route('/valuationJson', methods=['GET'])
+@cache.cached(timeout=3600*24*7, key_prefix=fn.make_cache_key)
 def valuationJson():
-    code = request.form['code']
-    period = int(request.form['period'])
+    code = request.args.get('code')
+    period = int(request.args.get('period'))
     df = ds.getStockValuationN(code[2:],period)
 
     close = []
@@ -347,7 +350,9 @@ def add():
         xues.updateIncomeWebData(code, headers)
         xues.updateCashWebData(code, headers)
 
-        dts.global_bdf, dts.global_tdf, dts.global_fdf = (None, None, None)
+        ds.get_global_trade_data()
+        ds.get_global_finance_data()
+        ds.get_global_basic_data()
     return jsonify(msg='true')
 
 @blueprint.route('/add_relation', methods=['GET', 'POST'])
@@ -399,10 +404,11 @@ def saveInPrice():
 
 @blueprint.route('/saveTag', methods=['POST'])
 def saveTag():
+    uid = current_user.id
     code = request.form['code']
     tag = request.form['tag']
     ds.updateStockTag(code,tag)
-    data = dts.getMyStocks(code,True)
+    data = dts.getMyStocks(code,uid,True)
     return jsonify(msg='true',stock=result_list_to_array(data))
 
 @blueprint.route('/remove', methods=['POST'])

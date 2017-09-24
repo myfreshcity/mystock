@@ -12,7 +12,7 @@ bcrypt = Bcrypt()
 principals = Principal()
 
 # Create the Flask-Cache's instance
-cache = Cache()
+cache = Cache(config={'CACHE_TYPE': 'simple'})
 
 # Create the Flask-Login's instance
 login_manager = LoginManager()

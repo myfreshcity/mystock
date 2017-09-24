@@ -78,7 +78,7 @@ function getMainData() {
     url:$SCRIPT_ROOT + '/detail/report/mainJson',
     data:requestOption,
     type:'get',
-    cache:false,
+    cache:true,
     dataType:'json',
     success:function(result) {
         $('#t0').html(renderNewTable(result));
@@ -102,7 +102,7 @@ function getAssetData() {
     url:$SCRIPT_ROOT + '/detail/report/assetJson',
     data:requestOption,
     type:'get',
-    cache:false,
+    cache:true,
     dataType:'json',
     success:function(result) {
         $('#t1').html(renderNewTable(result));
@@ -126,7 +126,7 @@ function getIncomeData() {
     url:$SCRIPT_ROOT + '/detail/report/incomeJson',
     data:requestOption,
     type:'get',
-    cache:false,
+    cache:true,
     dataType:'json',
     success:function(result) {
         $('#t2').html(renderNewTable(result));
@@ -154,7 +154,7 @@ function getCashData() {
     url:$SCRIPT_ROOT + '/detail/report/cashJson',
     data:requestOption,
     type:'get',
-    cache:false,
+    cache:true,
     dataType:'json',
     success:function(result) {
        $('#t3').html(renderNewTable(result));

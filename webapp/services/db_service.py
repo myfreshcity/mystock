@@ -6,6 +6,7 @@ import numpy as np
 from flask import current_app as app
 from webapp.services import db
 from webapp.models import *
+from webapp.extensions import cache
 import json
 
 from pandas.tseries.offsets import *
@@ -60,6 +61,40 @@ def getPerStockPriceV2():
     df = tdf.groupby([tdf['code']]).first()
     return df
 
+#所有股票基础数据
+@cache.memoize(timeout=3600*24*90)
+def get_global_basic_data():
+    tdf = pd.read_sql_query("select * from stock_basic sb ", db.engine, index_col='code')
+    return tdf
+
+
+#所有股票最近交易数据
+@cache.memoize(timeout=3600*24*7)
+def get_global_trade_data():
+    tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
+                                    from stock_trade_data order by trade_date desc limit 6000", db.engine) #上市股票不足3000家，取两倍数值
+    global_tdf = tdf.groupby([tdf['code']]).first()
+    return global_tdf
+
+#所有股票最近财务数据
+@cache.memoize(timeout=3600*24*30)
+def get_global_finance_data():
+    fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
+                                            from stock_finance_data order by report_type desc limit 6000", db.engine,
+                             index_col=['code', 'report_type'])
+    fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
+                                            from xueqiu_finance_cash order by report_type desc limit 6000", db.engine,
+                             index_col=['code', 'report_type'])
+    fdf3 = pd.read_sql_query("select code,report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
+                                            from xueqiu_finance_asset order by report_type desc limit 6000", db.engine,
+                             index_col=['code', 'report_type'])
+
+    fdf = pd.concat([fdf1, fdf2, fdf3], axis=1, join='inner')
+    fdf = fdf.reset_index()
+    global_fdf = fdf.groupby([fdf['code']]).last()
+    return global_fdf
+
+
 #获取每季度现金变化情况
 def get_cash_rate(code):
     valueDf = get_revenue_df(code)
@@ -73,6 +108,7 @@ def get_cash_rate(code):
 
 # 获取每季度资产负债信息
 # pType 0-按报告期，1-按单季度
+@cache.memoize(timeout=3600*24*30)
 def get_stock_asset(code, quarter=None, pType=0):
     df = pd.read_sql_query("select * from xueqiu_finance_asset where code=%(name)s order by report_type",
                            db.engine, params={'name': code})
@@ -278,6 +314,7 @@ def get_stock_cash(code, quarter=None, pType=0):
 
 #获取每季度营收
 #pType 0-按报告期，1-按单季度
+@cache.memoize(timeout=3600*24*30)
 def get_quarter_stock_revenue(code,quarter=None,pType=0):
     df = get_revenue_df(code,quarter==0,pType)
     if quarter is None:
@@ -437,6 +474,7 @@ def getStockData(code):
     pd.DataFrame(list(cursor))
     return df
 
+@cache.memoize(timeout=3600*24*30)
 def getStock(code):
     stock = db.session.query(Stock).filter_by(code = code).first()
     return stock
