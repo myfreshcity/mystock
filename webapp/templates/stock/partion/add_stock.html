@@ -73,7 +73,9 @@ $(function(){
                     beforeSend: function () { },
                     complete: function (){ },
                     success: function (data) {
-                        stockCode.attr('value', ''); //重置数据
+                        //重置数据
+                        stockCode.attr('value', '');
+                        modal.find('.modal-body #flash_msg').text('');
                         var resultList = data.result.map(function (item) {
                             var aItem = {id: item.id, name: item.name};
                             return JSON.stringify(aItem);

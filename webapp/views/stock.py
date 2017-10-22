@@ -9,7 +9,7 @@ from webapp.extensions import cache
 import time
 import urllib
 
-from flask_login import login_required, current_user
+from flask_login import login_required,current_user
 
 from webapp.services import getHeaders, db_service as ds,data_service as dts,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.models import MyStock
@@ -24,13 +24,13 @@ def mystock(code):
     title = '自选股'
     uid = current_user.id
     if code == '1':
-        data = dts.getMyStocks(code,uid)
+        data = dts.getMyStocks(uid,code)
         title = '备选股'
     elif code == '0':
-        data = dts.getMyStocks(code,uid)
+        data = dts.getMyStocks(uid,code)
         title = '自选股'
     else:
-        data = dts.getMyStocks(code,uid)
+        data = dts.getMyStocks(uid,code)
         title = '相关股'
 
     return render_template('stock/mystock_list.html', title=title, code=code, stocks=result_list_to_array(data))
@@ -99,8 +99,9 @@ def report(code):
 @blueprint.route('/info/<code>', methods=['GET'])
 @login_required
 def info(code):
+    uid = current_user.id
     stock = ds.getStock(code[2:])
-    mynews = ds.getMyStockNews(code[2:])
+    mynews = ds.getMyStockNews(uid,code[2:])
     return render_template('stock/info.html', title=stock.name+'-资讯', stock=stock,code=code,
                            news=mynews)
 
@@ -122,13 +123,17 @@ def debet(code):
 @blueprint.route('/blog/<code>', methods=['GET'])
 @login_required
 def blog(code):
-    stock = ds.getMyStock(code)
+    cd = code[2:].strip()
+    uid = current_user.id
+    stock = ds.getMyStock(uid,cd)
     #price = stock.current_price
     return render_template('stock/blog.html', title=stock.name+'-日志', code=code)
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
-    stock = ds.getMyStock(code)
+    cd = code[2:].strip()
+    uid = current_user.id
+    stock = ds.getMyStock(uid,cd)
     #price = stock.current_price
     return render_template('stock/valuation.html', title=stock.name+'-估值', code=code)
 
@@ -335,14 +340,32 @@ def cashJson():
                          'xjye':xjye,'xjjze_qt':xjjze_qt,'jlr_qt':jlr_qt,'jyjxjl_qt':jyjxjl_qt},\
                             tableData=tableData)
 
+@blueprint.route('/query', methods=['GET'])
+def query():
+    query = request.args.get('query')
+    df = ds.get_global_basic_data()
+    df = df[(df['name'].str.contains(query)) | (df.index.str.contains(query))]
+    result = []
+    for index, row in df.iterrows():
+        result.append(
+            {'id': index, 'name': row['name']}
+        )
+
+    return jsonify(result=result)
+
+
 @blueprint.route('/add', methods=['GET', 'POST'])
 def add():
+    uid = current_user.id
     code = request.form['code']
+    cname = request.form['cname']
     app.logger.debug('code:' + code)
-    msg = ds.addMystock(code)
+    msg = ds.addMystock(uid,code,cname)
+
     if msg:
         return jsonify(msg=msg)
     else:
+        #dts.clearCacheGetMyStocks('1',uid)  # 清除备选股缓存
         ns.updateFinanceData(code)  # 更新财务数据
         ns.updateTradeData(code)  # 更新交易数据
         headers = getHeaders("http://xueqiu.com")
@@ -361,7 +384,8 @@ def add_relation():
     scode = request.form['scode']
 
     app.logger.debug('mcode:' + mcode +',scode:' +scode)
-    msg = ds.addRelationStock(mcode,scode)
+    uid = current_user.id
+    msg = ds.addRelationStock(uid,mcode,scode)
     if msg:
         return jsonify(msg=msg)
     return jsonify(msg='true')
@@ -372,7 +396,8 @@ def del_relation():
     scode = request.form['scode']
 
     app.logger.debug('mcode:' + mcode +',scode:' +scode)
-    msg = ds.delRelationStock(mcode,scode)
+    uid = current_user.id
+    msg = ds.delRelationStock(uid,mcode,scode)
     if msg:
         return jsonify(msg=msg)
     return jsonify(msg='true')
@@ -399,40 +424,46 @@ def saveInPrice():
     code = request.form['code']
     price = request.form['price']
     in_date = request.form['date']
-    ds.updateStockInPrice(code,price,in_date)
+    uid = current_user.id
+    ds.updateStockInPrice(uid,code,price,in_date)
     return jsonify(msg='true')
 
 @blueprint.route('/saveTag', methods=['POST'])
 def saveTag():
-    uid = current_user.id
     code = request.form['code']
     tag = request.form['tag']
-    ds.updateStockTag(code,tag)
-    data = dts.getMyStocks(code,uid,True)
+    uid = current_user.id
+    ds.updateStockTag(uid,code,tag)
+    data = dts.getMyStocks(uid,code,True)
     return jsonify(msg='true',stock=result_list_to_array(data))
 
 @blueprint.route('/remove', methods=['POST'])
 def remove():
     code = request.form['code']
-    ds.removeMystock(code)
+    uid = current_user.id
+    ds.removeMystock(uid,code)
     return jsonify(msg='true',code=code)
 
 @blueprint.route('/rollback', methods=['POST'])
 def rollback():
     code = request.form['code']
-    ds.rollbackStock(code)
+    uid = current_user.id
+    ds.rollbackStock(uid,code)
     return jsonify(msg='true',code=code)
 
 @blueprint.route('/del', methods=['POST'])
 def hardRemove():
     code = request.form['code']
-    ds.hardRemoveMystock(code)
+    uid = current_user.id
+    ds.hardRemoveMystock(uid,code)
+    #dts.clearCacheGetMyStocks('1')  # 清除备选股缓存
     return jsonify(msg='true',code=code)
 
 @blueprint.route('/queryComments', methods=['GET', 'POST'])
 def queryComments():
     code = request.form['code']
-    df = ds.queryComment(code)
+    uid = current_user.id
+    df = ds.queryComment(uid,code)
     data = []
     for x in df:
         data.append({
@@ -447,9 +478,10 @@ def queryComments():
 def addComment():
     code = request.form['code']
     content = request.form['content']
+    uid = current_user.id
     app.logger.debug('code:' + code)
     try:
-        c = ds.addComment(code,content)
+        c = ds.addComment(uid,code,content)
         return jsonify(msg='true',
                        data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content,'id':c.id}
                        )

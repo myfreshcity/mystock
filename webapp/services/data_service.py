@@ -198,8 +198,8 @@ def getPerStockHighPrice(df):
     index = pd.Index(st_codes, name='code')
     return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
 
-@cache.memoize(timeout=3600*24*30)
-def getMyStocks(flag,user_id,isSingle=False):
+def getMyStocks(uid,flag,isSingle=False):
+    user_id = uid
     if flag == '0' or flag == '1':
         global_bdf = pd.read_sql_query(
             "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
@@ -220,8 +220,9 @@ def getMyStocks(flag,user_id,isSingle=False):
                                 db.engine,
                                 params={'name': flag, 'uid': user_id}, \
                                 index_col='code')
+        #添加股票自身
         tf2 = dbs.get_global_basic_data()
-        tf2 = tf2[tf2.isin([flag])]
+        tf2 = tf2[tf2.index == flag]
         bdf = pd.concat([tf1, tf2])
 
     #获取交易数据
@@ -240,6 +241,9 @@ def getMyStocks(flag,user_id,isSingle=False):
     gdf = hs.getGroupStockHolderRate()
     df6 = pd.merge(df4, gdf, how='left',on='code')
     return df6
+
+def clearCacheGetMyStocks(flag,uid,isSingle=False):
+    cache.delete('getMyStocks')
 
 def refreshStockData(start_date=None):
     stocks = db.session.query(MyStock).all()

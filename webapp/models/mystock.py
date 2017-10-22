@@ -29,6 +29,3 @@ class MyStock(db.Model):
     def ncode(self):
       return self.market+self.code
 
-    @classmethod
-    def get_by_code(code):
-        return MyStock.query.filter_by(code=code).first()

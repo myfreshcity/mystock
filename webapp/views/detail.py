@@ -7,6 +7,7 @@ from flask import json, jsonify, Blueprint, render_template
 import pandas as pd
 import time
 import urllib
+from flask_login import login_required,current_user
 from webapp.services import db_service as ds,data_service as dts,holder_service as hs
 from webapp.extensions import cache
 
@@ -545,6 +546,7 @@ def getLinkContent():
 
 @blueprint.route('/addFavoriate', methods=['GET', 'POST'])
 def addFavoriate():
+    uid = current_user.id
     code = request.form['code']
     title = request.form['title']
     url = request.form['url']
@@ -552,7 +554,7 @@ def addFavoriate():
     src = request.form['src']
 
     app.logger.debug('url:' + url)
-    msg = ds.addMystockFavor(code,title,url,dateTime,src)
+    msg = ds.addMystockFavor(uid,code,title,url,dateTime,src)
 
     return jsonify(msg=msg)
 
@@ -564,7 +566,8 @@ def removeFavoriate():
 
 @blueprint.route('/favorList/<code>', methods=['GET'])
 def favorList(code):
-    mynews = ds.getMyStockNews(code[2:])
+    uid = current_user.id
+    mynews = ds.getMyStockNews(uid,code[2:])
     sdata = []
     for ne in mynews:
         sdata.append({

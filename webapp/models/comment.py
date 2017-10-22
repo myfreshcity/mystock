@@ -19,7 +19,3 @@ class Comment(db.Model):
     def __repr__(self):
         return '<Comment %r>' % self.id
 
-    @classmethod
-    def find_by_code(self,cd):
-        return Comment.query.filter_by(stock=cd)
-

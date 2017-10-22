@@ -479,19 +479,20 @@ def getStock(code):
     stock = db.session.query(Stock).filter_by(code = code).first()
     return stock
 
-def getMyStock(code):
-    stock = db.session.query(MyStock).filter_by(code = code[2:].strip()).first()
+def getMyStock(uid,code):
+    stock = db.session.query(MyStock).filter_by(code = code, user_id = uid).first()
     return stock
 
-def getMyStockNews(code):
-    news = db.session.query(MyStockFavor).filter_by(code = code).order_by(desc(MyStockFavor.pub_date))
+def getMyStockNews(uid,code):
+    news = db.session.query(MyStockFavor).filter_by(code = code, user_id = uid).order_by(desc(MyStockFavor.pub_date))
     return news
 
-def addMystock(code):
+def addMystock(uid,code,cname):
     code = code.strip()
+
     if len(code) != 6:
-        return "'"+code+"'无效,长度应为6位"
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+        return "无效的股票，请重新选择"
+    mystock = getMyStock(uid,code)
     if not mystock:
         #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
         #stock = Stock.find_by_code(code)
@@ -505,50 +506,59 @@ def addMystock(code):
         name =  unicode(trade_data[0],'gbk')[1:]
         #trade_data[0].decode('gbk').encode('utf-8')
         if name:
-            mystock = MyStock(code,name,market)
+            mystock = MyStock(code,cname,market)
+            mystock.user_id = uid
             db.session.add(mystock)
             return None
     else:
         return "'"+code+"'股票已存在"
 
-def addMystockFavor(code,title,url,pub_date,src_type):
+def addMystockFavor(uid,code,title,url,pub_date,src_type):
     code = code.strip()
-    myfavor = db.session.query(MyStockFavor).filter_by(url = url).first()
+    myfavor = db.session.query(MyStockFavor).filter_by(url = url,user_id = uid).first()
     if not myfavor:
         myfavor = MyStockFavor(code,title,url,pub_date,src_type)
+        myfavor.user_id = uid
         db.session.add(myfavor)
         return "收藏成功"
     else:
         return "该收藏已存在"
 
-def addRelationStock(mcode,scode):
+def getRelationStock(uid,mcode,scode):
+    return db.session.query(RelationStock)\
+        .filter_by(main_stock=mcode, relation_stock=scode,user_id=uid)\
+        .first()
+
+def addRelationStock(uid,mcode,scode):
     code = scode.strip()
     if len(code) != 6:
         return "'"+code+"'无效,长度应为6位"
     if scode == mcode:
         return "相关股票和母股票相同"
 
-    rstock1 = db.session.query(RelationStock).filter_by(main_stock = mcode,relation_stock = scode).first()
-    rstock2 = db.session.query(RelationStock).filter_by(relation_stock=mcode, main_stock=scode).first()
+    rstock1 = getRelationStock(uid,mcode,scode)
+    rstock2 = getRelationStock(uid,scode,mcode)
 
     if (not rstock1) and (not rstock2):
         rstock = RelationStock(mcode,scode)
+        rstock = uid
         db.session.add(rstock)
         rstock = RelationStock(scode,mcode)
+        rstock = uid
         db.session.add(rstock)
         return None
     else:
         return "'"+code+"'股票已存在"
 
-def delRelationStock(mcode,scode):
-    mystock = db.session.query(RelationStock).filter_by(main_stock = mcode,relation_stock = scode).first()
+def delRelationStock(uid,mcode,scode):
+    mystock = getRelationStock(uid,mcode,scode)
     db.session.delete(mystock)
-    mystock = db.session.query(RelationStock).filter_by(relation_stock=mcode, main_stock=scode).first()
+    mystock = getRelationStock(uid,scode,mcode)
     db.session.delete(mystock)
     return db.session.flush()
 
-def removeMystock(code):
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+def removeMystock(uid,code):
+    mystock = getMyStock(uid,code)
     mystock.flag = '1'
     return db.session.flush()
 
@@ -557,24 +567,24 @@ def removeMystockFavor(fid):
     return db.session.delete(mystock)
 
 
-def hardRemoveMystock(code):
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+def hardRemoveMystock(uid,code):
+    mystock = getMyStock(uid,code)
     db.session.delete(mystock)
     return db.session.flush()
 
-def rollbackStock(code):
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+def rollbackStock(uid,code):
+    mystock = getMyStock(uid,code)
     mystock.flag = '0'
     return db.session.flush()
 
-def updateStockInPrice(code,price,in_date):
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+def updateStockInPrice(uid,code,price,in_date):
+    mystock = getMyStock(uid,code)
     mystock.in_price = price
     mystock.in_date = in_date
     return db.session.flush()
 
-def updateStockTag(code,tag):
-    mystock = db.session.query(MyStock).filter_by(code = code).first()
+def updateStockTag(uid,code,tag):
+    mystock = getMyStock(uid,code)
     mystock.tag = tag
     return db.session.flush()
 
@@ -584,10 +594,11 @@ def updateStock(code,desc,grow_type):
     st.grow_type = grow_type
     return db.session.flush()
 
-def addComment(code,content):
+def addComment(uid,code,content):
     #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
     #stock = Stock.find_by_code(code)
     comment = Comment(code,content)
+    comment.user_id = uid
     comment.created_time = datetime.now()
     db.session.add(comment)
     return comment
@@ -597,9 +608,9 @@ def updateComment(cid,content):
     comment.content = content
     return comment
 
-def queryComment(code):
-    #mystock = db.session.query(MyStock).filter_by(code = code).first()
-    return Comment.find_by_code(code).all()
+def queryComment(uid,code):
+    comments = db.session.query(Comment).filter_by(stock = code,user_id = uid).all()
+    return comments
 
 def addUser(username,password):
     user = User(username=username, password=password)
