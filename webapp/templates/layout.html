@@ -22,12 +22,15 @@
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedColumns.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedHeader.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='jquery.blockui.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap3-typeahead.min.js') }}"></script>
+
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
         $(function(){
-            $(document).ajaxStart(function(){
+            $.ajaxSetup({
+            beforeSend:function(){
                 $.blockUI({
                     message: '加载中...',
                     baseZ: 20000,
@@ -45,11 +48,14 @@
                     }
                 });
                 // console.debug('start');
-              });
-              $(document).ajaxStop(function(){
+            },
+            complete:function(){
                 $.unblockUI();
                 // console.debug('end');
+            }
+
               });
+
         });
     </script>
 </head>

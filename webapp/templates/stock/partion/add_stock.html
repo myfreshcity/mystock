@@ -2,7 +2,9 @@
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
         <h4 class="modal-title" id="addStockModalLabel">添加股票</h4>
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
@@ -10,8 +12,10 @@
         <p class="text-danger" id="flash_msg"></p>
         <form>
           <div class="form-group">
-            <label for="code" class="control-label">股票代码</label>
-            <input type="text" class="form-control" id="code">
+            <label for="cname" class="control-label">股票代码</label>
+            <input type="text" class="form-control" id="cname" data-provide="typeahead" data-value="" autocomplete="off"
+                   placeholder="股票代码或名称">
+            <input type="hidden" id="code" />
           </div>
         </form>
       </div>
@@ -36,11 +40,15 @@ $(function(){
       //modal.find('.modal-title').text('设置股票 ' + recipient);
       modal.find('.modal-footer .btn-primary').on("click",save);
 
+      var stockCname = modal.find('#cname');
+      var stockCode = modal.find('#code');
+
     function save() {
       var aj = $.ajax( {
       url:$SCRIPT_ROOT + '/stock/add',
       data:{
-               code : modal.find('.modal-body #code').val()
+               code : stockCode.val(),
+               cname : stockCname.val()
       },
       type:'post',
       cache:false,
@@ -55,6 +63,58 @@ $(function(){
       });
     }
 
+    stockCname.typeahead({
+              source: function (query, process) {
+                return $.ajax({
+                    url: $SCRIPT_ROOT + '/stock/query',
+                    type: 'get',
+                    data: { query: query },
+                    dataType: 'json',
+                    beforeSend: function () { },
+                    complete: function (){ },
+                    success: function (data) {
+                        stockCode.attr('value', ''); //重置数据
+                        var resultList = data.result.map(function (item) {
+                            var aItem = {id: item.id, name: item.name};
+                            return JSON.stringify(aItem);
+                        });
+                        return process(resultList);
+
+                    }
+                });
+
+            },
+            /**
+         * 使用指定的方式，高亮(指出)匹配的部分
+         *
+         * @param obj 数据源中返回的单个实例
+         * @returns {XML|void|string|*} 数据列表中数据的显示方式（如匹配内容高亮等）
+         */
+        highlighter: function (obj) {
+            var item = JSON.parse(obj);
+            var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+            return item.name.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return  '<strong>' + match + '</strong>'
+            }) + '&nbsp;&nbsp;'
+            + item.id.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return match
+            });
+        },
+        /**
+         * 在选中数据后的操作，这里的返回值代表了输入框的值
+         *
+         * @param obj
+         * @return 选中后，最终输入框里的值
+         */
+        updater: function (obj) {
+            var item = JSON.parse(obj);
+            stockCode.attr('value', item.id);
+            return item.name;
+        },
+            minLength:1,
+            items: 10,   //显示10条
+            delay: 800,  //延迟时间
+        });
 
 
 
