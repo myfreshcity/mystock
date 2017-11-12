@@ -2,6 +2,8 @@
 import sys
 
 #网易数据来源
+import traceback
+
 import pandas as pd
 from pandas.tseries.offsets import *
 from sqlalchemy import text
@@ -11,8 +13,11 @@ from webapp.services import db, db_service as dbs
 from flask import current_app as app
 from datetime import datetime
 
+def getFinanceDataFromNet(code):
+    url = 'http://quotes.money.163.com/service/zycwzb_' + code + '.html?type=report'
+    return pd.read_csv(url)
 
-def updateFinanceData(code):
+def updateFinanceData(code,tdf):
     # 获得开始日期
     sql = "select max(report_type) from stock_finance_data where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
@@ -20,9 +25,6 @@ def updateFinanceData(code):
     if (s_date == None):
         s_date = dbs.getStock(code).launch_date  # 取上市日期
     s_date = max(s_date, pd.to_datetime('2000-01-01').date())
-
-    url = 'http://quotes.money.163.com/service/zycwzb_' + code + '.html?type=report'
-    tdf = pd.read_csv(url)
     tdf = tdf.iloc[:, 1:].dropna(axis=1).T.reset_index()
 
 
@@ -46,9 +48,9 @@ def updateFinanceData(code):
         s_lye = tdf[tdf['index'] == lastYearEnd.strftime('%Y-%m-%d')]
         lastYearQuart = dt - DateOffset(months=12)  # 去年同期
         s_lyq = tdf[tdf['index'] == lastYearQuart.strftime('%Y-%m-%d')]
-        app.logger.debug(
-            dt.strftime('%Y-%m-%d') + ':' + lastYearEnd.strftime('%Y-%m-%d') + ':' + lastYearQuart.strftime(
-                '%Y-%m-%d'))
+        #app.logger.debug(
+        #    dt.strftime('%Y-%m-%d') + ':' + lastYearEnd.strftime('%Y-%m-%d') + ':' + lastYearQuart.strftime(
+        #        '%Y-%m-%d'))
         v1 = s_dt.get(attri)
 
         if dt.quarter != 4:
@@ -64,7 +66,7 @@ def updateFinanceData(code):
             v4 = int(v1) + (int(v2) - int(v3))
             return 1 if v4==0 else v4
         except Exception, ex:
-            app.logger.error(ex)
+            #app.logger.error(ex)
             return 1
 
     def getQuarterRevence(x, attri):
@@ -86,7 +88,8 @@ def updateFinanceData(code):
             v4 = int(v1) - int(v2)
             return 1 if v4==0 else v4
         except Exception, ex:
-            app.logger.error(ex)
+            #msg = traceback.format_exc()
+            #app.logger.error(msg)
             return 1
 
     if tdf['index'].max() > s_date.strftime("%Y-%m-%d"):
@@ -134,7 +137,8 @@ def updateFinanceData(code):
             if v2.empty:
                 return None
             else:
-                return (float(v1) - float(v2)) / abs(float(v2))
+                v3 = (float(v1) - float(v2)) / abs(float(v2))
+                return round(v3,2)
 
         df['jlr_rate'] = df['report_type'].apply(pct_change_fix,args=('jlr_ttm',))
 
@@ -161,15 +165,15 @@ def updateTradeData(code):
     mc = '0' if code[:2]=='60' else '1'
     url = 'http://quotes.money.163.com/service/chddata.html?code=' + mc  + code +\
           '&start=' + s_date.strftime("%Y%m%d") + '&end=' + e_date.strftime("%Y%m%d") + '&fields=TCLOSE;VATURNOVER;TCAP;MCAP'
-    app.logger.info('query stock('+code+') trade data url is:'+url)
+    #app.logger.info('query stock('+code+') trade data url is:'+url)
     try:
         tdf = pd.read_csv(url,names=['trade_date','code','name','close','volume','t_cap','m_cap'],header=0)
         tdf = pd.DataFrame({
             'trade_date': tdf['trade_date'],
             'close': tdf['close'],
-            'volume': tdf['volume'],
-            't_cap': tdf['t_cap'],
-            'm_cap': tdf['m_cap'],
+            'volume': int(tdf['volume']),
+            't_cap': int(tdf['t_cap']),
+            'm_cap': int(tdf['m_cap']),
             'code': code
         })
         #获取历史周数据存储

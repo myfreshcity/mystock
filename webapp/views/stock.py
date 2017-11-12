@@ -25,9 +25,11 @@ def mystock(code):
     uid = current_user.id
     if code == '1':
         data = dts.getMyStocks(uid,code)
+        code = 'sh000001'
         title = '备选股'
     elif code == '0':
         data = dts.getMyStocks(uid,code)
+        code = 'sh000001'
         title = '自选股'
     else:
         data = dts.getMyStocks(uid,code)
@@ -361,21 +363,8 @@ def add():
     cname = request.form['cname']
     app.logger.debug('code:' + code)
     msg = ds.addMystock(uid,code,cname)
-
     if msg:
         return jsonify(msg=msg)
-    else:
-        #dts.clearCacheGetMyStocks('1',uid)  # 清除备选股缓存
-        ns.updateFinanceData(code)  # 更新财务数据
-        ns.updateTradeData(code)  # 更新交易数据
-        headers = getHeaders("http://xueqiu.com")
-        xues.updateAssetWebData(code, headers)
-        xues.updateIncomeWebData(code, headers)
-        xues.updateCashWebData(code, headers)
-
-        ds.get_global_trade_data()
-        ds.get_global_finance_data()
-        ds.get_global_basic_data()
     return jsonify(msg='true')
 
 @blueprint.route('/add_relation', methods=['GET', 'POST'])

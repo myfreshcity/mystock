@@ -20,10 +20,12 @@ def getWebData(url,headers):
     tdf = pd.read_csv(dataFile)
     return tdf
 
-def updateIncomeWebData(code, headers):
+def getIncomeWebDataFromNet(code, headers):
     market = 'SH' if code[:2] == '60' else 'SZ'
-    u1 = 'http://api.xueqiu.com/stock/f10/incstatement.csv?symbol='+market+code+'&page=1&size=10000'
-    tdf = getWebData(u1, headers)
+    u1 = 'http://api.xueqiu.com/stock/f10/incstatement.csv?symbol=' + market + code + '&page=1&size=10000'
+    return getWebData(u1, headers)
+
+def updateIncomeWebData(code, tdf):
     t1_df = pd.DataFrame({
         'report_type': tdf['报表期截止日'],
         'in_all': tdf['营业总收入'],
@@ -53,11 +55,12 @@ def updateIncomeWebData(code, headers):
     })
     saveData(t1_df, code, 'xueqiu_finance_income')
 
-
-def updateAssetWebData(code, headers):
+def getAssetWebDataFromNet(code, headers):
     market = 'SH' if code[:2] == '60' else 'SZ'
-    u2 = 'http://api.xueqiu.com/stock/f10/balsheet.csv?symbol='+market+code+'&page=1&size=10000'
-    tdf = getWebData(u2, headers)
+    u2 = 'http://api.xueqiu.com/stock/f10/balsheet.csv?symbol=' + market + code + '&page=1&size=10000'
+    return getWebData(u2, headers)
+
+def updateAssetWebData(code, tdf):
     tdf['report_date'] = tdf.iloc[:, 0:1]
     t2_df = pd.DataFrame({
         'report_type': tdf['report_date'],
@@ -120,10 +123,13 @@ def updateAssetWebData(code, headers):
     })
     saveData(t2_df, code, 'xueqiu_finance_asset')
 
-def updateCashWebData(code, headers):
+def getCashWebDataFromNet(code, headers):
     market = 'SH' if code[:2] == '60' else 'SZ'
-    u3 = 'http://api.xueqiu.com/stock/f10/cfstatement.csv?symbol='+market+code+'&page=1&size=10000'
-    tdf = getWebData(u3, headers)
+    u3 = 'http://api.xueqiu.com/stock/f10/cfstatement.csv?symbol=' + market + code + '&page=1&size=10000'
+    return getWebData(u3, headers)
+
+
+def updateCashWebData(code, tdf):
     # tdf['report_date'] = tdf.iloc[:,1:2]
     t3_df = pd.DataFrame({
         'report_type': tdf['报表期截止日'],

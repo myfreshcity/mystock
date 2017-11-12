@@ -23,18 +23,30 @@ def index():
 @blueprint.route('/update/', methods = ['GET','POST'])
 def update():
     code = request.form['code'][2:]
+
     # 更新财务数据
-    flag = ns.updateFinanceData(code)
+
+    # 更新网易来源数据
+    d1 = ns.getFinanceDataFromNet(code)
+    flag = ns.updateFinanceData(code,d1)
+    # 更新雪球来源数据
     headers = getHeaders("http://xueqiu.com")
-    xues.updateAssetWebData(code,headers)
-    xues.updateIncomeWebData(code,headers)
-    xues.updateCashWebData(code,headers)
+
+    d2 = xues.getAssetWebDataFromNet(code, headers)
+    xues.updateAssetWebData(code, d2)
+
+    d3 = xues.getIncomeWebDataFromNet(code, headers)
+    xues.updateIncomeWebData(code, d3)
+
+    d4 = xues.getCashWebDataFromNet(code, headers)
+    xues.updateCashWebData(code, d4)
+
     # 更新交易数据
     ns.updateTradeData(code)
 
-    dbs.get_global_trade_data()
-    dbs.get_global_finance_data()
-    dbs.get_global_basic_data()
+    #dbs.get_global_trade_data()
+    #dbs.get_global_finance_data()
+    #dbs.get_global_basic_data()
 
     return jsonify(msg=flag)
 
@@ -43,7 +55,7 @@ def updateHolder():
     code = request.args.get('code')
     #heads = getHeaders('https://xueqiu.com')
     (session,heads) = getXueqiuHeaders()
-    hs.updateStockHolder(code,session,heads)
+    hs.updateStockHolder(code)
     return jsonify(msg=True)
 
 @blueprint.route('/updateAll/<int:cat>', methods = ['GET','POST'])

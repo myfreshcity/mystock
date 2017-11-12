@@ -245,18 +245,3 @@ def getMyStocks(uid,flag,isSingle=False):
 def clearCacheGetMyStocks(flag,uid,isSingle=False):
     cache.delete('getMyStocks')
 
-def refreshStockData(start_date=None):
-    stocks = db.session.query(MyStock).all()
-    #stocks = db.session.query(Stock).all()
-    for st in stocks:
-        app.logger.info('checking stock data for:' + st.code)
-        ns.updateFinanceData(st.code)
-        headers = getHeaders("http://xueqiu.com")
-        xues.updateAssetWebData(st.code, headers)
-        xues.updateIncomeWebData(st.code, headers)
-        xues.updateCashWebData(st.code, headers)
-
-        ns.updateTradeData(st.code)
-        db.session.flush()
-
-

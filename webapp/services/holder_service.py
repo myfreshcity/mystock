@@ -15,6 +15,8 @@ from datetime import datetime
 import urllib2,re,html5lib
 
 group_stockholder_rate = None
+session, headers = getXueqiuHeaders()
+
 
 def getLatestStockHolder():
     global group_stockholder_rate
@@ -25,18 +27,11 @@ def getLatestStockHolder():
         #group_stockholder_rate = gdf[gdf['holder_type'] != '自然人股']
     return group_stockholder_rate
 
-def refreshStockHolder(start_date='2017-03-31'):
+def getRefreshStocks():
+    start_date = datetime.now().strftime('%Y-%m-%d')
     #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(and_(Stock.latest_report < start_date,Stock.launch_date < start_date)).all()
-    #stocks = stocks = db.session.query(MyStock).all()
-    #heads = getHeaders('http://xueqiu.com')
-    (session, heads) = getXueqiuHeaders()
-    for st in stocks:
-        app.logger.info('checking stock holder for:' + st.code)
-        latest_report = updateStockHolder(st.code,session,heads)
-        st.latest_report = latest_report
-        db.session.flush()
-        app.logger.info('update done. the latest report date is:' + latest_report)
+    stocks = db.session.query(Stock).filter(or_(Stock.holder_updated_time == None,Stock.holder_updated_time < start_date)).all()
+    return map(lambda x:x.code, stocks)
 
 
 def refreshStockHolderSum(gdf,code):
@@ -101,17 +96,23 @@ def getStockHolderRank():
     t7_df = pd.merge(t6_df, bdf, on='code')
     return t7_df
 
-
-def updateStockHolder(code,session,headers):
+def getStockHolderFromNet(code):
+    #app.logger.info('checking stock holder for:' + code)
     mc = 'SH' if code[:2] == '60' else 'SZ'
     url = "https://xueqiu.com/stock/f10/shareholder.json?symbol=" + mc + code + "&page=1&size=4"
-    app.logger.debug('stock holder url is:' + url)
-    #req = urllib2.Request(url=url, headers=headers)
-    #feeddata = urllib2.urlopen(req).read()
+    #app.logger.debug('stock holder url is:' + url)
+    # req = urllib2.Request(url=url, headers=headers)
+    # feeddata = urllib2.urlopen(req).read()
     res1 = session.get(url, headers=headers)
+    return {'code':code,'data':json.loads(res1.content)}
 
-    fd = json.loads(res1.content)
+def updateStockHolder(data):
+    code = data['code']
+    fd = data['data']
     fArray = []
+    if fd['list'] is None:
+        return
+
     for e in fd['list']:
         fArray = fArray + e['list']
     ndf = pd.DataFrame(fArray)
@@ -133,6 +134,7 @@ def updateStockHolder(code,session,headers):
     sql = "select max(report_date) from stock_holder where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
     s_date = resultProxy.scalar()
+
     if (s_date == None):
         s_date = dbs.getStock(code).launch_date  # 取上市日期
 
@@ -143,9 +145,16 @@ def updateStockHolder(code,session,headers):
     if not df2.empty:
         df2.to_sql('stock_holder', db.engine, if_exists='append', index=False, chunksize=1000)
         #更新汇总信息
-        refreshStockHolderSum(df2,code)
+        #refreshStockHolderSum(df2,code)
 
-    return df1['report_date'].max()
+    latest_report = df1['report_date'].max()
+    #更新stock情况
+    st = dbs.getStock(code)
+    st.latest_report = latest_report
+    st.holder_updated_time = datetime.now()
+    db.session.flush()
+    app.logger.info(code +' update done. the latest report date is:' + latest_report)
+
 
 #近期持股情况比较
 def getStockHolder(code,report_date,direction):

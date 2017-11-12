@@ -16,10 +16,11 @@ blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/', methods = ['GET'])
 @login_required
-@cache.cached(timeout=3600*24*3)
 def index():
-    #title = '首页'
-    return render_template('index.html')
+    # title = '首页'
+    rw = ds.get_random_warning()
+    code = 'sh000001'
+    return render_template('index.html', info=rw, code=code)
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])

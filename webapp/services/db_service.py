@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import random
 import sys
+
 from sqlalchemy import create_engine,text
 import pandas as pd
 import numpy as np
 from flask import current_app as app
+
+from webapp.models.invest_warning import InvestWarning
 from webapp.services import db
 from webapp.models import *
 from webapp.extensions import cache
@@ -11,7 +15,7 @@ import json
 
 from pandas.tseries.offsets import *
 from datetime import datetime
-from sqlalchemy import desc
+from sqlalchemy import *
 import urllib2,re
 
 from pymongo import MongoClient
@@ -474,10 +478,27 @@ def getStockData(code):
     pd.DataFrame(list(cursor))
     return df
 
-@cache.memoize(timeout=3600*24*30)
+def get_random_warning():
+    iws = db.session.query(InvestWarning).all()
+    return random.sample(iws,1)[0]
+
+
 def getStock(code):
     stock = db.session.query(Stock).filter_by(code = code).first()
     return stock
+
+def get_refresh_finance_stocks():
+    start_date = datetime.now().strftime('%Y-%m-%d')
+    #获得所有股票代码列表
+    stocks = db.session.query(Stock).filter(or_(Stock.finance_updated_time == None,Stock.finance_updated_time < start_date)).all()
+    return map(lambda x:x.code, stocks)
+    #return [stocks.code]
+
+def get_refresh_trade_stocks():
+    start_date = datetime.now().strftime('%Y-%m-%d')
+    #获得所有股票代码列表
+    stocks = db.session.query(Stock).filter(or_(Stock.trade_updated_time == None,Stock.trade_updated_time < start_date)).all()
+    return map(lambda x:x.code, stocks)
 
 def getMyStock(uid,code):
     stock = db.session.query(MyStock).filter_by(code = code, user_id = uid).first()
@@ -489,27 +510,15 @@ def getMyStockNews(uid,code):
 
 def addMystock(uid,code,cname):
     code = code.strip()
-
     if len(code) != 6:
         return "无效的股票，请重新选择"
     mystock = getMyStock(uid,code)
     if not mystock:
-        #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
-        #stock = Stock.find_by_code(code)
         market = 'sh' if code[0:2]=='60' else 'sz'
-        code = code.strip()
-        url = "http://hq.sinajs.cn/list=" + market + code
-        req = urllib2.Request(url)
-        res_data = urllib2.urlopen(req).read()
-        match = re.search(r'".*"', res_data).group(0)
-        trade_data = match.split(',')
-        name =  unicode(trade_data[0],'gbk')[1:]
-        #trade_data[0].decode('gbk').encode('utf-8')
-        if name:
-            mystock = MyStock(code,cname,market)
-            mystock.user_id = uid
-            db.session.add(mystock)
-            return None
+        mystock = MyStock(code,cname,market)
+        mystock.user_id = uid
+        db.session.add(mystock)
+        return None
     else:
         return "'"+code+"'股票已存在"
 

@@ -12,6 +12,9 @@ class Stock(db.Model):
     ltgb = db.Column(db.Numeric)
     launch_date = db.Column(db.Date)
     latest_report = db.Column(db.Date)
+    holder_updated_time = db.Column(db.DateTime)
+    trade_updated_time = db.Column(db.DateTime)
+    finance_updated_time = db.Column(db.DateTime)
     desc = db.Column(db.String(500))
     grow_type = db.Column(db.String(3))
 
