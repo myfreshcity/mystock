@@ -2,10 +2,10 @@
 
 {% block nav %}
     {% if title=='备选股' %}
-    <li><a href="#addStockModal"  data-toggle="modal">添加股票</a></li>
+    <li><a href="#addStockModal"  data-toggle="modal">添加备选股</a></li>
     {% endif %}
     {% if title=='自选股' %}
-    <li><a href="/stock/blog/sh000001">交易日记</a></li>
+    <li><a href="#addStockModal"  data-toggle="modal">添加自选股</a></li>
     {% endif %}
     {% if title=='相关股' %}
     <li><a href="#addRelationStockModal"  data-toggle="modal" data-stock="{{code|e}}">添加相关股票</a></li>
@@ -19,16 +19,14 @@
         <thead>
         <tr>
             <th></th>
-            <th>编码</th>
+            <th>代码</th>
             <th>名称</th>
-            <th>类型</th>
             <th>增长率(%)</th>
-            <th width="40"><a href="#" data-toggle="tooltip" title="经营现金比净利润">现金利润比(PCF/PE)</a></th>
-            <th width="40"><a href="#" data-toggle="tooltip" title="净资产收益率">ROE(PE/PB)</a></th>
+            <th><a href="#" data-toggle="tooltip" title="经营现金比净利润">现金利润比(PCF/PE)</a></th>
+            <th><a href="#" data-toggle="tooltip" title="净资产收益率">ROE(PE/PB)</a></th>
             <th>市现率(PCF)</th>
             <th>市盈率(PE)</th>
             <th>市净率(PB)</th>
-            <th width="40">机构持股</th>
             <th>市值(亿)</th>
             <th></th>
         </tr>
@@ -37,22 +35,20 @@
         {% for d in stocks: %}
         <tr id="row-{{d.code|e}}">
             <td><span class="label label-warning">{{d.tag|e}}</span></td>
-            <td><a href='/stock/report/{{d.ncode|e}}' target="_blank">{{d.code|e}}</a></td>
-            <td><a href='/stock/info/{{d.ncode|e}}' target="_blank">{{d.name|e}}</a></td>
-            <td>{{d.grow_type|e}}</td>
-            <td><a href='/stock/{{d.ncode|e}}' target="_blank">{{d.jlr_rate|e}}</a></td>
-            <td><a href='/stock/cash/{{d.ncode|e}}' target="_blank">{{d.cash_rate|e}}</a></td>
+            <td>{{d.code|e}}</td>
+            <td>{{d.name|e}}</td>
+            <td>{{d.jlr_rate|e}}</td>
+            <td>{{d.cash_rate|e}}</td>
             <td><a href="#roeModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.roe|e}}</a></td>
             <td><a href="#pcfModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pcf|e}}</a></td>
             <td><a href="#peModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pe|e}}</a></td>
             <td><a href="#pbModal" data-stock="{{d.ncode|e}}" data-name="{{d.name|e}}" data-toggle="modal">{{d.pb|e}}</a></td>
-            <td><a href='/stock/holder/{{d.code|e}}' target="_blank">{{d.sh_rate|e}}</a></td>
             <td><a href='https://xueqiu.com/S/{{d.ncode|e}}' target="_blank">{{d.mvalue|e}}</a></td>
             <td>
                 <div class="btn-group pull-right">
                     <button type="button" class="btn btn-default　btn-sm dropdown-toggle" data-toggle="dropdown"
                             aria-haspopup="true" aria-expanded="false">
-                        Action <span class="caret"></span>
+                        操作 <span class="caret"></span>
                     </button>
                     <ul class="dropdown-menu">
                         {% if title=='自选股' %}
@@ -65,15 +61,15 @@
                         {% if title=='相关股' and d.code != code %}
                         <li><a href="#" onclick="javascript:delRelation('{{code|e}}','{{d.code|e}}',this);return false;">从相关股清除</a></li>
                         {% endif %}
-                        <li><a href="#" onclick="javascript:updateData('{{d.ncode|e}}');return false;">更新</a></li>
                         <li><a href="#editTagModal" data-stock="{{d.code|e}}" data-tag="{{d.tag|e}}" data-toggle="modal">标注</a></li>
-                        <li><a href="#buyStockModal" data-stock="{{d.code|e}}" data-inprice="{{d.in_price|e}}" data-indate="{{d.in_date|e}}" data-toggle="modal">设置</a></li>
-                        <li><a href='/stock/blog/{{d.ncode|e}}' target="_blank">日志</a></li>
+
+                        <li><a href='/stock/info/{{d.ncode|e}}' target="_blank">资讯</a></li>
+                        <li><a href='/stock/report/{{d.ncode|e}}' target="_blank">财报</a></li>
+                        <li><a href='/stock/{{d.ncode|e}}' target="_blank">成长</a></li>
+                        <li><a href='/stock/cash/{{d.ncode|e}}' target="_blank">现金</a></li>
+                        <li><a href='/stock/holder/{{d.ncode|e}}' target="_blank">持股</a></li>
                         <li><a href='/stock/mystock/{{d.code|e}}' target="_blank">相关股票</a></li>
-                        <li><a href='http://data.eastmoney.com/notice/{{d.code|e}}.html' target="_blank">公告</a></li>
-                        <li><a href='http://soft-f9.eastmoney.com/soft/gp30.php?code={{d.pcode|e}}' target="_blank">业务分析</a></li>
                         <li><a href="#relationModal" data-stock="{{d.code|e}}" data-name="{{d.name|e}}" data-toggle="modal">行业对比</a></li>
-                        <li><a href='http://quotes.money.163.com/f10/zycwzb_{{d.code|e}},year.html' target="_blank">财务指标</a></li>
                     </ul>
                 </div>
             </td>
@@ -196,7 +192,7 @@ $(function(){
     "order": [],
     scrollY: 600,
     aoColumnDefs: [
-        { "sWidth": "1%", "aTargets": [ 0 ] },
+        { "sWidth": "10", "aTargets": [ 0 ] },
         { "sWidth": "6%", "aTargets": [ 1 ] },
         { "sWidth": "10%", "aTargets": [ 2 ] },
         { "sWidth": "2%", "aTargets": [ 3 ] }

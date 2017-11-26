@@ -1,10 +1,4 @@
-{% extends "layout.html" %}
-
-{% block nav %}
-<li><a href="http://quotes.money.163.com/f10/fhpg_{{ stock.code|safe }}.html#01d05" target="_blank">分红配股</a></li>
-<li><a href="http://quotes.money.163.com/f10/nbcg_{{ stock.code|safe }}.html#01d04" target="_blank">内部持股</a></li>
-<li><a href="http://stockdata.stock.hexun.com/gszl/ggml-{{ stock.code|safe }}.shtml" target="_blank">高管持股</a></li>
-{% endblock %}
+{% extends "stock_layout.html" %}
 
 {% block body %}
 
@@ -18,7 +12,9 @@
         <div class="row">
           <div class="col-md-2 col-md-offset-10">
             <a id="m1_link_next" href="#">下一期</a>
+            {% if admin_permission.can() %}
             <a id="m1_link" href='#'>更新数据</a>
+            {% endif %}
             <a id="m1_link_pre" href="#">前一期</a>
           </div>
           <table id="data_table" class="display" cellspacing="0" width="90%"></table>
