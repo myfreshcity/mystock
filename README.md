@@ -1,7 +1,29 @@
 # mystock
 
 启动程序
- python manage.py runserver -H localhost
+ venv/bin/python manage.py runserver -H localhost
+
+更新股东持股数据
+ venv/bin/python refresh_stock_holder.py
+
+更新财务数据
+ venv/bin/python refresh_stock_finance.py
+
+更新交易数据
+ venv/bin/python refresh_stock_trade.py
+
+
+生产环境的启动
+ venv/bin/uwsgi --ini uwsgi.ini | tail -f uwsgi.log
+
+ 程序终止：
+ kill -HUP `cat uwsgi.pid`
+ venv/bin/uwsgi --reload uwsgi.pid | tail -f uwsgi.log
+
+centos:
+   解决：EnvironmentError: mysql_config not found
+   yum install python-devel mysql-devel
+
 
 virtualenvs 配置：
  virtualenv venv

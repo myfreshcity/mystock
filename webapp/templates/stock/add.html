@@ -3,9 +3,18 @@
 <div class="container-fluid">
     <form action="{{ url_for('stock.add') }}" method="post">
         股票代码
-        <p><input name="code" type="text" /></p>
+        <p> <input type="text" class="form-control" id="code" data-provide="typeahead"
+                   placeholder="股票代码或名称"></p>
+        <div class="well">
+	<input type="text" class="span3" style="margin: 0 auto;" data-provide="typeahead" data-items="4" data-source="[&quot;Ahmedabad&quot;,&quot;Akola&quot;,&quot;Asansol&quot;,&quot;Aurangabad&quot;,&quot;Bangaluru&quot;,&quot;Baroda&quot;,&quot;Belgaon&quot;,&quot;Berhumpur&quot;,&quot;Calicut&quot;,&quot;Chennai&quot;,&quot;Chapra&quot;,&quot;Cherapunji&quot;]">
+</div>
         <button type="submit">提交</button>
     </form>
 </div>
+
+<script type=text/javascript>
+    var subjects = ['PHP', 'MySQL', 'SQL', 'PostgreSQL', 'HTML', 'CSS', 'HTML5', 'CSS3', 'JSON'];
+    $('#code').typeahead({source: subjects})
+</script>
 
 {% endblock %}

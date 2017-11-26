@@ -133,9 +133,7 @@ def blog(code):
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
-    cd = code[2:].strip()
-    uid = current_user.id
-    stock = ds.getMyStock(uid,cd)
+    stock = ds.getStock(code[2:])
     #price = stock.current_price
     return render_template('stock/valuation.html', title='估值-'+stock.name, code=code)
 
