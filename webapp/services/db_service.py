@@ -25,10 +25,6 @@ def getItemDates():
     items = DataItem.query.all()
     return items
 
-def getStocks():
-    df = pd.read_sql_query("select code,name from stock_basic",db.engine,index_col='code')
-    return df
-
 #获取当前股价
 def getPerStockPrice(df):
     q_st_codes = []

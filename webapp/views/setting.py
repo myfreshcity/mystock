@@ -20,6 +20,24 @@ def index():
     data = dbs.getItemDates()
     return render_template('/setting/index.html', title='设置',dataItems=data)
 
+@blueprint.route('/stocks', methods = ['GET'])
+def stocks():
+
+    df = dbs.get_global_basic_data()
+    data = []
+    for index, row in df.iterrows():
+        data.append({
+            'code':index,
+            'name': row['name'],
+            'launch_date':row['launch_date'].strftime('%Y-%m-%d'),
+            'latest_report':row['latest_report'].strftime('%Y-%m-%d'),
+            'holder_updated_time': row['holder_updated_time'].strftime('%Y-%m-%d %H:%M'),
+            'trade_updated_time': row['trade_updated_time'].strftime('%Y-%m-%d %H:%M'),
+            'finance_updated_time': row['finance_updated_time'].strftime('%Y-%m-%d %H:%M')
+        })
+    return render_template('/setting/stocks.html', title='股票',dataItems=data)
+
+
 @blueprint.route('/update/', methods = ['GET','POST'])
 def update():
     code = request.form['code'][2:]
