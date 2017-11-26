@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../static/styles/my.css?v=20160624">
     <link rel="stylesheet" href="../static/styles/mainv2.css?v=20160318">
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
 </head>
 
 <body class="whitebody">
@@ -109,16 +110,48 @@ $("#regbtn").on('click', function(){
 	var password = $.trim($("#password").val());
 	var mobile = $.trim($("#mobile").val());
 	var remember = $('#autologin').is(':checked');
-	$.post("/login",{password:password, mobile:mobile, remember:remember}, function(data,status){
-		if(data.status == 200)
-		{
-			document.location.href = '{{info["base_url"]|e}}'+'';
-		}
-		else
-		{
-			$("#loginhint").html(data.msg);
-		}
-	},'json');
+
+	$.ajax({
+                    url: '/login',
+                    type: 'post',
+                    data: {password:password, mobile:mobile, remember:remember},
+                    dataType: 'json',
+                    beforeSend: function () {
+                     $.blockUI({
+                    message: '登录中...',
+                    baseZ: 20000,
+                    css: {
+                        border: '1px solid #ddd',
+                        padding: '7px',
+                        fontSize: '13px',
+                        position: 'fixed',
+                        backgroundColor: '#eee'
+                    },
+                    overlayCSS: {
+                        backgroundColor: '#555',
+                        opacity: 0.5,
+                        cursor: 'wait'
+                    }
+                });
+
+                     },
+                    complete: function (){
+                    $.unblockUI();
+                    },
+                    success: function (data,status) {
+                        if(data.status == 200)
+                            {
+                                document.location.href = '{{info["base_url"]|e}}'+'';
+                            }
+                            else
+                            {
+                                $("#loginhint").html(data.msg);
+                            }
+
+                    }
+                });
+
+
 })
 
 

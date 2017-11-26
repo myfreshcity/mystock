@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="../static/styles/my.css?v=20160624">
     <link rel="stylesheet" href="../static/styles/mainv2.css?v=20160318">
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
 </head>
 
 <body class="whitebody">
@@ -166,17 +167,48 @@ $("#regbtn").on('click', function(){
 	var password = $.trim($("#password").val());
     //var verifycode = $.trim($("#verifycode").val());
     var hashcode = $.trim($("#hashcode").val());
-	$.post("/register",{password:password, mobile:mobile,hashcode:hashcode}, function(data,status){
-		if(data.status == 200)
-		{
-			$("#reghint").html("注册成功，正在跳转登录...");
-			setTimeout("document.location.href = '{{info["base_url"]|e}}'+'login';",3000);
-		}
-		else
-		{
-			$("#reghint").html(data.msg);
-		}
-	},'json');
+
+    	$.ajax({
+                    url: '/register',
+                    type: 'post',
+                    data: {password:password, mobile:mobile,hashcode:hashcode},
+                    dataType: 'json',
+                    beforeSend: function () {
+                     $.blockUI({
+                    message: '注册中...',
+                    baseZ: 20000,
+                    css: {
+                        border: '1px solid #ddd',
+                        padding: '7px',
+                        fontSize: '13px',
+                        position: 'fixed',
+                        backgroundColor: '#eee'
+                    },
+                    overlayCSS: {
+                        backgroundColor: '#555',
+                        opacity: 0.5,
+                        cursor: 'wait'
+                    }
+                });
+
+                     },
+                    complete: function (){
+                    $.unblockUI();
+                    },
+                    success: function (data,status) {
+                        if(data.status == 200)
+                            {
+                                $("#reghint").html("注册成功，正在跳转登录...");
+                                setTimeout("document.location.href = '{{info["base_url"]|e}}'+'login';",3000);
+                            }
+                            else
+                            {
+                                $("#reghint").html(data.msg);
+                            }
+                    }
+                });
+
+
 })
 
 

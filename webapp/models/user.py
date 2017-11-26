@@ -33,7 +33,7 @@ class User(db.Model):
         self.password = self.set_password(password)
 
         # Setup the default-role for user.
-        default = Role.query.filter_by(role_name="default").one()
+        default = Role.query.filter_by(name="default").one()
         self.roles.append(default)
 
     def __repr__(self):
