@@ -10,13 +10,17 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
+
+from flask_login import current_user
+from flask_principal import identity_loaded, RoleNeed, UserNeed
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import os
 from flask import Flask, render_template, abort, url_for, session
 from views import home, stock, setting,macro,detail
 from services import db_service,db
-from extensions import bcrypt, login_manager, principals, cache
+from extensions import bcrypt, login_manager, principals, cache, admin_permission
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
@@ -42,6 +46,28 @@ def config_app(app, config):
     login_manager.init_app(app)
     # Init the Flask-Prinicpal via app object
     principals.init_app(app)
+
+    @identity_loaded.connect_via(app)
+    def on_identity_loaded(sender, identity):
+        """Change the role via add the Need object into Role.
+
+           Need the access the app object.
+        """
+
+        # Set the identity user object
+        identity.user = current_user
+
+        # Add the UserNeed to the identity user object
+        if hasattr(current_user, 'id'):
+            identity.provides.add(UserNeed(current_user.id))
+
+        # Add each role to the identity user object
+        if hasattr(current_user, 'roles'):
+            for role in current_user.roles:
+                identity.provides.add(RoleNeed(role.name))
+    # 自定义全局函数
+    app.add_template_global(admin_permission, 'admin_permission')
+
     # Init the Flask-Cache via app object
     cache.init_app(app)
 

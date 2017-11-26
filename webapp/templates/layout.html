@@ -9,20 +9,21 @@
     <meta name="author" content="">
     <title>{{ title }}</title>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='bootstrap.min.css') }}">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='jquery.dataTables.min.css') }}">
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/datatables/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedColumns.dataTables.min.css') }}">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedHeader.dataTables.min.css') }}">
 
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.12.4.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='highcharts.min.js') }}"></script>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/highcharts/6.0.3/highcharts.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery.dataTables.min.js') }}"></script>
+    <script src="https://cdn.bootcss.com/datatables/1.10.16/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedColumns.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedHeader.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery.blockui.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap3-typeahead.min.js') }}"></script>
+    <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
 
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 
@@ -100,18 +101,22 @@
                 {% block nav %}{% endblock %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
-                <li><a href="#">关于</a></li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统 <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="#">设置</a></li>
-                        <li><a href="/setting">数据更新</a></li>
+                        <li><a href="#">关于</a></li>
+                        {% if admin_permission.can() %}
+                        <li><a href="/setting/stocks">数据更新</a></li>
+                        {% endif %}
                         <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">定期报告预约披露时间表</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/macro">宏观指标</a></li>
-                        {% if current_user.is_authenticated() %}
+                        {% if current_user.is_authenticated %}
                         <li><a href="/logout">退出登录</a></li>
+                        {% else %}
+                        <li><a href="/login">登录</a></li>
                         {% endif %}
                     </ul>
                 </li>
@@ -128,7 +133,15 @@
             {% endfor %}
             {% block body %}{% endblock %}
         </div>
-    </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="note-edit">
+      <a class="pull-right btn btn-success btn-lg" href="/stock/blog/{{code|e}}" role="button">
+          <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+          笔记</a>
+</div>
+{% endif %}
 
 </body>
 </html>

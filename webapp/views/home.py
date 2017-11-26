@@ -5,8 +5,9 @@ from flask import Flask, Blueprint,Response, request, session, g, redirect, url_
     render_template, flash
 from flask import json, jsonify, render_template
 import pandas as pd
+from flask import current_app as app
 from webapp.extensions import cache
-import time
+from flask_principal import Principal, Identity, AnonymousIdentity,identity_changed
 
 from flask_login import login_required, login_user, logout_user
 
@@ -43,6 +44,11 @@ def login():
         # user. Remember the user's login status.
         remember = request.form.get('remember') == 'true'
         login_user(user, remember)
+
+        # Tell Flask-Principal the identity changed
+        identity_changed.send(app._get_current_object(),
+                              identity=Identity(user.id))
+
         return jsonify(msg='OK',status='200')
     return render_template('login.html', info=info)
 
@@ -69,6 +75,9 @@ def logout():
     session.pop('name')
     # Using the Flask-Login to processing and check the logout status for user.
     logout_user()
+    identity_changed.send(
+        app._get_current_object(),
+        identity=AnonymousIdentity())
     return redirect(url_for('home.login'))
 
 
