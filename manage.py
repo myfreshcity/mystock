@@ -46,5 +46,14 @@ def runserver(config, host, port):
     register_blueprints(app)
     app.run(host=host, port=port,debug=True)
 
+
+def createApp(config):
+    config_app(app, config)
+    register_blueprints(app)
+    return app
+
+application = createApp('scriptfan.cfg')
+
+
 if __name__ == '__main__':
     manager.run()
