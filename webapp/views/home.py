@@ -27,7 +27,6 @@ def index():
 @blueprint.route('/login', methods=['GET', 'POST'])
 def login():
     info = {}
-    info['base_url'] = request.url_root
     info['m_name'] = session['name'] if 'name' in session else ''
     if request.method == 'POST':
         username = request.form.get('mobile')
@@ -55,7 +54,6 @@ def login():
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register():
     info = {}
-    info['base_url'] = request.url_root
     if request.method == 'POST':
         username = request.form.get('mobile')
         password = request.form.get('password')

@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="../static/styles/mainv2.css?v=20160318">
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
+
+
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 </head>
 
 <body class="whitebody">
@@ -143,6 +146,11 @@ function checkVerifycode(){
 	}
 };
 
+function forwardLoginPage(){
+    var _hostName = parseURL(document.location.href).host;
+    document.location.href = '/login';
+}
+
 
 $("#mobile").on('focus', function(){
 	$(this).parent().removeClass('has-error');
@@ -199,7 +207,8 @@ $("#regbtn").on('click', function(){
                         if(data.status == 200)
                             {
                                 $("#reghint").html("注册成功，正在跳转登录...");
-                                setTimeout("document.location.href = '{{info["base_url"]|e}}'+'login';",3000);
+
+                                setTimeout(function(){ forwardLoginPage();},3000);
                             }
                             else
                             {
@@ -215,7 +224,7 @@ $("#regbtn").on('click', function(){
 </script>
 <div class="wid" id="foot2">
     <div class="wid2">
-        <p class="clear mtop15 mcenter">&copy; 2017-2019 辽ICP备13024337号</p>
+        <p class="clear mtop15 mcenter">&copy; 2017-2019 辽ICP备17020606号</p>
     </div>
 </div>
 </body>
