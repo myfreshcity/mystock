@@ -15,9 +15,33 @@
 
 
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
 </head>
 
 <body class="whitebody">
+
+<!--[if lt IE 9]>
+<div id="browser_ie">
+    <div class="brower_info">
+        <h4>系统检测到您使用的浏览器版本过低，这可能导致网站不能正常访问，请升级您的浏览器，我们为您推荐：</h4>
+        <p>
+            <a href="https://www.google.com.hk/chrome/" target="_blank">Chrome浏览器</a>
+            <a href="http://www.firefox.com.cn/download/" target="_blank">Firefox浏览器</a>
+            <a href="http://se.360.cn/" target="_blank">360浏览器</a>
+        </p>
+    </div>
+</div>
+<![endif]-->
+
 <div id="top" class="regtop">
     <div class="wid wid2">
         <div id="logo">
@@ -27,6 +51,7 @@
         <div class="clearfix"></div>
     </div>
 </div>
+
 <div class="wid wid2">
     <div id="regbox">
         <div id="regleft">
@@ -159,6 +184,29 @@ $("#regbtn").on('click', function(){
 
 
 </script>
+<style>
+#browser_ie {
+background-color: #f6f6b4; height: 85px; color: #000; font-size: 15px
+}
+#browser_ie .brower_info {
+margin: 0px auto; width: 800px; padding-top: 17px
+}
+#browser_ie .brower_info .notice_info {
+position: relative; margin-top: 5px; float: left
+}
+#browser_ie .brower_info .notice_info p {
+text-align: left; line-height: 25px; width: 360px; display: inline-block
+}
+#browser_ie .browser_list {
+position: relative; float: left
+}
+#browser_ie .browser_list img {
+width: 40px; height: 40px
+}
+#browser_ie .browser_list span {
+text-align: center; width: 80px; display: inline-block
+}
+</style>
 <div class="wid" id="foot2">
     <div class="wid2">
         <p class="clear mtop15 mcenter">&copy; 2017-2019 辽ICP备17020606号</p>

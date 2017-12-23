@@ -27,6 +27,16 @@
 
     <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
 
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
         $(function(){
@@ -137,11 +147,15 @@
 
 {% if current_user.is_authenticated %}
 <div class="note-edit">
-      <a class="pull-right btn btn-success btn-lg" href="/stock/blog/{{code|e}}" role="button">
-          <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-          笔记</a>
+    <a class="pull-right btn btn-success btn-lg" href="#editBlogModal"
+       data-stock="{{code|e}}" data-toggle="modal"
+       role="button">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+        笔记</a>
 </div>
 {% endif %}
+
+{% include 'stock/partion/edit_blog.html' %}
 
 </body>
 </html>
