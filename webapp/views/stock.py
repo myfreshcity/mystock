@@ -455,34 +455,27 @@ def queryComments():
     for x in df:
         data.append({
             'id' : x.id,
+            'pid': x.parent_id,
             'date':x.created_time.strftime('%Y-%m-%d'),
             'content':x.content
         })
     return jsonify(data=data)
 
 
-@blueprint.route('/addComment', methods=['GET', 'POST'])
-def addComment():
-    code = request.form['code']
-    content = request.form['content']
-    uid = current_user.id
-    app.logger.debug('code:' + code)
-    try:
-        c = ds.addComment(uid,code,content)
-        return jsonify(msg='true',
-                       data={'date':c.created_time.strftime('%Y-%m-%d'),'content':c.content,'id':c.id}
-                       )
-    except:
-        return jsonify(msg='false')
-
 @blueprint.route('/updateComment', methods=['GET', 'POST'])
 def updateComment():
+    code = request.form['code']
     cid = request.form['cid']
     content = request.form['content']
     try:
-        c = ds.updateComment(cid, content)
+        if cid == '':
+            uid = current_user.id
+            c = ds.addComment(uid, code, content)
+        else:
+            c = ds.updateComment(cid, content)
         return jsonify(msg='true',
-                       data={'id': cid, 'content': c.content}
+                       data={'pid':cid,'id': c.id, 'content': c.content,'date':c.created_time.strftime('%Y-%m-%d')}
                        )
-    except:
+    except Exception, ex:
+        app.logger.error(ex)
         return jsonify(msg='false')

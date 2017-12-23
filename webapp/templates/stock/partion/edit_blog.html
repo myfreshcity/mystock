@@ -1,0 +1,152 @@
+{% from "macro/comment.html" import comment with context %}
+<div class="modal fade" id="editBlogModal" tabindex="-1" role="dialog" aria-labelledby="editBlogModalLabel">
+  <div class="modal-dialog" role="document" style="width:92%">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="editBlogModalLabel"></h4>
+        <input type="hidden" class="form-control" id="sel-code"/>
+      </div>
+      <div class="modal-body modal-abc">
+
+          <div class="panel panel-info">
+            <!-- Default panel contents -->
+            <div class="panel-heading">投资日志</div>
+            <div class="panel-body" id="comment">
+              <input name="stock" type="hidden" value="{{ code }}"/>
+              <input id="comment-id" type="hidden"/>
+              <div class="form-group">
+                <textarea name="content" class="form-control" rows="3"></textarea>
+              </div>
+              <p class="text-right">
+                <button type="button" class="btn btn-primary" id="comment-btn">提交</button>
+              </p>
+            </div>
+
+            <!-- List group -->
+            <ul class="list-group" id="comment-list">
+
+            </ul>
+          </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .modal-abc {
+    height: 400px;
+    margin-top: 10px;
+    overflow: auto;
+}
+</style>
+
+<script type=text/javascript>
+
+
+//加载完毕自动执行
+$(function(){
+     $('#editBlogModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget)
+      var recipient = button.data('stock')
+
+      var modal = $(this)
+      modal.find('.modal-title').text('投资笔记- ' + recipient);
+      modal.find('.modal-body #comment-btn').on("click",updateComment);
+
+      var content_em = modal.find("div#comment textarea[name='content']");
+      var submit_em = modal.find("button#comment-btn");
+      var cid_em = modal.find("div#comment #comment-id");
+      var cpid = '';
+
+      function updateComment() {
+          if(content_em.val()=='')return;
+          var aj = $.ajax( {
+          url:$SCRIPT_ROOT + '/stock/updateComment',
+          data:{
+                   code : recipient,
+                   cid : cid_em.val(),
+                   content : content_em.val()
+          },
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(result) {
+              if(result.msg =="true" ){
+                  content_em.val('');
+                  cid_em.val('');
+                  if(result.data.pid==''){
+                  makeCommentItem(result.data.id,result.data.date,result.data.content);
+                  }else{
+                  makeCommentItemChild(result.data.pid,result.data.id,result.data.date,result.data.content);
+                  }
+              }
+           }
+          });
+          return false;
+        };
+
+      function queryComment() {
+          var aj = $.ajax( {
+          url:$SCRIPT_ROOT + '/stock/queryComments',
+          data:{
+                   code : recipient
+          },
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(result) {
+             for(var i=0,a;a=result.data[i++];){
+                if(a.id==a.pid){
+                makeCommentItem(a.id,a.date,a.content);
+                }else{
+                makeCommentItemChild(a.pid,a.id,a.date,a.content);
+                }
+
+             }
+           }
+          });
+        };
+
+      function makeCommentItem(id,date,content){
+          content =  content.replace(/\n/g,'<br/>');
+          var commentItem = $('<li class="list-group-item" id="p-'+id+'"></li>');
+          modal.find("#comment-list").prepend(commentItem);
+          var ci = '<h6 class="list-group-item-text" id="'+id+'">'+content+'</h6>\
+                <p class="list-group-item-heading small text-right">\
+                    [<a href="javascript:onCommentEdit(\''+id+'\',\''+id+'\')">编辑</a>]'+date+'\
+                </p>'
+          commentItem.prepend(ci);
+      }
+
+      function makeCommentItemChild(pid,id,date,content){
+          content =  content.replace(/\n/g,'<br/>');
+          var sci = '<h6 class="list-group-item-text" id="'+id+'">'+content+'</h6>\
+                      <p class="list-group-item-heading small text-right">\
+                          [<a href="javascript:onCommentEdit(\''+id+'\',\''+pid+'\')">编辑</a>]'+date+'\
+                          </p><hr style="border:.5 dashed #987cb9" />'
+          $("#comment-list #p-"+pid+"").prepend(sci);
+      }
+
+
+    //加载执行
+   queryComment();
+
+    });
+
+
+    // 隐藏后消失
+  $('#editBlogModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this)
+    modal.find("#comment-list").empty();
+    modal.find('.modal-body #comment-btn').unbind();
+    modal.find("div#comment textarea[name='content']").val('');
+    modal.find("div#comment #comment-id").val('');
+  });
+
+});
+</script>

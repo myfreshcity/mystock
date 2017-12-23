@@ -67,3 +67,11 @@ function addStock(code){
      })
 }
 
+
+function onCommentEdit(id,pid){
+      var c = $("#"+id+"").html().replace(/\<br\>/g,'\n');
+      var content_em = $("div#comment textarea[name='content']");
+      content_em.val(c);
+      $("div#comment #comment-id").val(pid);
+}
+
