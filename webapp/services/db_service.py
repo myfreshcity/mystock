@@ -599,21 +599,9 @@ def updateStock(code,desc,grow_type):
     st.grow_type = grow_type
     return db.session.flush()
 
-def addComment(uid,code,content,cflag="-1"):
-    #stock = db.session.query(Stock).filter(Stock.code.like('%'+code)).first()
-    #stock = Stock.find_by_code(code)
-    comment = Comment(code,content)
-    comment.parent_id = comment.id
+def updateComment(uid,code,cid,content,cflag="-1"):
+    comment = Comment(code, content)
     comment.user_id = uid
-    comment.ct_flag = cflag
-    comment.created_time = datetime.now()
-    db.session.add(comment)
-    return comment
-
-def updateComment(cid,content,cflag="-1"):
-    _p_comment = db.session.query(Comment).filter_by(id = cid).first()
-    comment = Comment(_p_comment.stock, content)
-    comment.user_id = _p_comment.user_id
     comment.parent_id = cid
     comment.content = content
     comment.ct_flag = cflag

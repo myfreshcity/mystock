@@ -456,6 +456,7 @@ def queryComments():
         data.append({
             'id' : x.id,
             'pid': x.parent_id,
+            'flag': x.ct_flag,
             'date':x.created_time.strftime('%Y-%m-%d'),
             'content':x.content
         })
@@ -466,15 +467,15 @@ def queryComments():
 def updateComment():
     code = request.form['code']
     cid = request.form['cid']
+    cflag = request.form['flag']
     content = request.form['content']
     try:
         if cid == '':
-            uid = current_user.id
-            c = ds.addComment(uid, code, content)
-        else:
-            c = ds.updateComment(cid, content)
+            cid = "%d" % time.time()
+        uid = current_user.id
+        c = ds.updateComment(uid,code,cid,content,cflag)
         return jsonify(msg='true',
-                       data={'pid':cid,'id': c.id, 'content': c.content,'date':c.created_time.strftime('%Y-%m-%d')}
+                       data={'pid':c.parent_id,'id': c.id, 'content': c.content,'date':c.created_time.strftime('%Y-%m-%d'),'flag': c.ct_flag}
                        )
     except Exception, ex:
         app.logger.error(ex)
