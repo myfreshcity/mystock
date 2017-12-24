@@ -62,7 +62,7 @@
                         <li><a href="#" onclick="javascript:delRelation('{{code|e}}','{{d.code|e}}',this);return false;">从相关股清除</a></li>
                         {% endif %}
                         <li><a href="#editTagModal" data-stock="{{d.code|e}}" data-tag="{{d.tag|e}}" data-toggle="modal">标注</a></li>
-
+                        <li><a href="#editBlogModal" data-stock="{{d.ncode|e}}" data-toggle="modal">日志</a></li>
                         <li><a href='/stock/info/{{d.ncode|e}}' target="_blank">资讯</a></li>
                         <li><a href='/stock/report/{{d.ncode|e}}' target="_blank">财报</a></li>
                         <li><a href='/stock/{{d.ncode|e}}' target="_blank">成长</a></li>

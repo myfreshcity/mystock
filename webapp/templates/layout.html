@@ -5,7 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="">
+    <meta name="description" content="记录投资心路，远离喧哗，独立投资者的私人场所"/>
+    <meta name="keywords" content="投资笔记 历史市盈率 历史市净率 交易笔记 投资 价值投资"/>
     <meta name="author" content="">
     <title>{{ title }}</title>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
@@ -97,7 +98,7 @@
                         <li><a href="/stock/mystock/1" target="_blank">备选股</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="http://data.eastmoney.com/xuangu/" target="_blank">选股器</a></li>
-                        <li><a href="/stock/person_stockholder_rank">自然人持股排行</a></li>
+                        <li><a href="#">私募选股</a></li>
                         <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
                         <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">基金排行(市场热度)</a></li>
                         <li role="separator" class="divider"></li>
@@ -116,7 +117,7 @@
                        aria-expanded="false">系统 <span class="caret"></span></a>
                     <ul class="dropdown-menu">
                         <li><a href="#">设置</a></li>
-                        <li><a href="#">关于</a></li>
+                        <li><a href="#contactInfoModal" data-toggle="modal">联系我</a></li>
                         {% if admin_permission.can() %}
                         <li><a href="/setting/stocks">数据更新</a></li>
                         {% endif %}
@@ -134,6 +135,23 @@
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
 </nav>
+
+
+<div class="modal fade" id="contactInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">联系信息</h4>
+            </div>
+            <div class="modal-body">微信号(QQ) 5692322</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
 
 <div class="container">
         <div class="row">
