@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import traceback
 
+import math
 from flask import Flask, Response, request, session, g, redirect, url_for, abort, \
     render_template, flash
 from flask import json, jsonify, Blueprint, render_template
@@ -21,45 +23,60 @@ blueprint = Blueprint('stock', __name__)
 @blueprint.route('/mystock/<code>', methods=['GET'])
 @login_required
 def mystock(code):
-    title = '自选股'
-    uid = current_user.id
     if code == '1':
-        data = dts.getMyStocks(uid,code)
-        code = 'sh000001'
+        stock = 'sh00000A'
         title = '备选股'
     elif code == '0':
-        data = dts.getMyStocks(uid,code)
-        code = 'sh000001'
+        stock = 'sh00000A'
         title = '自选股'
+    elif code == '2':
+        stock = 'sh00000A'
+        title = '所有股票'
     else:
-        data = dts.getMyStocks(uid,code)
+        stock = code
         title = '相关股'
 
-    return render_template('stock/mystock_list.html', title=title, code=code, stocks=result_list_to_array(data))
+    return render_template('stock/mystock_list_v2.html', title=title, code=stock,stype=code)
+
+@blueprint.route('/mystockJson', methods=['GET'])
+def mystockJson():
+    code = request.args.get('code')
+    uid = current_user.id
+    if code == '1':
+        data = dts.getMyStocks(uid, code)
+    elif code == '0':
+        data = dts.getMyStocks(uid, code)
+    else:
+        data = dts.getMyStocks(uid, code)
+
+    return jsonify(data={'tableData':result_list_to_array(data)})
+
 
 def result_list_to_array(data):
     sdata = []
+
+    def fixBadData(x):
+        return '-' if math.isnan(x) else x
+
     for index, row in data.iterrows():
         sdata.append(
             {'name': row['name'],
              'code': row.code,
              'tag': row.tag if hasattr(row, 'tag') else '',
-             'grow_type': row.grow_type,
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
-             'price': row.close,
-             'mvalue': round(row.t_cap / (10000 * 10000), 2),
-             'pe': round(row.t_cap / (row.jlr_ttm * 10000), 2),
-             'ps': round(row.t_cap / (row.zyysr_ttm * 10000), 2),
-             'pcf': round(row.t_cap / (row.jyjxjl_ttm * 10000), 2),
-             'pb': round(row.t_cap / (row.gdqy * 10000), 2),
-             'roe': round(row.jlr_ttm * 100.0 / row.gdqy, 2),
-             'dar': round(row.zfz * 100.0 / (row.zzc), 2),
-             'jlr_rate': round(row['jlr_rate'] * 100.0, 2),
+             'price': fixBadData(row.close),
+             'mvalue': fixBadData(round(row.t_cap / (10000 * 10000), 2)),
+             'pe': fixBadData(round(row.t_cap / (row.jlr_ttm * 10000), 2)),
+             'ps': fixBadData(round(row.t_cap / (row.zyysr_ttm * 10000), 2)),
+             'pcf': fixBadData(round(row.t_cap / (row.jyjxjl_ttm * 10000), 2)),
+             'pb': fixBadData(round(row.t_cap / (row.gdqy * 10000), 2)),
+             'roe': fixBadData(round(row.jlr_ttm * 100.0 / row.gdqy, 2)),
+             'dar': fixBadData(round(row.zfz * 100.0 / (row.zzc), 2)),
+             'jlr_rate': fixBadData(round(row['jlr_rate'] * 100.0, 2)),
              'sh_rate': row['count'],
-             'cash_rate': round(row.jyjxjl_ttm * 1.0 / row.jlr_ttm, 2),  # 现金净利润比
-             'trade_date': row.trade_date,
-             'report_type': row.report_type
+             'cash_rate': fixBadData(round(row.jyjxjl_ttm * 1.0 / row.jlr_ttm, 2)),  # 现金净利润比
+             'report_type': '-' if pd.isnull(row.report_type) else row.report_type
              }
         )
     return sdata
@@ -163,7 +180,7 @@ def valuationJson():
         except Exception, ex:
             app.logger.error(tcp)
             app.logger.error(row['jlr_ttm'])
-            app.logger.error(ex)
+            app.logger.error(traceback.format_exc())
 
         close.append([tdate,rclose])
         pe.append([tdate,spe])
@@ -359,11 +376,14 @@ def add():
     uid = current_user.id
     code = request.form['code']
     cname = request.form['cname']
+    flag = request.form['stype']
+
     app.logger.debug('code:' + code)
-    msg = ds.addMystock(uid,code,cname)
+    msg = ds.addMystock(uid,code,cname,flag)
     if msg:
         return jsonify(msg=msg)
-    return jsonify(msg='true')
+    data = dts.getMyStocks(uid, code, True)
+    return jsonify(msg='true', stock=result_list_to_array(data)[0])
 
 @blueprint.route('/add_relation', methods=['GET', 'POST'])
 def add_relation():
@@ -422,20 +442,24 @@ def saveTag():
     uid = current_user.id
     ds.updateStockTag(uid,code,tag)
     data = dts.getMyStocks(uid,code,True)
-    return jsonify(msg='true',stock=result_list_to_array(data))
+    return jsonify(msg='true',stock=result_list_to_array(data)[0])
 
 @blueprint.route('/remove', methods=['POST'])
 def remove():
     code = request.form['code']
     uid = current_user.id
-    ds.removeMystock(uid,code)
+    msg = ds.removeMystock(uid,code)
+    if msg:
+        return jsonify(msg=msg)
     return jsonify(msg='true',code=code)
 
 @blueprint.route('/rollback', methods=['POST'])
 def rollback():
     code = request.form['code']
     uid = current_user.id
-    ds.rollbackStock(uid,code)
+    msg = ds.rollbackStock(uid,code)
+    if msg:
+        return jsonify(msg=msg)
     return jsonify(msg='true',code=code)
 
 @blueprint.route('/del', methods=['POST'])

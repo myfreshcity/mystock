@@ -22,7 +22,6 @@ def index():
 
 @blueprint.route('/stocks', methods = ['GET'])
 def stocks():
-
     df = dbs.get_global_basic_data()
     data = []
     for index, row in df.iterrows():
@@ -40,7 +39,7 @@ def stocks():
 
 @blueprint.route('/update/', methods = ['GET','POST'])
 def update():
-    code = request.form['code'][2:]
+    code = request.form['code']
 
     # 更新财务数据
 

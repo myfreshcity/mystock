@@ -31,10 +31,10 @@ def test():
 @manager.command
 def refresh():
     config_app(app, 'scriptfan.cfg')
-    ctx = app.app_context()
-    ctx.push()
-    hs.refreshStockHolder()
-    #dts.refreshStockData()
+    #ctx = app.app_context()
+    #ctx.push()
+    #hs.refreshStockHolder()
+    dts.freshBasicStockInfo()
     print "hello"
 
 

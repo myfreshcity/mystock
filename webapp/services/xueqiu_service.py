@@ -7,6 +7,7 @@ from pandas.tseries.offsets import *
 from sqlalchemy import text
 import numpy as np
 
+from webapp.models import Stock
 from webapp.services import db,getHeaders, db_service as dbs
 from flask import current_app as app
 from datetime import datetime
@@ -26,6 +27,10 @@ def getIncomeWebDataFromNet(code, headers):
     return getWebData(u1, headers)
 
 def updateIncomeWebData(code, tdf):
+    st = Stock.find_by_code(code)
+    if st.industry=='银行':
+        return
+
     t1_df = pd.DataFrame({
         'report_type': tdf['报表期截止日'],
         'in_all': tdf['营业总收入'],
@@ -61,6 +66,10 @@ def getAssetWebDataFromNet(code, headers):
     return getWebData(u2, headers)
 
 def updateAssetWebData(code, tdf):
+    st = Stock.find_by_code(code)
+    if st.industry=='银行':
+        return
+
     tdf['report_date'] = tdf.iloc[:, 0:1]
     t2_df = pd.DataFrame({
         'report_type': tdf['report_date'],
@@ -130,6 +139,9 @@ def getCashWebDataFromNet(code, headers):
 
 
 def updateCashWebData(code, tdf):
+    st = Stock.find_by_code(code)
+    if st.industry == '银行':
+        return
     # tdf['report_date'] = tdf.iloc[:,1:2]
     t3_df = pd.DataFrame({
         'report_type': tdf['报表期截止日'],

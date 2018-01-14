@@ -8,6 +8,11 @@ class Stock(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String(255))
     name = db.Column(db.String(255))
+    flag = db.Column(db.String(5))
+
+    industry = db.Column(db.String(255))
+    area = db.Column(db.String(255))
+
     zgb = db.Column(db.Numeric)
     ltgb = db.Column(db.Numeric)
     launch_date = db.Column(db.Date)
@@ -27,7 +32,7 @@ class Stock(db.Model):
 
     @classmethod
     def find_by_code(self,cd):
-        return Stock.query.filter_by(code=cd).first()
+        return Stock.query.filter_by(code=cd,flag=0).first()
 
     @property
     def current_price(self):

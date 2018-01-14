@@ -161,6 +161,9 @@ def updateTradeData(code):
     s_date = (s_date +DateOffset(days=1)).date()  # 排除掉之前插入的数据
     e_date = datetime.now().date()
 
+    def toInt(x):
+        return int(x)
+
     #根据类型获取市场代码
     mc = '0' if code[:2]=='60' else '1'
     url = 'http://quotes.money.163.com/service/chddata.html?code=' + mc  + code +\
@@ -168,12 +171,15 @@ def updateTradeData(code):
     #app.logger.info('query stock('+code+') trade data url is:'+url)
     try:
         tdf = pd.read_csv(url,names=['trade_date','code','name','close','volume','t_cap','m_cap'],header=0)
+        if tdf.empty:
+            app.logger.info('query stock(' + code + ') data is empty for :' + url)
+            return
         tdf = pd.DataFrame({
             'trade_date': tdf['trade_date'],
             'close': tdf['close'],
-            'volume': int(tdf['volume']),
-            't_cap': int(tdf['t_cap']),
-            'm_cap': int(tdf['m_cap']),
+            'volume': tdf['volume'].apply(toInt),
+            't_cap': tdf['t_cap'].apply(toInt),
+            'm_cap': tdf['m_cap'].apply(toInt),
             'code': code
         })
         #获取历史周数据存储
@@ -188,6 +194,6 @@ def updateTradeData(code):
             if df1['trade_date'].max() > s_date.strftime("%Y-%m-%d"):
                 df1.to_sql('stock_trade_data', db.engine, if_exists='append', index=False, chunksize=1000)
     except Exception, ex:
-        app.logger.error(ex)
+        app.logger.error(traceback.format_exc())
 
 

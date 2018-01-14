@@ -30,7 +30,9 @@ def getLatestStockHolder():
 def getRefreshStocks():
     start_date = datetime.now().strftime('%Y-%m-%d')
     #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(or_(Stock.holder_updated_time == None,Stock.holder_updated_time < start_date)).all()
+    stocks = db.session.query(Stock).\
+        filter(or_(Stock.holder_updated_time == None,Stock.holder_updated_time < start_date)).\
+        filter_by(flag=0).all()
     return map(lambda x:x.code, stocks)
 
 
@@ -48,7 +50,7 @@ def refreshStockHolderSum(gdf,code):
     t3_gdf = pd.merge(t1_gdf, t2_gdf, on='report_date')
     t3_gdf = t3_gdf.sort_values(by='report_date', ascending=False).head(1)
     t3_gdf['code'] = code
-    bdf = pd.read_sql_query("select * from stock_basic where code =%(code)s", db.engine, params={'code': code})
+    bdf = pd.read_sql_query("select * from stock_basic where code =%(code)s and flag=0", db.engine, params={'code': code})
     t3_df = pd.merge(t3_gdf, bdf, on='code')
 
     m2_df = pd.DataFrame({
@@ -92,7 +94,7 @@ def getStockHolderRank():
     t5_df = t41_df.sort_index(by='avg', ascending=True).head(100)
     t6_df = t5_df.reset_index()
 
-    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
+    bdf = dbs.get_global_basic_data().reset_index()
     t7_df = pd.merge(t6_df, bdf, on='code')
     return t7_df
 
@@ -246,7 +248,7 @@ def getStockHolderTrack(holder_code):
                                 from stock_holder where holder_code=%(code)s", db.engine,\
                             params={'code': holder_code})
 
-    bdf = pd.read_sql_query("select * from stock_basic sb ", db.engine)
+    bdf = dbs.get_global_basic_data().reset_index()
     t3_df = pd.merge(hdf, bdf, on='code')
 
     m2_df = pd.DataFrame({

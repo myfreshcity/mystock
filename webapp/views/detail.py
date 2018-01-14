@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import traceback
 
 from flask import Flask, Response, request, session, g, redirect, url_for, abort, \
     render_template, flash
@@ -480,7 +481,7 @@ def relationJson():
                  row['peg']
                  ])
     except Exception, ex:
-        app.logger.error(code+':',ex)
+        app.logger.error(code+':',traceback.format_exc())
     return jsonify(data={'tableData':tableData})
 
 @blueprint.route('/growJson', methods=['GET'])

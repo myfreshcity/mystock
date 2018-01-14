@@ -1,4 +1,5 @@
 import datetime
+import traceback
 
 import pandas as pd
 from pandas.tseries.offsets import MonthEnd
@@ -49,4 +50,4 @@ def updateTradeBasic(code,market):
         })
         df1.to_sql('yahoo_trade_basic', db.engine, if_exists='append', index=False, chunksize=1000)
     except Exception, ex:
-        app.logger.error(ex)
+        app.logger.error(traceback.format_exc())

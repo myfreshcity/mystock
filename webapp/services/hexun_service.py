@@ -1,4 +1,5 @@
 import re
+import traceback
 import urllib2
 
 import pandas as pd
@@ -118,7 +119,7 @@ def calculateTTMValue(in_df,code):
                 df3.mgjyxjl_ttm.loc[index] = n_mgjyxjl
 
             except Exception, ex:
-                app.logger.warn(ex)
+                app.logger.warn(traceback.format_exc())
                 df3.mgsy_ttm.loc[index] = float(row.mgsy)
                 df3.mgjyxjl_ttm.loc[index] = float(row.mgjyxjl)
 

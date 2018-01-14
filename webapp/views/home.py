@@ -20,7 +20,7 @@ blueprint = Blueprint('home', __name__)
 def index():
     # title = '首页'
     rw = ds.get_random_warning()
-    code = 'sh000001'
+    code = 'sh00000A'
     return render_template('index.html', info=rw, code=code)
 
 

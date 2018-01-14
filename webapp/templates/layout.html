@@ -109,7 +109,6 @@
                         <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">热门基金排行</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/macro">宏观指标</a></li>
-                        <li><a href="/stock/blog/sh000001">交易日记</a></li>
                     </ul>
                 </li>
                 {% if title %}
@@ -173,7 +172,7 @@
 {% if current_user.is_authenticated %}
 <div class="note-edit">
     <a class="pull-right btn btn-success btn-lg" href="#editBlogModal"
-       data-stock="{{code|default('sh000001')|e}}" data-toggle="modal"
+       data-stock="{{code|default('sh00000A')|e}}" data-toggle="modal"
        role="button">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
         笔记</a>

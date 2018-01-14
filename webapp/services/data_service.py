@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import traceback
 
 import http
 from bs4 import  BeautifulSoup,BeautifulStoneSoup
@@ -57,7 +58,7 @@ def getStockHighPrice(code,market):
         return df['Close'].max()
 
     except Exception, ex:
-        app.logger.error(ex)
+        app.logger.error(traceback.format_exc())
 
 def getRelationStock(code):
     headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
@@ -203,7 +204,7 @@ def getMyStocks(uid,flag,isSingle=False):
     if flag == '0' or flag == '1':
         global_bdf = pd.read_sql_query(
             "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
-            "where ms.code=sb.code and ms.code != '000001' and ms.user_id = %(uid)s", db.engine, \
+            "where ms.code=sb.code and sb.flag=0 and ms.user_id = %(uid)s", db.engine, \
             params={'uid': user_id}, \
             index_col='code')
         bdf = global_bdf[global_bdf['flag'] == int(flag)]
@@ -211,21 +212,27 @@ def getMyStocks(uid,flag,isSingle=False):
     elif isSingle:  # 如果是股票代码
         bdf = pd.read_sql_query(
             "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
-            "where ms.code=sb.code and ms.code = %(code)s and ms.user_id = %(uid)s", db.engine,
+            "where ms.code=sb.code and sb.flag=0 and ms.code = %(code)s and ms.user_id = %(uid)s", db.engine,
             params={'code': flag, 'uid': user_id}, \
             index_col='code')
+    elif flag == '2': #所有股票
+        bdf = dbs.get_global_basic_data()
     else:
         tf1 = pd.read_sql_query("select sb.* from relation_stocks rs,stock_basic sb " \
-                                "where rs.relation_stock=sb.code and rs.main_stock=%(name)s and rs.user_id=%(uid)s",
+                                "where rs.relation_stock=sb.code and sb.flag=0 and rs.main_stock=%(name)s and rs.user_id=%(uid)s",
                                 db.engine,
                                 params={'name': flag, 'uid': user_id}, \
                                 index_col='code')
-        #添加股票自身
+        # 添加股票自身
         tf2 = dbs.get_global_basic_data()
         tf2 = tf2[tf2.index == flag]
         bdf = pd.concat([tf1, tf2])
 
-    #获取交易数据
+    return getStockItem(bdf)
+
+#获取股票汇总信息
+def getStockItem(bdf):
+    # 获取交易数据
     global_tdf = dbs.get_global_trade_data()
     # 获取财务数据
     global_fdf = dbs.get_global_finance_data()
@@ -233,14 +240,47 @@ def getMyStocks(uid,flag,isSingle=False):
     df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
 
     bdf = bdf.reset_index()
-    if not df3.empty: #若交易数据或财务数据为空，会导致错误。判断以过滤这种情况。
+    if not df3.empty:  # 若交易数据或财务数据为空，会导致错误。判断以过滤这种情况。
         df3 = df3.reset_index()
-    df4 = pd.merge(bdf, df3, how='left',on='code')
+    df4 = pd.merge(bdf, df3, how='left', on='code')
 
-    #加入机构持股比例
+    # 加入机构持股比例
     gdf = hs.getGroupStockHolderRate()
-    df6 = pd.merge(df4, gdf, how='left',on='code')
+    df6 = pd.merge(df4, gdf, how='left', on='code')
     return df6
+
+#更新基础股票数据
+def freshBasicStockInfo():
+    import tushare as ts
+    td = ts.get_stock_basics()
+    ntd = td.reset_index().loc[:, ['code', 'name', 'industry', 'area', 'timeToMarket', 'totals', 'outstanding']]
+    df = pd.read_sql_query("select * from stock_basic where flag=0", db.engine)
+    tdf = pd.merge(ntd, df, on='code', how='left')
+
+    def fixNoneTime(x):
+        return pd.to_datetime('1900-01-01') if pd.isnull(x) else x
+
+    def fixNoneTime2Now(x):
+        return datetime.now() if pd.isnull(x) else x
+
+    df2 = pd.DataFrame({
+        'code': tdf['code'],
+        'name': tdf['name_x'],
+        'industry': tdf['industry_x'],
+        'area': tdf['area_x'],
+        'zgb': tdf['totals'],
+        'ltgb': tdf['outstanding'],
+        'launch_date': tdf['timeToMarket'].apply(lambda x: pd.to_datetime('1900-01-01').date() if x==0 else x),
+        'latest_report': tdf['latest_report'].apply(lambda x: pd.to_datetime('1900-01-01').date() if pd.isnull(x) else x),
+        'holder_updated_time': tdf['holder_updated_time'].apply(fixNoneTime),
+        'trade_updated_time': tdf['trade_updated_time'].apply(fixNoneTime),
+        'finance_updated_time': tdf['finance_updated_time'].apply(fixNoneTime),
+        'created_time': tdf['created_time'].apply(fixNoneTime2Now),
+        'flag': '0'
+    })
+    db.session.execute('update stock_basic set flag="-1"')
+    df2.to_sql('stock_basic', db.engine, if_exists='append', index=False, chunksize=1000)
+
 
 def clearCacheGetMyStocks(flag,uid,isSingle=False):
     cache.delete('getMyStocks')

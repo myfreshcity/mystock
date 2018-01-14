@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import sys
+import traceback
 
 from sqlalchemy import create_engine,text
 import pandas as pd
@@ -64,7 +65,7 @@ def getPerStockPriceV2():
 #所有股票基础数据
 @cache.memoize(timeout=3600*24*90)
 def get_global_basic_data():
-    tdf = pd.read_sql_query("select * from stock_basic sb ", db.engine, index_col='code')
+    tdf = pd.read_sql_query("select * from stock_basic sb where flag=0", db.engine, index_col='code')
     return tdf
 
 
@@ -346,7 +347,7 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
                 try:
                     return (float(v1) - float(v2)) / abs(float(v2))
                 except Exception, ex:
-                    app.logger.error(ex)
+                    app.logger.error(traceback.format_exc())
                     return 0
 
     df1 = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
@@ -480,20 +481,20 @@ def get_random_warning():
 
 
 def getStock(code):
-    stock = db.session.query(Stock).filter_by(code = code).first()
+    stock = Stock.find_by_code(code)
     return stock
 
 def get_refresh_finance_stocks():
     start_date = datetime.now().strftime('%Y-%m-%d')
     #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(or_(Stock.finance_updated_time == None,Stock.finance_updated_time < start_date)).all()
+    stocks = db.session.query(Stock).filter(or_(Stock.finance_updated_time == None,Stock.finance_updated_time < start_date)).filter_by(flag=0).all()
     return map(lambda x:x.code, stocks)
     #return [stocks.code]
 
 def get_refresh_trade_stocks():
     start_date = datetime.now().strftime('%Y-%m-%d')
     #获得所有股票代码列表
-    stocks = db.session.query(Stock).filter(or_(Stock.trade_updated_time == None,Stock.trade_updated_time < start_date)).all()
+    stocks = db.session.query(Stock).filter(or_(Stock.trade_updated_time == None,Stock.trade_updated_time < start_date)).filter_by(flag=0).all()
     return map(lambda x:x.code, stocks)
 
 def getMyStock(uid,code):
@@ -504,19 +505,45 @@ def getMyStockNews(uid,code):
     news = db.session.query(MyStockFavor).filter_by(code = code, user_id = uid).order_by(desc(MyStockFavor.pub_date))
     return news
 
-def addMystock(uid,code,cname):
-    code = code.strip()
+def addMystock(uid,cd,cname,flag='1'):
+    code = getValidStockInput(cd,cname)
     if len(code) != 6:
-        return "无效的股票，请重新选择"
+        return "无效的股票，请直接输入股票代码重试"
+
+    msg = checkMyStockAmt(flag, uid)
+    if msg:
+        return msg
+
     mystock = getMyStock(uid,code)
     if not mystock:
         market = 'sh' if code[0:2]=='60' else 'sz'
         mystock = MyStock(code,cname,market)
+        mystock.flag = flag
         mystock.user_id = uid
         db.session.add(mystock)
+        db.session.flush()
         return None
     else:
-        return "'"+code+"'股票已存在"
+        if mystock.flag == 0:
+            return cname + "(" + code + ")在自选股池已存在"
+        else:
+            return cname + "(" + code + ")在备选股池已存在"
+
+#返回有效股票代码
+def getValidStockInput(code,cname):
+    n = cname.strip()
+    if len(code) < 6:
+        #如cname是数字，code为空
+        if n.isdigit():
+            st = Stock.find_by_code(code)
+            if st:
+                return st.code
+        else:
+            st = db.session.query(Stock).filter(Stock.name.contains(n),flag=0).first()
+            if st:
+                return st.code
+    return code
+
 
 def addMystockFavor(uid,code,title,url,pub_date,src_type):
     code = code.strip()
@@ -563,9 +590,12 @@ def delRelationStock(uid,mcode,scode):
     return db.session.flush()
 
 def removeMystock(uid,code):
-    mystock = getMyStock(uid,code)
-    mystock.flag = '1'
-    return db.session.flush()
+    msg = checkMyStockAmt('1', uid)
+    if not msg:
+        mystock = getMyStock(uid,code)
+        mystock.flag = '1'
+        db.session.flush()
+    return msg
 
 def removeMystockFavor(fid):
     mystock = db.session.query(MyStockFavor).get(fid)
@@ -577,10 +607,22 @@ def hardRemoveMystock(uid,code):
     db.session.delete(mystock)
     return db.session.flush()
 
+def checkMyStockAmt(flag,uid):
+    # 自选股不要超过10个，备选股不超过50个
+    st_size = db.session.query(MyStock).filter_by(flag=flag, user_id=uid).count()
+    if flag == '0' and st_size >= 10:
+        return "自选股太多了，请把没有买入的股票转移到备选股池"
+    if flag == '1' and st_size >= 50:
+        return "备选股太多了，保持专注，收益更有保证"
+    return None
+
 def rollbackStock(uid,code):
-    mystock = getMyStock(uid,code)
-    mystock.flag = '0'
-    return db.session.flush()
+    msg = checkMyStockAmt('0', uid)
+    if not msg:
+        mystock = getMyStock(uid,code)
+        mystock.flag = '0'
+        db.session.flush()
+    return msg
 
 def updateStockInPrice(uid,code,price,in_date):
     mystock = getMyStock(uid,code)
@@ -594,7 +636,7 @@ def updateStockTag(uid,code,tag):
     return db.session.flush()
 
 def updateStock(code,desc,grow_type):
-    st = db.session.query(Stock).filter_by(code=code).first()
+    st = Stock.find_by_code(code)
     st.desc = desc
     st.grow_type = grow_type
     return db.session.flush()
