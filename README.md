@@ -20,6 +20,11 @@
  kill -HUP `cat uwsgi.pid`
  venv/bin/uwsgi --reload uwsgi.pid | tail -f uwsgi.log
 
+
+发版流程
+   调整version_no 为当前日期
+
+
 centos:
    解决：EnvironmentError: mysql_config not found
    yum install python-devel mysql-devel

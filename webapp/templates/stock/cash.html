@@ -44,7 +44,7 @@
     </p>
 
 </div>
-<script type="text/javascript" src="{{ url_for('static', filename='stock/cash.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/cash.js',v=version_no) }}"></script>
 <script type="text/javascript">
 var cashPage = {
   code : '{{ code|safe }}',

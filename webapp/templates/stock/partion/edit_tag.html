@@ -64,8 +64,9 @@ $(function(){
           dataType:'json',
           success:function(data) {
               if(data.msg =="true" ){
-                  // list_table.row(button.parents('tr')).data(data.stock);
-                  window.location.reload();
+                  list_table.row(button.parents('tr')).data(data.stock).draw();
+                  modal.modal('hide');
+                  // window.location.reload();
               }else{
                   console.warn("server result is:"+data.msg);
               }
@@ -75,5 +76,12 @@ $(function(){
 
 
     });
+
+        // 隐藏后消失
+  $('#editTagModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this);
+    modal.find('.modal-footer .add-tag').unbind();
+    modal.find('.modal-footer .remove-tag').unbind();
+  });
 });
 </script>

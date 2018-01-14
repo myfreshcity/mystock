@@ -13,12 +13,15 @@
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/datatables/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedColumns.dataTables.min.css') }}">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedHeader.dataTables.min.css') }}">
 
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdn.bootcss.com/highcharts/6.0.3/highcharts.js"></script>
+    <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
     <script src="https://cdn.bootcss.com/datatables/1.10.16/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedColumns.min.js') }}"></script>
@@ -26,7 +29,7 @@
     <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
 
-    <script type="text/javascript" src="{{ url_for('static', filename='app.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js',v=version_no) }}"></script>
 
     <script>
     var _hmt = _hmt || [];
@@ -40,6 +43,9 @@
 
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        toastr.options.positionClass = 'toast-top-center';
+
+
         $(function(){
             $.ajaxSetup({
             beforeSend:function(){
@@ -100,7 +106,7 @@
                         <li><a href="http://data.eastmoney.com/xuangu/" target="_blank">选股器</a></li>
                         <li><a href="#">私募选股</a></li>
                         <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
-                        <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">基金排行(市场热度)</a></li>
+                        <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">热门基金排行</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/macro">宏观指标</a></li>
                         <li><a href="/stock/blog/sh000001">交易日记</a></li>
@@ -119,6 +125,7 @@
                         <li><a href="#">设置</a></li>
                         <li><a href="#contactInfoModal" data-toggle="modal">联系我</a></li>
                         {% if admin_permission.can() %}
+                        <li><a href="/stock/mystock/2">所有股票</a></li>
                         <li><a href="/setting/stocks">数据更新</a></li>
                         {% endif %}
                         <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">定期报告预约披露时间表</a></li>
@@ -144,7 +151,7 @@
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h4 class="modal-title" id="myModalLabel">联系信息</h4>
             </div>
-            <div class="modal-body">微信号(QQ) 5692322</div>
+            <div class="modal-body">使用过程中如遇到问题或有好的建议，欢迎通过微信号(QQ) 5692322 联系我</div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
             </div>
@@ -166,7 +173,7 @@
 {% if current_user.is_authenticated %}
 <div class="note-edit">
     <a class="pull-right btn btn-success btn-lg" href="#editBlogModal"
-       data-stock="{{code|e}}" data-toggle="modal"
+       data-stock="{{code|default('sh000001')|e}}" data-toggle="modal"
        role="button">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
         笔记</a>

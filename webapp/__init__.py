@@ -67,6 +67,7 @@ def config_app(app, config):
                 identity.provides.add(RoleNeed(role.name))
     # 自定义全局函数
     app.add_template_global(admin_permission, 'admin_permission')
+    app.add_template_global(app.config.get('VERSION_NO'), 'version_no')
 
     # Init the Flask-Cache via app object
     cache.init_app(app)

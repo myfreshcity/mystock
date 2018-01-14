@@ -233,6 +233,10 @@ $(function(){
   $('#debetModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
     modal.find('.modal-body').hide();
+    modal.find('.modal-body #dm_q1').unbind();
+    modal.find('.modal-body #dm_q2').unbind();
+    modal.find('.modal-body #dm_q3').unbind();
+    modal.find('.modal-body #dm_q4').unbind();
   });
 
 });

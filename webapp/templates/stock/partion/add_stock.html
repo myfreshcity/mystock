@@ -12,12 +12,12 @@
         <p class="text-danger" id="flash_msg"></p>
         <form>
           <div class="form-group">
-            <label for="cname" class="control-label">股票代码</label>
+            <label for="cname" class="control-label">请输入股票代码或名称</label>
             <input type="text" class="form-control" id="cname" data-provide="typeahead" data-value="" autocomplete="off"
                    placeholder="股票代码或名称">
             <input type="hidden" id="code" />
           </div>
-          <div>提示：仅支持上市3年以上的股票</div>
+          <div>提示：仅支持沪深A股，且不包括次新股</div>
         </form>
       </div>
       <div class="modal-footer">
@@ -37,26 +37,34 @@ $(function(){
       var recipient = button.data('stock') // Extract info from data-* attributes
       // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
       // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
+
+      var stype = button.data('stype')
+
       var modal = $(this)
       //modal.find('.modal-title').text('设置股票 ' + recipient);
       modal.find('.modal-footer .btn-primary').on("click",save);
 
       var stockCname = modal.find('#cname');
       var stockCode = modal.find('#code');
+      stockCode.val('');
+      stockCname.val('');
 
     function save() {
       var aj = $.ajax( {
       url:$SCRIPT_ROOT + '/stock/add',
       data:{
                code : stockCode.val(),
-               cname : stockCname.val()
+               cname : stockCname.val(),
+               stype : stype
       },
       type:'post',
       cache:false,
       dataType:'json',
       success:function(data) {
           if(data.msg =="true" ){
-              window.location.reload();
+              //window.location.reload();
+              list_table.row.add(data.stock).draw();
+              modal.modal('hide');
           }else{
               modal.find('.modal-body #flash_msg').text(data.msg);
           }
@@ -122,5 +130,12 @@ $(function(){
 
 
     });
+
+      // 隐藏后消失
+  $('#addStockModal').on('hidden.bs.modal', function (event) {
+    var modal = $(this);
+    modal.find('.modal-body #flash_msg').text('');
+    modal.find('.modal-footer .btn-primary').unbind();
+  });
 });
 </script>

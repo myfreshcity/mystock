@@ -43,7 +43,7 @@ $(function(){
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 
     var modal = $(this)
-    modal.find('.modal-title').text('机构持股情况 -' + '{{ title|safe }}'+'-'+code );
+    modal.find('#holderModalLabel').text('机构持股情况 -' + '{{ title|safe }}'+'-'+code );
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
     var holder_data_table = modal.find('.modal-body #data_table');
@@ -115,7 +115,7 @@ $(function(){
     c2_data['data'] = result.data.holderSum;
 
     holderPage.report_date = result.data.reportDate
-    modal.find('.modal-title').text('机构持股情况 -' + '{{ stock.name|safe }}'+'-'+holderPage.report_date );
+    modal.find('#holderModalLabel').text('机构持股情况 -' + '{{ stock.name|safe }}'+'-'+holderPage.report_date );
 
     //显示数据
     modal.find('.modal-body').show();
