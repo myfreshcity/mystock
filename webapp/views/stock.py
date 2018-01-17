@@ -74,7 +74,7 @@ def result_list_to_array(data):
              'roe': fixBadData(round(row.jlr_ttm * 100.0 / row.gdqy, 2)),
              'dar': fixBadData(round(row.zfz * 100.0 / (row.zzc), 2)),
              'jlr_rate': fixBadData(round(row['jlr_rate'] * 100.0, 2)),
-             'sh_rate': row['count'],
+             'sh_rate': fixBadData(row['count']),
              'cash_rate': fixBadData(round(row.jyjxjl_ttm * 1.0 / row.jlr_ttm, 2)),  # 现金净利润比
              'report_type': '-' if pd.isnull(row.report_type) else row.report_type
              }
