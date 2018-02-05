@@ -45,7 +45,7 @@ h2 img{vertical-align: middle;}
 #top{}
 #top.regtop{height: 64px;background-color: #F5F5F5;}
 #top #logo{margin-top: 0px;}
-#top.regtop #logo a{background: url(/static/images/nlogosmall.png) 0 12px no-repeat;}
+#top.regtop #logo a{background: url(/static/images/mylogo2.png) 0 12px no-repeat;}
 #top #rlogoright{float: right;color: #656565;padding-right: 10px;}
 #top #rlogoright span{color: #D3D3D3;font-size: 12px;padding-left: 5px;padding-right: 5px;}
 #top #rlogoright a{line-height: 60px;color: #595959;}

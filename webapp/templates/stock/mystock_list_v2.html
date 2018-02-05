@@ -14,8 +14,19 @@
 
 {% block body %}
 
+<style>
+.col-center-block {
+    float: none;
+    display: block;
+    margin-top:100px;
+    margin-left: auto;
+    margin-right: auto;
+    height:300px;
+}
+</style>
+
 <div class="container-fluid">
-    <table id="example" class="display" cellspacing="0" width="98%">
+    <table id="example" class="hidden" cellspacing="0" width="98%">
         <thead>
         <tr>
             <th></th>
@@ -32,7 +43,15 @@
         </tr>
         </thead>
     </table>
-</div>
+
+    <div class="row myCenter hidden" id="guide">
+        <div class="col-xs-6 col-md-4 col-center-block">
+
+            <h4>欢迎,股票是一切的开始。</h4><h4>您现在可以添加第一只自选股了。</h4>
+            <button type="button" class="btn btn-primary col-md-4" data-toggle="modal" data-target="#addStockModal" data-stype="0">立刻添加</button>
+
+        </div>
+    </div>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/mystock_list.js',v=version_no) }}"></script>
 <script type=text/javascript>
 

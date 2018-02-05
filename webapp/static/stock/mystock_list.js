@@ -128,9 +128,17 @@ function valuation(result){
       list_table.destroy();
  }
 
+ var resultTData = result.data.tableData;
+ //第一次访问时，显示引导
+ if(resultTData.length==0 && page_title=='自选股'){
+    $("#guide").removeClass("hidden");
+    return;
+ }
+ $('#example').removeClass("hidden");
+
  list_table = $('#example').DataTable({
     "paging": false,
-    data: result.data.tableData,
+    data: resultTData,
     "order": [],
     scrollY: 600,
     columns: [

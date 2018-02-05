@@ -12,9 +12,7 @@
         <div class="row">
           <div class="col-md-2 col-md-offset-10">
             <a id="m1_link_next" href="#">下一期</a>
-            {% if admin_permission.can() %}
             <a id="m1_link" href='#'>更新数据</a>
-            {% endif %}
             <a id="m1_link_pre" href="#">前一期</a>
           </div>
           <table id="data_table" class="display" cellspacing="0" width="90%"></table>
@@ -48,7 +46,7 @@ $(function(){
     var value_chart = modal.find('.modal-body #value_chart');
     var holder_data_table = modal.find('.modal-body #data_table');
 
-    modal.find('.modal-body #m1_link').on("click",updateData);
+    modal.find('.modal-body #m1_link').on("click",updateHolderData);
     modal.find('.modal-body #m1_link_pre').on("click",preData);
     modal.find('.modal-body #m1_link_next').on("click",nextData);
 
@@ -65,7 +63,7 @@ $(function(){
     success:valuation
     };
 
-    function updateData(){
+    function updateHolderData(){
         var aj = $.ajax( {
         url:$SCRIPT_ROOT + '/setting/updateHolder/',
         data:{

@@ -90,7 +90,7 @@ class ThreadWrite(threading.Thread):
                 xues.updateAssetWebData(code, item['d1'])
                 xues.updateIncomeWebData(code, item['d2'])
                 xues.updateCashWebData(code, item['d3'])
-                print 'stock %s finance update done' % code
+                #print 'stock %s finance update done' % code
             except Exception, ex:
                 msg = traceback.format_exc()
                 eLog = ReqErrorLog("finance_update",item,msg[:1800])

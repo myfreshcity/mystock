@@ -160,13 +160,19 @@
 
 
 <div class="container">
-        <div class="row">
-            <h4>{{ title }}</h4>
-            {% for message in get_flashed_messages() %}
-            <div class="flash alert alert-danger">{{ message }}</div>
-            {% endfor %}
-            {% block body %}{% endblock %}
+    <div class="row">
+        <h4>{{ title }}</h4>
+        {% for message in get_flashed_messages() %}
+        <div class="flash alert alert-danger">{{ message }}</div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </div>
+    <hr>
+    <footer>
+        <div class="container">
+            <p>&copy; 版权所有 2018 联系方式：5692322@qq.com</p>
         </div>
+    </footer>
 </div>
 
 {% if current_user.is_authenticated %}
@@ -175,7 +181,7 @@
        data-stock="{{code|default('sh00000A')|e}}" data-toggle="modal"
        role="button">
         <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-        笔记</a>
+        撰写笔记</a>
 </div>
 {% endif %}
 

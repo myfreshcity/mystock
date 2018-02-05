@@ -126,7 +126,7 @@ def updateStockHolder(data):
         'holder_name': ndf['shholdername'],
         'holder_code': ndf['shholdercode'],
         'amount': ndf['holderamt'],
-        'rate': ndf['holderrto'],
+        'rate': ndf['holderrto'].map(lambda x: round(float(x),2)),
         'holder_nature': ndf['shholdertype'],
         'holder_type': ndf['shholdernature'],
         'holder_parent': ndf['shholdername'].map(lambda x: x.split('-')[0])
@@ -155,7 +155,7 @@ def updateStockHolder(data):
     st.latest_report = latest_report
     st.holder_updated_time = datetime.now()
     db.session.flush()
-    app.logger.info(code +' update done. the latest report date is:' + latest_report)
+    #app.logger.info(code +' update done. the latest report date is:' + latest_report)
 
 
 #近期持股情况比较

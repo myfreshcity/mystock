@@ -16,7 +16,6 @@ from webapp.services import db_service as ds
 blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/', methods = ['GET'])
-@login_required
 def index():
     # title = '首页'
     rw = ds.get_random_warning()
