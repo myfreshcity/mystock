@@ -99,7 +99,7 @@ def person_stockholder_rank():
 
 @blueprint.route('/<code>', methods=['GET'])
 def home(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     #price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
@@ -108,7 +108,7 @@ def home(code):
 
 @blueprint.route('/report/<code>', methods=['GET'])
 def report(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     #price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
@@ -118,26 +118,26 @@ def report(code):
 @blueprint.route('/info/<code>', methods=['GET'])
 def info(code):
     mynews = []
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     if not current_user.is_anonymous:
         uid = current_user.id
-        mynews = ds.getMyStockNews(uid,code)
+        mynews = ds.getMyStockNews(uid,code[2:])
     return render_template('stock/info.html', title='资讯-'+stock.name, stock=stock,code=code,
                            news=mynews)
 
 @blueprint.route('/cash/<code>', methods=['GET'])
 def cash(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     return render_template('stock/cash.html', title='现金-%s'%stock.name, stock=stock,code=code)
 
 @blueprint.route('/holder/<code>', methods=['GET'])
 def holder(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     return render_template('stock/holder.html', title="股东-%s"%(stock.name), stock=stock,code=code)
 
 @blueprint.route('/debet/<code>', methods=['GET'])
 def debet(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     return render_template('stock/debet.html', title='负债-'+stock.name, stock=stock,code=code)
 
 @blueprint.route('/blog/<code>', methods=['GET'])
@@ -151,7 +151,7 @@ def blog(code):
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
-    stock = ds.getStock(code)
+    stock = ds.getStock(code[2:])
     #price = stock.current_price
     return render_template('stock/valuation.html', title='估值-'+stock.name, code=code)
 
@@ -367,7 +367,7 @@ def query():
     result = []
     for index, row in df.iterrows():
         result.append(
-            {'id': index, 'name': row['name']}
+            {'id': index, 'name': row['name'], 'ncode': fn.code_to_ncode(index)}
         )
 
     return jsonify(result=result)
@@ -414,7 +414,7 @@ def del_relation():
 @blueprint.route('/get_basic', methods=['GET'])
 def get_basic():
     code = request.args.get('code')
-    st = ds.getStock(code)
+    st = ds.getStock(code[2:])
     return jsonify(msg='true',stock={
         'desc':st.desc,
         'grow_type':st.grow_type

@@ -94,7 +94,7 @@
                         //stockCode.attr('value', '');
                         //modal.find('.modal-body #flash_msg').text('');
                         var resultList = data.result.map(function (item) {
-                            var aItem = {id: item.id, name: item.name};
+                            var aItem = {id: item.id, name: item.name,ncode: item.ncode};
                             return JSON.stringify(aItem);
                         });
                         return process(resultList);
@@ -128,7 +128,7 @@
         updater: function (obj) {
             var item = JSON.parse(obj);
             //stockCode.attr('value', item.id);
-            document.location.href = '/stock/valuation/'+item.id;
+            document.location.href = '/stock/valuation/'+item.ncode;
             return item.name;
         },
             minLength:1,
