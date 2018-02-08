@@ -1,3 +1,6 @@
+
+var redirect_url="/stock/mystock/0";
+
 function toThousands(num) {
     var num = (num || 0).toString(), result = '';
     while (num.length > 3) {
@@ -6,6 +9,12 @@ function toThousands(num) {
     }
     if (num) { result = num + result; }
     return result;
+}
+
+function request_login(){
+    redirect_url = parseURL(document.location.href).path;
+    $.cookie("redirect_url",redirect_url,{path: '/' });
+    document.location.href = '/login';
 }
 
 //格式化营收数据

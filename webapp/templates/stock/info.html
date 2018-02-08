@@ -2,14 +2,16 @@
 
 {% block body %}
 <div class="container-fluid">
+    {% if current_user.is_authenticated %}
     <div class="row">
         <div class="panel panel-default">
             <!-- Default panel contents -->
-            <div class="panel-heading">收藏的资讯</div>
+            <div class="panel-heading">我的收藏夹</div>
             <div class="col-md-2 col-md-offset-10"><a href="#thirdInfoModal" data-stock="{{code[2:]|e}}" data-toggle="modal">添加第三方资讯</a></div>
             <table id="mynews_table" class="display" cellspacing="0" width="90%"></table>
         </div>
     </div>
+    {% endif %}
 
     <div class="row">
         <!-- Nav tabs -->
@@ -61,7 +63,8 @@ var infoPage = {
   code: '{{ code|safe }}',
   yeahLoad: false, // 网易
   qqLoad: false,
-  sinaLoad: false
+  sinaLoad: false,
+  isLogin:'{{ current_user.is_authenticated|safe }}'
 };
 
 
@@ -124,9 +127,11 @@ $(function(){
                       if(full.src_type==='other'){
                       return "<a href='"+full.url+"' target='_blank'>" +full.title+ "</a>&nbsp;"
                       }else{
+
                       return "<a data-href='"+full.url+"' data-stock='"+full.code+"' data-toggle='modal' data-title='"
                         +full.title+"' data-datetime='"+full.pub_date+"' data-src='"+full.src_type+"' href='#infoModal'>"
                         +full.title+"</a>&nbsp;"
+
                       }
                    }
               },

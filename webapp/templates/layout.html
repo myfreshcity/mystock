@@ -20,6 +20,7 @@
 
     <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
     <script src="https://cdn.bootcss.com/highcharts/6.0.3/highcharts.js"></script>
     <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
@@ -47,6 +48,8 @@
 
 
         $(function(){
+            //统一加载效果
+
             $.ajaxSetup({
             beforeSend:function(){
                 $.blockUI({
@@ -74,6 +77,66 @@
 
               });
 
+
+
+              //股票查找
+              $('#l_cname').typeahead({
+              source: function (query, process) {
+                return $.ajax({
+                    url: $SCRIPT_ROOT + '/stock/query',
+                    type: 'get',
+                    data: { query: query },
+                    dataType: 'json',
+                    beforeSend: function () { },
+                    complete: function (){ },
+                    success: function (data) {
+                        //重置数据
+                        //stockCode.attr('value', '');
+                        //modal.find('.modal-body #flash_msg').text('');
+                        var resultList = data.result.map(function (item) {
+                            var aItem = {id: item.id, name: item.name};
+                            return JSON.stringify(aItem);
+                        });
+                        return process(resultList);
+
+                    }
+                });
+
+            },
+            /**
+         * 使用指定的方式，高亮(指出)匹配的部分
+         *
+         * @param obj 数据源中返回的单个实例
+         * @returns {XML|void|string|*} 数据列表中数据的显示方式（如匹配内容高亮等）
+         */
+        highlighter: function (obj) {
+            var item = JSON.parse(obj);
+            var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+            return item.name.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return  '<strong>' + match + '</strong>'
+            }) + '&nbsp;&nbsp;'
+            + item.id.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return match
+            });
+        },
+        /**
+         * 在选中数据后的操作，这里的返回值代表了输入框的值
+         *
+         * @param obj
+         * @return 选中后，最终输入框里的值
+         */
+        updater: function (obj) {
+            var item = JSON.parse(obj);
+            //stockCode.attr('value', item.id);
+            document.location.href = '/stock/valuation/'+item.id;
+            return item.name;
+        },
+            minLength:1,
+            items: 10,   //显示10条
+            delay: 800,  //延迟时间
+        });
+
+
         });
     </script>
 </head>
@@ -83,19 +146,13 @@
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="/">投资笔记</a>
+            <a class="navbar-brand header-sprite" href="/"></a>
         </div>
 
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
             <ul class="nav navbar-nav">
+                {% if current_user.is_authenticated %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">漫游 <span class="caret"></span></a>
@@ -107,36 +164,40 @@
                         <li><a href="#">私募选股</a></li>
                         <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
                         <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">热门基金排行</a></li>
+                        <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">财报预约披露时间表</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="/macro">宏观指标</a></li>
                     </ul>
                 </li>
+                {% endif %}
                 {% if title %}
                 <li class="active"><a href="#">{{ title }} <span class="sr-only">(current)</span></a></li>
                 {% endif %}
                 {% block nav %}{% endblock %}
             </ul>
             <ul class="nav navbar-nav navbar-right">
+
+                <li id="lookup-stock">
+                    <input type="text" class="form-control" id="l_cname" data-provide="typeahead" data-value="" autocomplete="off" placeholder="搜索股票代码或名称"/>
+                    <input type="hidden" id="l_code" />
+                </li>
+
+                {% if current_user.is_authenticated %}
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
                        aria-expanded="false">系统 <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        <li><a href="#">设置</a></li>
                         <li><a href="#contactInfoModal" data-toggle="modal">联系我</a></li>
                         {% if admin_permission.can() %}
                         <li><a href="/stock/mystock/2">所有股票</a></li>
                         <li><a href="/setting/stocks">数据更新</a></li>
                         {% endif %}
-                        <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">定期报告预约披露时间表</a></li>
-                        <li role="separator" class="divider"></li>
-                        <li><a href="/macro">宏观指标</a></li>
-                        {% if current_user.is_authenticated %}
                         <li><a href="/logout">退出登录</a></li>
-                        {% else %}
-                        <li><a href="/login">登录</a></li>
-                        {% endif %}
                     </ul>
                 </li>
+                {% else %}
+                <li><a href="/">关于我们</a></li>
+                {% endif %}
             </ul>
         </div><!-- /.navbar-collapse -->
     </div><!-- /.container-fluid -->
@@ -160,7 +221,7 @@
 
 
 <div class="container">
-    <div class="row">
+    <div class="row" style="min-height:600px;">
         <h4>{{ title }}</h4>
         {% for message in get_flashed_messages() %}
         <div class="flash alert alert-danger">{{ message }}</div>
@@ -168,22 +229,26 @@
         {% block body %}{% endblock %}
     </div>
     <hr>
-    <footer>
+    <footer class="footer">
         <div class="container">
-            <p>&copy; 版权所有 2018 联系方式：5692322@qq.com</p>
+            <p>&copy; 版权所有 2018 <a href="http://www.miibeian.gov.cn/">辽ICP备17020606号</a> 联系方式：5692322@qq.com</p>
         </div>
     </footer>
 </div>
 
-{% if current_user.is_authenticated %}
 <div class="note-edit">
+    {% if current_user.is_authenticated %}
     <a class="pull-right btn btn-success btn-lg" href="#editBlogModal"
        data-stock="{{code|default('sh00000A')|e}}" data-toggle="modal"
        role="button">
-        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
-        撰写笔记</a>
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>添加笔记
+    </a>
+    {% else %}
+    <a class="pull-right btn btn-success btn-lg" href="javascript:void(0);" onclick="request_login()" >
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>添加笔记
+    </a>
+    {% endif %}
 </div>
-{% endif %}
 
 {% include 'stock/partion/edit_blog.html' %}
 

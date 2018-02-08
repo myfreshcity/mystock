@@ -1,13 +1,15 @@
 {% extends "layout.html" %}
 {% block nav %}
 
+{% if current_user.is_authenticated %}
+
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
        aria-expanded="false">估值 <span class="caret"></span></a>
     <ul class="dropdown-menu">
         <li><a href='/stock/valuation/{{code|e}}' target="_blank">历史估值</a></li>
         <li><a href='https://xueqiu.com/S/{{code|e}}' target="_blank">股价走势</a></li>
-        <li><a href="/stock/mystock/{{code[2:]|e}}" target="_blank">相关股票</a></li>
+        <li><a href="/stock/mystock/{{code[2:]|e}}" target="_blank">股票对比</a></li>
     </ul>
 </li>
 
@@ -24,6 +26,8 @@
                target="_blank">IR活动记录</a>
             {% endif %}
         </li>
+        <li><a href='http://data.eastmoney.com/report/{{code[2:]|e}}.html' target="_blank">第三方研报</a></li>
+        <li><a href='http://data.eastmoney.com/notice/{{code[2:]|e}}.html' target="_blank">公告(东方财富)</a></li>
     </ul>
 </li>
 
@@ -65,15 +69,14 @@
         <li>
             <a href='http://stockdata.stock.hexun.com/2009_gg_{{code[2:]|e}}.shtml' target="_blank">高管资料</a>
         </li>
-        <li><a href='http://data.eastmoney.com/report/{{code[2:]|e}}.html' target="_blank">第三方研报</a></li>
-        <li><a href='http://data.eastmoney.com/notice/{{code[2:]|e}}.html' target="_blank">公告(东方财富)</a></li>
+
     </ul>
 </li>
 
 
 <li class="dropdown">
     <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-       aria-expanded="false">持股 <span class="caret"></span></a>
+       aria-expanded="false">股东 <span class="caret"></span></a>
     <ul class="dropdown-menu">
         <li><a href='/stock/holder/{{code|e}}' target="_blank">十大流通股东</a></li>
         <li><a href="http://quotes.money.163.com/f10/fhpg_{{ code[2:]|safe }}.html#01d05" target="_blank">分红配股</a>
@@ -85,10 +88,20 @@
         </li>
     </ul>
 </li>
-
 <li>
     <a href="#" onclick="updateData('{{ code[2:]|safe }}')">数据更新</a>
 </li>
 
+{% else %}
+
+<li><a href='/stock/valuation/{{code|e}}' target="_blank">历史估值</a></li>
+<li><a href='/stock/info/{{code|e}}' target="_blank">资讯汇总</a></li>
+<li><a href='/stock/report/{{code|e}}' target="_blank">财务报告</a></li>
+<li><a href='/stock/{{code|e}}' target="_blank">成长分析</a></li>
+<li><a href='/stock/cash/{{code|e}}' target="_blank">现金流</a></li>
+<li><a href='/stock/debet/{{code|e}}' target="_blank">资产质量</a></li>
+<li><a href='/stock/holder/{{code|e}}' target="_blank">股东分析</a></li>
+
+{% endif %}
 
 {% endblock %}

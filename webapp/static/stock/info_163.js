@@ -33,8 +33,13 @@ var _163_ajax_option =  {
                   {
                       "targets": [2],
                       "render": function(data, type, full) {
+                      if(infoPage.isLogin=='True'){
                           return "<a data-toggle='modal' data-stock='"+full[0]+"' data-href='" + full[2] + "' data-title='"+
                           full[1]+"' data-datetime='"+full[3]+"' data-src='163' href='#infoModal'>"+full[1]+"</a>&nbsp;"
+
+                          }else{
+                        return "<a href='javascript:void(0);' onclick='request_login()'>" +full[1]+ "</a>&nbsp;"
+                      }
                       }
                   }
         ]

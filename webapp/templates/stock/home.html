@@ -1,30 +1,5 @@
 {% extends "stock_layout.html" %}
 {% block body %}
-<div class="panel panel-default">
-    <div class="panel-body">
-        <form class="form-horizontal">
-            <div class="form-group">
-                <div class="col-md-1">
-                    <label for="growType">成长类型</label>
-                </div>
-                 <div class="col-md-4">
-                    <select class="form-control" id="growType">
-                      <option value="">请选择</option>
-                      <option value="A">A快速增长型（成长股）</option>
-                      <option value="B">B稳定增长型（白马股）</option>
-                      <option value="C">C困境反转型（黑马股）</option>
-                      <option value="D">D周期型（周期股）</option>
-                      <option value="E">E隐蔽资产型</option>
-                      <option value="F">F缓慢增长型(分红股)</option>
-                    </select>
-                 </div>
-                 <div class="col-md-1">
-                    <button type="button" class="btn btn-default" onclick="updateStockData('{{ code|safe }}')">提交</button>
-                </div>
-            </div>
-        </form>
-    </div>
-</div>
 
 <p class="container-fluid">
     <p class="row">

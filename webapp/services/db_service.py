@@ -13,6 +13,7 @@ from webapp.services import db
 from webapp.models import *
 from webapp.extensions import cache
 import json
+from webapp import functions as fn
 
 from pandas.tseries.offsets import *
 from datetime import datetime
@@ -481,6 +482,7 @@ def get_random_warning():
 
 
 def getStock(code):
+    code = fn.get_code(code)
     stock = Stock.find_by_code(code)
     return stock
 
@@ -502,6 +504,7 @@ def getMyStock(uid,code):
     return stock
 
 def getMyStockNews(uid,code):
+    code = fn.get_code(code)
     news = db.session.query(MyStockFavor).filter_by(code = code, user_id = uid).order_by(desc(MyStockFavor.pub_date))
     return news
 

@@ -12,7 +12,9 @@
         <div class="row">
           <div class="col-md-2 col-md-offset-10">
             <a id="m1_link_next" href="#">下一期</a>
+            {% if current_user.is_authenticated %}
             <a id="m1_link" href='#'>更新数据</a>
+            {% endif %}
             <a id="m1_link_pre" href="#">前一期</a>
           </div>
           <table id="data_table" class="display" cellspacing="0" width="90%"></table>

@@ -206,7 +206,7 @@ function valuation(result){
                   {
                       "targets": [9],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a>';
+                          return '<a href="/stock/valuation/'+full['ncode']+'" target="_blank">详细</a>';
                       }
                   },
                   {
@@ -221,7 +221,7 @@ function valuation(result){
                     <ul class="dropdown-menu">'
                         +getSubMenu(full['code'])+
                         '<li><a href="#editTagModal" data-stock="'+full['code']+'" data-tag="'+full['tag']+'" data-toggle="modal">标注</a></li>'+
-                        '<li><a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">日志</a></li>'+
+                        '<li><a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">查看笔记</a></li>'+
                         '<li><a href="#relationModal" data-stock="'+full['code']+'" data-name="'+full['name']+'" data-toggle="modal">行业对比</a></li>'+
                     '</ul>\
                   </div>';

@@ -32,8 +32,14 @@
                   {
                       "targets": [1],
                       "render": function(data, type, full) {
+                      if(infoPage.isLogin=='True'){
+
                         return "<a data-toggle='modal' data-stock='"+full.symbol.substring(2)+"' data-href='" + full.url
                         + "' data-title='"+full.title+"' data-datetime='"+full.datetime+"' data-src='qq' href='#infoModal'>"+full.title+"</a>&nbsp;"
+
+                        }else{
+                        return "<a href='javascript:void(0);' onclick='request_login()'>" +full.title+ "</a>&nbsp;"
+                      }
                       }
                   }
         ]

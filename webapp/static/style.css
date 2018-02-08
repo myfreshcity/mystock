@@ -12,3 +12,12 @@ body {
   margin-right: 10px;
   border-width: 1px 0 0;
 }
+.header-sprite {
+    display: block;
+    width: 140px;
+    background: url(/static/images/mylogo5.png) no-repeat;
+}
+
+#lookup-stock{
+    padding-top: 10px;
+}

@@ -14,6 +14,9 @@ def get_data_array(mydate,myvalue):
 def code_to_ncode(code):
     return 'sh' + code if code[:2] == '60'else 'sz' + code
 
+def get_code(code):
+    return code[2:] if len(code) >= 8 else code
+
 def make_cache_key(*args, **kwargs):
     """Dynamic creation the request url."""
 

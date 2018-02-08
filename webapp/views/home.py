@@ -64,6 +64,10 @@ def register():
             return jsonify(msg='抱歉，注册失败',status='400')
         else:
             session['name'] = username
+            login_user(user, False)
+            identity_changed.send(app._get_current_object(),
+                                  identity=Identity(user.id))
+
             return jsonify(msg='OK', status='200')
     return render_template('register.html', info=info)
 
