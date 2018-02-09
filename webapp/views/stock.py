@@ -146,8 +146,9 @@ def blog(code):
     cd = code[2:].strip()
     uid = current_user.id
     stock = ds.getMyStock(uid,cd)
+    sname = '' if stock is None else stock.name
     #price = stock.current_price
-    return render_template('stock/blog.html', title='日志-'+stock.name, code=code)
+    return render_template('stock/blog.html', title='日志-'+sname, code=code)
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
@@ -184,10 +185,12 @@ def valuationJson():
             app.logger.error(traceback.format_exc())
 
         close.append([tdate,rclose])
-        pe.append([tdate,spe])
-        ps.append([tdate, sps])
-        pcf.append([tdate, spcf])
-        pb.append([tdate, spb])
+        #pe.append([fn.date2str(row['trade_date']), spe])
+        _td_stamp = fn.date2timestamp(row['trade_date'])
+        pe.append([_td_stamp,spe])
+        ps.append([_td_stamp, sps])
+        pcf.append([_td_stamp, spcf])
+        pb.append([_td_stamp, spb])
 
         tableData.append(
             [tdate,

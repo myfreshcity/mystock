@@ -54,10 +54,15 @@ function valuation(result){
     $('#pe').highcharts({
         chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市盈率'},
-        xAxis: {categories: []},
+        xAxis: {
+        type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: [pe],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -65,10 +70,15 @@ function valuation(result){
     $('#ps').highcharts({
         chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市销率'},
-        xAxis: {categories: []},
+        xAxis: {
+        type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: [ps],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -76,10 +86,15 @@ function valuation(result){
     $('#pcf').highcharts({
         chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市现率'},
-        xAxis: {categories: []},
+        xAxis: {
+        type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: [pcf],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -87,10 +102,15 @@ function valuation(result){
     $('#pb').highcharts({
         chart: {zoomType: 'xy'},
         title: {text:  '最近'+result.period+'年市净率'},
-        xAxis: {categories: []},
+        xAxis: {
+        type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: [pb],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }

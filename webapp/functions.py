@@ -17,6 +17,10 @@ def code_to_ncode(code):
 def get_code(code):
     return code[2:] if len(code) >= 8 else code
 
+def date2timestamp(dt):
+    import time
+    return int(time.mktime(dt.timetuple()))*1000
+
 def make_cache_key(*args, **kwargs):
     """Dynamic creation the request url."""
 
