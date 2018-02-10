@@ -7,6 +7,7 @@ from flask import json, jsonify, render_template
 import pandas as pd
 from flask import current_app as app
 from webapp.extensions import cache
+from webapp import functions as fn
 from flask_principal import Principal, Identity, AnonymousIdentity,identity_changed
 
 from flask_login import login_required, login_user, logout_user
@@ -105,6 +106,35 @@ def query():
         #flash('abc')
         app.logger.debug('year:'+year+",month:"+month)
     return render_template('test.html')
+
+
+@blueprint.route('/stockList', methods=['GET'])
+@blueprint.route('/stockList/<pageNum>')
+def stockList(pageNum=None):
+
+    pageSize = 200
+    page = 0 if pageNum is None else int(pageNum)
+    df = ds.get_global_basic_data()
+    totalPages = int(df.size / pageSize);
+
+    df = df[(page*pageSize+1):(page+1)*pageSize]
+
+    data = []
+    for index, row in df.iterrows():
+        data.append({
+            'code': index,
+            'name': row['name'],
+            'ncode': fn.code_to_ncode(index)
+        })
+
+    cuPage = 1 if page==0 else page
+
+    return render_template('stock_list.html',title="股票清单",stocks=data,currentPage=cuPage,totalPages=totalPages)
+
+@blueprint.route('/stockJson', methods=['GET'])
+def stockJson():
+    return jsonify(data='true')
+
 
 @blueprint.route('/hello/')
 @blueprint.route('/hello/<name>')

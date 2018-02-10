@@ -3,12 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
-    <meta name="description" content="记录投资心路，远离喧哗，独立投资者的私人场所"/>
-    <meta name="keywords" content="投资笔记 历史市盈率 历史市净率 交易笔记 投资 价值投资"/>
+    <meta name="description" content="做投资笔记是执行投资、学习投资、股市复盘的重要前提。投资笔记帮你随时记录，永久保存。"/>
+    <meta name="keywords" content="投资笔记 交易笔记 云笔记 笔记 投资 价值投资 {{ title }}"/>
     <meta name="author" content="">
-    <title>{{ title }}</title>
+    <title>{{ title }} | 投资笔记</title>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css',v=version_no) }}">
     <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
@@ -31,16 +31,6 @@
     <script src="https://cdn.bootcss.com/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
 
     <script type="text/javascript" src="{{ url_for('static', filename='app.js',v=version_no) }}"></script>
-
-    <script>
-    var _hmt = _hmt || [];
-    (function() {
-    var hm = document.createElement("script");
-    hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
-    var s = document.getElementsByTagName("script")[0];
-    s.parentNode.insertBefore(hm, s);
-    })();
-    </script>
 
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
@@ -232,7 +222,10 @@
     <hr>
     <footer class="footer">
         <div class="container">
-            <p>&copy; 版权所有 2018 <a href="http://www.miibeian.gov.cn/">辽ICP备17020606号</a> 联系方式：5692322@qq.com</p>
+            <p> <span>&copy; 版权所有 2018</span>
+                <a href="http://www.miibeian.gov.cn/">辽ICP备17020606号</a> 联系方式：5692322@qq.com
+                <a href="/stockList" target="_blank">股票清单</a>
+            </p>
         </div>
     </footer>
 </div>
@@ -253,5 +246,14 @@
 
 {% include 'stock/partion/edit_blog.html' %}
 
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
 </body>
 </html>
