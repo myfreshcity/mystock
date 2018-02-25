@@ -10,7 +10,7 @@ from webapp.extensions import cache
 from webapp import functions as fn
 from flask_principal import Principal, Identity, AnonymousIdentity,identity_changed
 
-from flask_login import login_required, login_user, logout_user
+from flask_login import login_required, login_user, logout_user,current_user
 
 from webapp.services import db_service as ds
 
@@ -19,9 +19,12 @@ blueprint = Blueprint('home', __name__)
 @blueprint.route('/', methods = ['GET'])
 def index():
     # title = '首页'
-    rw = ds.get_random_warning()
-    code = 'sh00000A'
-    return render_template('index.html', info=rw, code=code)
+    if current_user.is_authenticated:
+        return redirect(url_for('stock.mystock',code=0))
+    else:
+        rw = ds.get_random_warning()
+        code = 'sh00000A'
+        return render_template('index.html', info=rw, code=code)
 
 
 @blueprint.route('/login', methods=['GET', 'POST'])
@@ -115,7 +118,7 @@ def stockList(pageNum=None):
     pageSize = 200
     page = 0 if pageNum is None else int(pageNum)
     df = ds.get_global_basic_data()
-    totalPages = int(df.size / pageSize);
+    totalPages = int(df.index.size / pageSize);
 
     df = df[(page*pageSize+1):(page+1)*pageSize]
 
