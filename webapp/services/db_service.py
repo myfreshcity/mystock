@@ -654,13 +654,25 @@ def updateComment(uid,code,cid,content,cflag="-1"):
     db.session.add(comment)
     return comment
 
-def queryComment(uid,code):
-    comments = db.session.query(Comment).\
-        filter_by(stock = code,user_id = uid). \
-        group_by(Comment.parent_id,Comment.created_time,Comment.id).all()
-        #order_by(Comment.sort_time.asc()).\
+def queryComment(uid,code,page=1):
+    pageSize = 10
+    if code.strip() == '':
+        totalPage = db.session.query(Comment).filter_by(user_id=uid).count()
+        comments = db.session.query(Comment). \
+            filter_by(user_id=uid).order_by(Comment.created_time.desc()).offset(
+            (page - 1) * pageSize).limit(pageSize)
 
-    return comments
+    else:
+        code = fn.code_to_ncode(code) if len(code) <= 6 else code
+        totalPage = db.session.query(Comment).filter_by(stock=code, user_id=uid).count()
+
+        comments = db.session.query(Comment). \
+            filter_by(stock=code, user_id=uid).order_by(Comment.created_time.desc()).offset(
+            (page - 1) * pageSize).limit(pageSize)
+        # group_by(Comment.parent_id,Comment.created_time,Comment.id).all()
+
+    return totalPage,comments
+
 
 def addUser(username,password):
     user = User(username=username, password=password)

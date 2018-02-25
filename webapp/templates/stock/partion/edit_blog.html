@@ -8,12 +8,8 @@
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
       <div class="modal-body">
-
-
             <!-- Default panel contents -->
-
             <div id="comment">
-              <input name="stock" type="hidden" value="{{ code }}"/>
               <input id="comment-id" type="hidden"/>
               <div class="form-group">
                 <textarea name="content" class="form-control" rows="3"></textarea>
@@ -29,9 +25,7 @@
               </p>
 
             </div>
-            <div><a href="/stock/blog/{{ code }}" target="_blank">查看历史笔记</a></div>
-
-
+            <div><a href="#" target="_blank" id="his-link">查看历史笔记</a></div>
       </div>
 
     </div>
@@ -58,6 +52,8 @@ $(function(){
       var modal = $(this)
       modal.find('.modal-title').text('投资笔记- ' + recipient);
       modal.find('.modal-body #comment-btn').on("click",updateComment);
+
+      modal.find('.modal-body #his-link').attr("href","/stock/blog/" + recipient);
 
       var content_em = modal.find("div#comment textarea[name='content']");
       var submit_em = modal.find("button#comment-btn");
@@ -86,7 +82,15 @@ $(function(){
           success:function(result) {
               if(result.msg =="true" ){
                   initInputStat();
-                  makeCommentItem(result.data.pid,result.data.id,result.data.date,result.data.content,result.data.flag);
+                  toastr.info('添加成功');
+                  try
+                  {
+                   if(typeof(eval(addBlogCallBack))=="function")
+                   {
+                     addBlogCallBack(result.data);
+                   }
+                  }catch(e){}
+
               }
            }
           });
@@ -98,48 +102,9 @@ $(function(){
         cid_em.val('');
         submit_em.prop('disabled', true);
         radio_em.attr("checked",false);
+        modal.modal('hide');
       }
 
-      function queryComment() {
-          var aj = $.ajax( {
-          url:$SCRIPT_ROOT + '/stock/queryComments',
-          data:{
-                   code : recipient
-          },
-          type:'post',
-          cache:false,
-          dataType:'json',
-          success:function(result) {
-             for(var i=0,a;a=result.data[i++];){
-                makeCommentItem(a.pid,a.id,a.date,a.content,a.flag);
-             }
-           }
-          });
-        };
-
-      function makeCommentItem(pid,id,date,content,flag){
-          content =  content.replace(/\n/g,'<br/>');
-
-          if($("#comment-list #p-"+pid+"").length>0){
-
-          var sci = '<h6 class="list-group-item-text '+renderFlag(flag)+'" id="'+id+'">'+content+'</h6>\
-                      <p class="list-group-item-heading small text-right">\
-                          [<a href="javascript:onCommentEdit(\''+id+'\',\''+pid+'\')">编辑</a>]'+date+'\
-                          </p><hr style="border:.5 dashed #987cb9" />';
-          $("#comment-list #p-"+pid+"").prepend($(sci));
-
-          }else{
-
-          var commentItem = $('<li class="list-group-item" id="p-'+pid+'"></li>');
-          modal.find("#comment-list").prepend(commentItem);
-          var ci = '<h6 class="list-group-item-text '+renderFlag(flag)+'" id="'+id+'">'+content+'</h6>\
-                <p class="list-group-item-heading small text-right">\
-                    [<a href="javascript:onCommentEdit(\''+id+'\',\''+pid+'\')">编辑</a>]'+date+'\
-                </p>'
-          commentItem.prepend($(ci));
-
-          }
-      }
 
       function renderFlag(flag){
           if(flag == '0')
@@ -153,7 +118,7 @@ $(function(){
 
     //加载执行
    initInputStat();
-   queryComment();
+   //queryComment();
 
     });
 

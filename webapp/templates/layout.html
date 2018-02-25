@@ -34,7 +34,10 @@
 
     <script type=text/javascript>
         $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-        toastr.options.positionClass = 'toast-top-center';
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.options.showMethod = 'slideDown';
+        toastr.options.hideMethod = 'slideUp';
+        toastr.options.timeOut = 1000; //1秒
 
 
         $(function(){

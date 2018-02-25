@@ -148,7 +148,7 @@ def blog(code):
     stock = ds.getMyStock(uid,cd)
     sname = '' if stock is None else stock.name
     #price = stock.current_price
-    return render_template('stock/blog.html', title='日志-'+sname, code=code)
+    return render_template('stock/blog2.html', title='日志-'+sname, code=code)
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
@@ -477,19 +477,22 @@ def hardRemove():
 
 @blueprint.route('/queryComments', methods=['GET', 'POST'])
 def queryComments():
-    code = request.form['code']
+    code = str(request.form['code'])
+    page = int(request.form['page'])
+
     uid = current_user.id
-    df = ds.queryComment(uid,code)
+    (totalPage,result) = ds.queryComment(uid,code,page)
     data = []
-    for x in df:
+    for x in result:
         data.append({
             'id' : x.id,
+            'stock': x.stock,
             'pid': x.parent_id,
             'flag': x.ct_flag,
             'date':x.created_time.strftime('%Y-%m-%d'),
             'content':x.content
         })
-    return jsonify(data=data)
+    return jsonify(data=data,totalPage=totalPage)
 
 
 @blueprint.route('/updateComment', methods=['GET', 'POST'])

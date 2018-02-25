@@ -1,7 +1,61 @@
-{% from "macro/comment.html" import comment with context %}
 {% extends "layout.html" %}
 {% block body %}
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='timeline.min.css') }}">
 
-{{ comment(code) }}
+
+<div class="timeline timeline-line-dotted" id="comment-list">
+    <span class="timeline-label">
+        <a href="#" class="btn btn-default" title="More...">
+            <i class="fa fa-fw fa-history"></i>
+        </a>
+    </span>
+</div>
+
+
+<script type=text/javascript>
+
+function queryComment() {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/queryComments',
+    data:{
+             code : '{{ code|e  }}'
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(result) {
+       for(var i=0,a;a=result.data[i++];){
+          $("#comment-list").prepend(makeCommentItem(a.id,a.date,a.content));
+       }
+     }
+    });
+  };
+
+function makeCommentItem(id,date,content){
+    content =  content.replace(/\n/g,'<br/>');
+
+    return   '<div class="timeline-item">\
+                <div class="timeline-point timeline-point-success">\
+                    <i class="fa fa-money"></i>\
+                </div>\
+                <div class="timeline-event">\
+                    <div class="timeline-body">\
+                        <p>'+content+'</p>\
+                    </div>\
+                    <div class="timeline-footer">\
+                        <p class="text-right">'+date+'</p>\
+                    </div>\
+                </div>\
+            </div>'
+}
+
+$(function(){
+
+queryComment();
+
+});
+
+
+</script>
 
 {% endblock %}

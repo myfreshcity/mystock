@@ -42,24 +42,11 @@ def update():
     code = request.form['code']
 
     # 更新财务数据
-
-    # 更新网易来源数据
-    d1 = ns.getFinanceDataFromNet(code)
-    flag = ns.updateFinanceData(code,d1)
-    # 更新雪球来源数据
-    headers = getHeaders("http://xueqiu.com")
-
-    d2 = xues.getAssetWebDataFromNet(code, headers)
-    xues.updateAssetWebData(code, d2)
-
-    d3 = xues.getIncomeWebDataFromNet(code, headers)
-    xues.updateIncomeWebData(code, d3)
-
-    d4 = xues.getCashWebDataFromNet(code, headers)
-    xues.updateCashWebData(code, d4)
+    result = dts.getFinanceData(code)
+    flag = dts.updateFinanceData(result)
 
     # 更新交易数据
-    ns.updateTradeData(code)
+    dts.updateTradeData(code)
 
     #dbs.get_global_trade_data()
     #dbs.get_global_finance_data()
@@ -73,7 +60,7 @@ def updateHolder():
     #heads = getHeaders('https://xueqiu.com')
     (session,heads) = getXueqiuHeaders()
     data = hs.getStockHolderFromNet(code)
-    hs.updateStockHolder(data)
+    dts.updateStockHolder(data)
     return jsonify(msg=True)
 
 @blueprint.route('/updateAll/<int:cat>', methods = ['GET','POST'])

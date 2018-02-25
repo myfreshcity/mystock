@@ -172,7 +172,9 @@ $("#regbtn").on('click', function(){
                     success: function (data,status) {
                         if(data.status == 200)
                             {
-                                document.location.href = $.cookie("redirect_url");
+                                var rd_uri = $.cookie("redirect_url");
+                                if(rd_uri == null) rd_uri = '/stock/mystock/0';
+                                document.location.href = rd_uri;
                             }
                             else
                             {

@@ -237,6 +237,9 @@ function valuation(result){
 //加载完毕自动执行
 $(function(){
 
+//重置登录后页面
+$.cookie("redirect_url",redirect_url,{path: '/' });
+
 mystock_ajax_option.success = valuation;
 
 $.ajax(mystock_ajax_option);
