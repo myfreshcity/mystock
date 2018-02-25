@@ -42,8 +42,13 @@
     <a href="##content" class="skip-link">跳转至主要内容</a>
 
     <div class="right-panel">
+        {% if current_user.is_authenticated %}
+        <a href="/login" class="cta view-pricing click_tracking" data-label="header"
+           data-action="expanded_pricing">个人中心</a>
+        {% else %}
         <a href="/login" class="cta view-pricing click_tracking" data-label="header"
            data-action="expanded_pricing">登录</a>
+        {% endif %}
         <a href="#" class="cta view-pricing click_tracking" data-label="header" data-action="expanded_pricing"
            style="margin-left:30px;">会员</a>
 

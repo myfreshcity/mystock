@@ -10,6 +10,8 @@ import pandas as pd
 from webapp.extensions import cache
 
 from flask import current_app as app
+
+from webapp.models.req_error_log import ReqErrorLog
 from webapp.services import db,getHeaders,db_service as dbs,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.models import MyStock
 import json,random,time
@@ -285,3 +287,91 @@ def freshBasicStockInfo():
 def clearCacheGetMyStocks(flag,uid,isSingle=False):
     cache.delete('getMyStocks')
 
+
+def data_logging(msg_type):
+    def wrapper(func):
+        def inner_wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception, ex:
+                msg = traceback.format_exc()
+                eLog = ReqErrorLog(msg_type, args, msg[:1800])
+                db.session.add(eLog)
+                db.session.commit()
+                return None
+        return inner_wrapper
+    return wrapper
+
+
+#获取股票财务数据
+@data_logging(msg_type='finance_get')
+def getFinanceData(code):
+    result = {'code': code}
+    # 更新网易来源数据
+    result['d0'] = ns.getFinanceDataFromNet(code)
+    # 更新雪球来源数据
+    headers = getHeaders("http://xueqiu.com")
+    result['d1'] = xues.getAssetWebDataFromNet(code, headers)
+    result['d2'] = xues.getIncomeWebDataFromNet(code, headers)
+    result['d3'] = xues.getCashWebDataFromNet(code, headers)
+    return result
+
+
+#更新股票财务数据
+def updateFinanceData(item):
+    code = item['code']
+    d1,d2,d3,d4 = item['d0'], item['d1'], item['d2'], item['d3']
+    try:
+        st = dbs.getStock(code)
+        # 更新网易来源数据
+        ns.updateFinanceData(st, d1)
+        # 更新雪球来源数据
+        xues.updateAssetWebData(st, d2)
+        xues.updateIncomeWebData(st, d3)
+        xues.updateCashWebData(st, d4)
+        # print 'stock %s finance update done' % code
+        # app.logger.info('.')
+
+        # 更新stock情况
+        st.finance_updated_time = datetime.now()
+        db.session.flush()
+
+        return True
+    except Exception, ex:
+        msg = traceback.format_exc()
+        eLog = ReqErrorLog("finance_update", code, msg[:1800])
+        db.session.add(eLog)
+        db.session.commit()
+        app.logger.warn('stock %s finance update fail' % code)
+        return False
+
+#更新股票交易数据
+def updateTradeData(code):
+    try:
+        st = dbs.getStock(code)
+        ns.updateTradeData(st)
+        # 更新stock情况
+        st.trade_updated_time = datetime.now()
+        db.session.flush()
+        return True
+    except Exception, ex:
+        msg = traceback.format_exc()
+        eLog = ReqErrorLog("trade_update", code, msg[:1800])
+        db.session.add(eLog)
+        db.session.commit()
+        app.logger.warn('stock %s trade update fail' % code)
+        return False
+
+#更新股票股东数据
+def updateStockHolder(data):
+    code = data['code']
+    try:
+        hs.updateStockHolder(data)
+        return True
+    except Exception, ex:
+        msg = traceback.format_exc()
+        eLog = ReqErrorLog("holder_update", code, msg[:1800])
+        db.session.add(eLog)
+        db.session.commit()
+        app.logger.warn('stock %s holder update fail' % code)
+        return False

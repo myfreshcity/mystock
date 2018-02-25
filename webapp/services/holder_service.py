@@ -112,6 +112,9 @@ def updateStockHolder(data):
     code = data['code']
     fd = data['data']
     fArray = []
+
+    st = dbs.getStock(code)
+
     if fd['list'] is None:
         return
 
@@ -138,7 +141,7 @@ def updateStockHolder(data):
     s_date = resultProxy.scalar()
 
     if (s_date == None):
-        s_date = dbs.getStock(code).launch_date  # 取上市日期
+        s_date = st.launch_date  # 取上市日期
 
     def convertDate(x):
         return pd.to_datetime(x).date()
@@ -151,7 +154,7 @@ def updateStockHolder(data):
 
     latest_report = df1['report_date'].max()
     #更新stock情况
-    st = dbs.getStock(code)
+
     st.latest_report = latest_report
     st.holder_updated_time = datetime.now()
     db.session.flush()

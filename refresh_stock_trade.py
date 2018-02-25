@@ -45,17 +45,8 @@ class ThreadCrawl(threading.Thread):
         while True:
             self.ctx.push()
             item = self.queue.get()
-            try:
-                ns.updateTradeData(item)
-            except Exception, ex:
-                msg = traceback.format_exc()
-                eLog = ReqErrorLog("trade_update",item,msg[:1800])
-                db.session.add(eLog)
-                db.session.commit()
-                print 'stock %s trade update fail' % item
-
-            st = ds.getStock(item)
-            self.out_queue.put(st)
+            dts.updateTradeData(item)
+            self.out_queue.put(item)
             self.queue.task_done()
 
 
@@ -70,10 +61,6 @@ class ThreadWrite(threading.Thread):
         while True:
             self.ctx.push()
             item = self.queue.get()
-            # 更新stock情况
-            item.trade_updated_time = datetime.now()
-            db.session.flush()
-            print 'stock %s trade update done' % item.code
             self.queue.task_done()
 
 

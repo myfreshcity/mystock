@@ -60,7 +60,7 @@ class ThreadWrite(threading.Thread):
 
     def _parse_data(self, item):
         self.ctx.push()
-        hs.updateStockHolder(item)
+        dts.updateStockHolder(item)
         #print 'write %s' % item
 
 @profile
@@ -70,7 +70,7 @@ def main():
     datas = hs.getRefreshStocks()
     for d in datas:
         urls_queue.put(d)
-    print 'target stocks size is %s' % urls_queue.qsize()
+    app.logger.info('target stocks size is %s' % urls_queue.qsize())
 
     #开线程读取数据
     for i in range(10):

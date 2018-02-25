@@ -45,29 +45,9 @@ class ThreadCrawl(threading.Thread):
         while True:
             self.ctx.push()
             item = self.queue.get()
-            result = {'code': item}
-            try:
-                # 更新stock情况
-                st = ds.getStock(item)
-                st.finance_updated_time = datetime.now()
-                db.session.flush()
-                # 更新网易来源数据
-                result['d0'] = ns.getFinanceDataFromNet(item)
-                # 更新雪球来源数据
-                headers = getHeaders("http://xueqiu.com")
-                result['d1'] = xues.getAssetWebDataFromNet(item, headers)
-                result['d2'] = xues.getIncomeWebDataFromNet(item, headers)
-                result['d3'] = xues.getCashWebDataFromNet(item, headers)
-                result['st'] = st
+            result = dts.getFinanceData(item)
+            if result:
                 self.out_queue.put(result)
-
-            except Exception, ex:
-                msg = traceback.format_exc()
-                eLog = ReqErrorLog("finance_get",item,msg[:1800])
-                db.session.add(eLog)
-                db.session.commit()
-                print 'stock %s finance get fail' % item
-
             self.queue.task_done()
 
 
@@ -82,25 +62,8 @@ class ThreadWrite(threading.Thread):
         while True:
             self.ctx.push()
             item = self.queue.get()
-            try:
-                code = item['st'].code
-                # 更新网易来源数据
-                ns.updateFinanceData(code,item['d0'])
-                # 更新雪球来源数据
-                xues.updateAssetWebData(code, item['d1'])
-                xues.updateIncomeWebData(code, item['d2'])
-                xues.updateCashWebData(code, item['d3'])
-                #print 'stock %s finance update done' % code
-            except Exception, ex:
-                msg = traceback.format_exc()
-                eLog = ReqErrorLog("finance_update",item,msg[:1800])
-                db.session.add(eLog)
-                db.session.commit()
-                print 'stock %s finance update fail' % item
-
+            dts.updateFinanceData(item)
             self.queue.task_done()
-
-
 
 @profile
 def main():
@@ -110,7 +73,7 @@ def main():
     #datas = ['000002']
     for d in datas:
         urls_queue.put(d)
-    print 'target stocks size is %s' % urls_queue.qsize()
+    app.logger.info('target stocks size is %s' % urls_queue.qsize())
 
 
     for i in range(10):

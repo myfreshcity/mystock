@@ -17,13 +17,14 @@ def getFinanceDataFromNet(code):
     url = 'http://quotes.money.163.com/service/zycwzb_' + code + '.html?type=report'
     return pd.read_csv(url)
 
-def updateFinanceData(code,tdf):
+def updateFinanceData(stock,tdf):
+    code = stock.code
     # 获得开始日期
     sql = "select max(report_type) from stock_finance_data where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
     s_date = resultProxy.scalar()
     if (s_date == None):
-        s_date = dbs.getStock(code).launch_date  # 取上市日期
+        s_date = stock.launch_date  # 取上市日期
     s_date = max(s_date, pd.to_datetime('2000-01-01').date())
     tdf = tdf.iloc[:, 1:].dropna(axis=1).T.reset_index()
 
@@ -117,7 +118,7 @@ def updateFinanceData(code,tdf):
             'zfz': tdf[15].apply(fixNaN),
             'ldfz': tdf[16].apply(fixNaN),
             'gdqy': tdf[17].apply(fixNaN),
-            'roe': tdf[18].apply(fixNaN),
+            'roe': tdf[18].apply(fixNaN).map(lambda x: round(float(x),2)),
             'code': code
         })
 
@@ -150,13 +151,14 @@ def updateFinanceData(code,tdf):
         edf = edf.fillna(1)
         edf.to_sql('stock_finance_data', db.engine, if_exists='append', index=False, chunksize=1000)
 
-def updateTradeData(code):
+def updateTradeData(stock):
+    code = stock.code
     #获得开始日期
     sql = "select max(trade_date) from stock_trade_data where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
     s_date = resultProxy.scalar()
     if (s_date == None):
-        s_date = dbs.getStock(code).launch_date #取上市日期
+        s_date = stock.launch_date #取上市日期
     s_date = max(s_date, pd.to_datetime('2000-01-01').date())
     s_date = (s_date +DateOffset(days=1)).date()  # 排除掉之前插入的数据
     e_date = datetime.now().date()
