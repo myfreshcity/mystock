@@ -453,6 +453,17 @@ def getStockValuationN(code,peroid):
     })
     df = df.fillna(method='bfill')
 
+    def getValuation(x, attri):
+        dt = pd.to_datetime(x)
+        tcp = df[df.index == dt].get('t_cap')
+        mg_val = df[df.index == dt].get(attri)
+        return 0 if mg_val.empty else round(tcp.values[0]/mg_val.values[0],2)
+
+    df['pe'] = df['trade_date'].apply(getValuation, args=('jlr_ttm',))
+    df['ps'] = df['trade_date'].apply(getValuation, args=('zyysr_ttm',))
+    df['pcf'] = df['trade_date'].apply(getValuation, args=('jyjxjl_ttm',))
+    df['pb'] = df['trade_date'].apply(getValuation, args=('gdqy',))
+
     #df.set_index('trade_date')
     if peroid>0:
         df = df.head(peroid*12)
