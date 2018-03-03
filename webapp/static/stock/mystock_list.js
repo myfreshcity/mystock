@@ -130,7 +130,7 @@ function valuation(result){
 
  var resultTData = result.data.tableData;
  //第一次访问时，显示引导
- if(resultTData.length==0 && page_title=='自选股'){
+ if(resultTData.length==0 && page_title=='备选股'){
     $("#guide").removeClass("hidden");
     return;
  }
@@ -176,25 +176,25 @@ function valuation(result){
                   {
                       "targets": [4],
                       "render": function(data, type, full) {
-                          return '<a href="#roeModal" data-stock="'+full['code']+'" data-name="'+full['name']+'" data-toggle="modal">'+data+'</a>';
+                          return data;
                       }
                   },
                   {
                       "targets": [5],
                       "render": function(data, type, full) {
-                          return '<a href="#pcfModal" data-stock="'+full['ncode']+'" data-name="'+full['name']+'" data-toggle="modal">'+data+'</a>';
+                          return data;
                       }
                   },
                   {
                       "targets": [6],
                       "render": function(data, type, full) {
-                          return '<a href="#peModal" data-stock="'+full['ncode']+'" data-name="'+full['name']+'" data-toggle="modal">'+data+'</a>';
+                          return data;
                       }
                   },
                   {
                       "targets": [7],
                       "render": function(data, type, full) {
-                          return '<a href="#pbModal" data-stock="'+full['ncode']+'" data-name="'+full['name']+'" data-toggle="modal">'+data+'</a>';
+                          return data;
                       }
                   },
                   {
@@ -206,7 +206,7 @@ function valuation(result){
                   {
                       "targets": [9],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/valuation/'+full['ncode']+'" target="_blank">详细</a>';
+                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a> | <a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">笔记</a>';
                       }
                   },
                   {
@@ -221,7 +221,6 @@ function valuation(result){
                     <ul class="dropdown-menu">'
                         +getSubMenu(full['code'])+
                         '<li><a href="#editTagModal" data-stock="'+full['code']+'" data-tag="'+full['tag']+'" data-toggle="modal">标注</a></li>'+
-                        '<li><a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">查看笔记</a></li>'+
                         '<li><a href="#relationModal" data-stock="'+full['code']+'" data-name="'+full['name']+'" data-toggle="modal">行业对比</a></li>'+
                     '</ul>\
                   </div>';

@@ -163,6 +163,11 @@ def valuationJson():
     period = int(request.args.get('period'))
     df = ds.getStockValuationN(code[2:],period)
 
+    df['fpe'] = fn.filter_extreme_MAD(df['pe'], 10)
+    df['fps'] = fn.filter_extreme_MAD(df['ps'], 10)
+    df['fpcf'] = fn.filter_extreme_MAD(df['pcf'], 10)
+    df['fpb'] = fn.filter_extreme_MAD(df['pb'], 10)
+
     close = []
     pe = []
     ps = []
@@ -174,10 +179,10 @@ def valuationJson():
         try:
             tcp = row['t_cap']
             rclose = row['close']
-            spe = 0 if row['jlr_ttm']== 0 else round(tcp/row['jlr_ttm'],2)
-            sps = 0 if row['zyysr_ttm']== 0 else round(tcp/row['zyysr_ttm'],2)
-            spcf = 0 if row['jyjxjl_ttm']== 0 else round(tcp/row['jyjxjl_ttm'],2)
-            spb = 0 if row['gdqy'] == 0 else round(tcp / row['gdqy'], 2)
+            spe = row['pe']
+            sps = row['ps']
+            spcf = row['pcf']
+            spb = row['pb']
             tdate = row['trade_date'].strftime('%Y-%m-%d')
         except Exception, ex:
             app.logger.error(tcp)
@@ -187,18 +192,18 @@ def valuationJson():
         close.append([tdate,rclose])
         #pe.append([fn.date2str(row['trade_date']), spe])
         _td_stamp = fn.date2timestamp(row['trade_date'])
-        pe.append([_td_stamp,spe])
-        ps.append([_td_stamp, sps])
-        pcf.append([_td_stamp, spcf])
-        pb.append([_td_stamp, spb])
+        pe.append([_td_stamp,row['fpe']])
+        ps.append([_td_stamp, row['fps']])
+        pcf.append([_td_stamp, row['fpcf']])
+        pb.append([_td_stamp, row['fpb']])
 
         tableData.append(
             [tdate,
              rclose,
-             spe,
-             sps,
-             spcf,
-             spb,
+             row['pe'],
+             row['ps'],
+             row['pcf'],
+             row['pb'],
              tcp,
              row['gdqy'],
              row['jlr'],
@@ -209,6 +214,8 @@ def valuationJson():
              row['jyjxjl_ttm']
              ]
         )
+
+
 
     return jsonify(data={'close': close, 'pe': pe, 'ps': ps, 'pcf': pcf,'pb':pb,'tableData':tableData},period=period)
 

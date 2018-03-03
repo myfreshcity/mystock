@@ -50,10 +50,17 @@ $(function(){
       stockCname.val('');
 
     function save() {
+      var stock_val = stockCode.val();
+      if(stock_val==''){
+        toastr.error('无效的股票。请从建议列表中选择。');
+        return;
+      }
+
+
       var aj = $.ajax( {
       url:$SCRIPT_ROOT + '/stock/add',
       data:{
-               code : stockCode.val(),
+               code : stock_val,
                cname : stockCname.val(),
                stype : stype
       },
@@ -63,7 +70,11 @@ $(function(){
       success:function(data) {
           if(data.msg =="true" ){
               //window.location.reload();
+              if(list_table){
               list_table.row.add(data.stock).draw();
+              }else{
+              window.location.reload();
+              }
               modal.modal('hide');
           }else{
               modal.find('.modal-body #flash_msg').text(data.msg);

@@ -8,7 +8,7 @@
        aria-expanded="false">估值 <span class="caret"></span></a>
     <ul class="dropdown-menu">
         <li><a href='/stock/valuation/{{code|e}}' target="_blank">历史估值</a></li>
-        <li><a href='https://xueqiu.com/S/{{code|e}}' target="_blank">股价走势</a></li>
+        <li><a href='https://xueqiu.com/S/{{code|e}}' target="_blank">股价走势(雪球)</a></li>
         <li><a href="/stock/mystock/{{code[2:]|e}}" target="_blank">股票对比</a></li>
     </ul>
 </li>
@@ -20,13 +20,13 @@
         <li><a href='/stock/info/{{code|e}}' target="_blank">资讯</a></li>
         <li>
             {% if code[:2]=='sz' %}
-            <a href="http://irm.cninfo.com.cn/ssessgs/S{{code[2:]}}/index.html" target="_blank">IR活动记录</a>
+            <a href="http://irm.cninfo.com.cn/ssessgs/S{{code[2:]}}/index.html" target="_blank">IR活动记录(巨潮)</a>
             {% else %}
             <a href="http://sns.sseinfo.com/search.do?keyword={{code[2:]}}"
-               target="_blank">IR活动记录</a>
+               target="_blank">IR活动记录(巨潮)</a>
             {% endif %}
         </li>
-        <li><a href='http://data.eastmoney.com/report/{{code[2:]|e}}.html' target="_blank">第三方研报</a></li>
+        <li><a href='http://data.eastmoney.com/report/{{code[2:]|e}}.html' target="_blank">第三方研报(东方财富)</a></li>
         <li><a href='http://data.eastmoney.com/notice/{{code[2:]|e}}.html' target="_blank">公告(东方财富)</a></li>
     </ul>
 </li>
@@ -39,7 +39,7 @@
         <li><a href='/stock/{{code|e}}' target="_blank">成长分析</a></li>
         <li><a href='/stock/debet/{{code|e}}' target="_blank">资产质量</a></li>
         <li><a href='/stock/cash/{{code|e}}' target="_blank">现金流</a></li>
-        <li><a href='http://quotes.money.163.com/f10/dbfx_{{code[2:]|e}}.html#01c08' target="_blank">收益结构</a></li>
+        <li><a href='http://quotes.money.163.com/f10/dbfx_{{code[2:]|e}}.html#01c08' target="_blank">收益结构(网易)</a></li>
         <li>
             <a href='http://quotes.money.163.com/f10/zycwzb_{{code[2:]|e}},year.html' target="_blank">财务指标(网易)</a>
         </li>
@@ -53,21 +53,21 @@
     <ul class="dropdown-menu">
         <li>
             <a href="http://soft-f9.eastmoney.com/soft/gp30.php?code={{code[2:]+ ('02' if code[:2] == 'sz' else '01')|e}}"
-               target="_blank">业务概述</a>
+               target="_blank">业务概述(东方财富)</a>
         </li>
         <li>
-            <a href="http://stock.jrj.com.cn/share,{{code[2:]|e}},zgsms.shtml" target="_blank">招股说明书</a>
+            <a href="http://stock.jrj.com.cn/share,{{code[2:]|e}},zgsms.shtml" target="_blank">招股说明书(金融界)</a>
         </li>
         <li>
             {% if code[:2]=='sz' %}
-            <a href="http://disclosure.szse.cn/m/drgg_search.htm?secode={{code[2:]}}" target="_blank">公司公告</a>
+            <a href="http://disclosure.szse.cn/m/drgg_search.htm?secode={{code[2:]}}" target="_blank">公司公告(交易所)</a>
             {% else %}
             <a href="http://www.sse.com.cn/assortment/stock/list/info/announcement/index.shtml?productId={{code[2:]}}"
-               target="_blank">公司公告</a>
+               target="_blank">公司公告(交易所)</a>
             {% endif %}
         </li>
         <li>
-            <a href='http://stockdata.stock.hexun.com/2009_gg_{{code[2:]|e}}.shtml' target="_blank">高管资料</a>
+            <a href='http://stockdata.stock.hexun.com/2009_gg_{{code[2:]|e}}.shtml' target="_blank">高管资料(和讯)</a>
         </li>
 
     </ul>
@@ -79,12 +79,12 @@
        aria-expanded="false">股东 <span class="caret"></span></a>
     <ul class="dropdown-menu">
         <li><a href='/stock/holder/{{code|e}}' target="_blank">十大流通股东</a></li>
-        <li><a href="http://quotes.money.163.com/f10/fhpg_{{ code[2:]|safe }}.html#01d05" target="_blank">分红配股</a>
+        <li><a href="http://quotes.money.163.com/f10/fhpg_{{ code[2:]|safe }}.html#01d05" target="_blank">分红配股(网易)</a>
         </li>
-        <li><a href="http://quotes.money.163.com/f10/nbcg_{{ code[2:]|safe }}.html#01d04" target="_blank">内部持股</a>
+        <li><a href="http://quotes.money.163.com/f10/nbcg_{{ code[2:]|safe }}.html#01d04" target="_blank">内部持股(网易)</a>
         </li>
         <li>
-            <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code[2:]}}.shtml" target="_blank">股东人数变化</a>
+            <a href="http://stockdata.stock.hexun.com/2009_cgjzd_{{code[2:]}}.shtml" target="_blank">股东人数变化(和讯)</a>
         </li>
     </ul>
 </li>

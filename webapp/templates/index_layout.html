@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<!-- saved from url=(0025)# -->
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <title>{{ title }} | 投资笔记</title>
+    <meta name="description" content="做投资笔记是执行投资、学习投资、股市复盘的重要前提。投资笔记帮你随时记录，永久保存。">
+    <meta name="keywords" content="投资笔记 交易笔记 云笔记 投资 价值投资 笔记"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <link href="{{ url_for('static', filename='styles/fonts-zh-cn.css',v=version_no) }}" rel="stylesheet" type="text/css" media="all">
+    <link href="{{ url_for('static', filename='styles/style_yx.css',v=version_no) }}" rel="stylesheet" type="text/css">
+    <link href="#" rel="Shortcut Icon" type="image/x-icon">
+    {% block head %}{% endblock %}
+</head>
+
+
+<body class="nav_home-new global local_zh-cn china_site evernote-webclipper-extension" data-lang="zh-cn"
+      data-country="CN">
+
+
+<header>
+    <div class="logo-container yx"><a href="/" class="header-sprite"><span>投资笔记</span></a></div>
+
+
+    <a href="##content" class="skip-link">跳转至主要内容</a>
+
+    <div class="right-panel">
+        {% if current_user.is_authenticated %}
+        <a href="/stock/mystock/0" class="cta view-pricing click_tracking" data-label="header"
+           data-action="expanded_pricing">个人中心</a>
+        {% else %}
+        <a href="/login" class="cta view-pricing click_tracking" data-label="header"
+           data-action="expanded_pricing">登录</a>
+        {% endif %}
+        <a href="#" class="cta view-pricing click_tracking" data-label="header" data-action="expanded_pricing"
+           style="margin-left:30px;">会员</a>
+
+
+        <a href="##" id="header-menu" class="menu click_tracking" data-label="menu" data-action="open_menu"><span
+                class="text">更多</span><span></span></a>
+    </div> <!-- end right-panel -->
+</header>
+
+{% block body %}{% endblock %}
+
+<footer class="footer-v3">
+    <nav class="footer-nav">
+
+
+        <div class="footer-grey-bar">
+            <div class="row">
+
+                <ul class="footer-legal-links">
+                    <li><a href="/howto" class="click_tracking" target="_blank">入门指南</a></li>
+                    <li><a href="/why" class="click_tracking" target="_blank">帮助</a></li>
+                    <li><a href="#" class="click_tracking" data-label="footer" data-action="legal">法律条款</a></li>
+                    <li><a href="#" class="click_tracking" data-label="footer" data-action="security">安全性</a></li>
+                </ul>
+                <p class="footer-copyright">版权所有 2018 </p>
+            </div><!-- .row -->
+
+            <div class="row">
+                <div class="footer-china-gov-id">
+                    <a href="http://www.miibeian.gov.cn/">辽ICP备17020606号</a>
+                    <span>联系方式：5692322@qq.com</span>
+                    <span>本站对数据正确、更新延误等不负任何责任，依本站数据交易发生损失需自行负责</span>
+                </div>
+            </div><!-- .row -->
+        </div>
+    </nav>
+</footer>
+<script>
+var _hmt = _hmt || [];
+(function() {
+var hm = document.createElement("script");
+hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
+var s = document.getElementsByTagName("script")[0];
+s.parentNode.insertBefore(hm, s);
+})();
+</script>
+
+</body>
+</html>

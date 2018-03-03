@@ -1,24 +1,4 @@
 
-function updateData(code){
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/setting/update/',
-    data:{
-             code : code
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:function(result){
-         if(result.msg == true){
-             alert('数据更新成功');
-         }else{
-            console.error(result.msg);
-         }
-        }
-    });
-
-}
-
 function getStockData(code) {
     var aj = $.ajax( {
     url:$SCRIPT_ROOT + '/stock/get_basic',

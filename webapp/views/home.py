@@ -18,14 +18,21 @@ blueprint = Blueprint('home', __name__)
 
 @blueprint.route('/', methods = ['GET'])
 def index():
-    # title = '首页'
-    if current_user.is_authenticated:
-        return redirect(url_for('stock.mystock',code=0))
-    else:
-        rw = ds.get_random_warning()
-        code = 'sh00000A'
-        return render_template('index.html', info=rw, code=code)
+    title = '做你的投资私人秘书'
+    rw = ds.get_random_warning()
+    code = 'sh00000A'
+    return render_template('index.html', info=rw, code=code,title=title)
 
+
+@blueprint.route('/howto', methods = ['GET'])
+def howto():
+    title = '快速开始投资笔记'
+    return render_template('howto.html',title=title)
+
+@blueprint.route('/why', methods = ['GET'])
+def why():
+    title = '为什么要做投资笔记'
+    return render_template('why.html',title=title)
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 def login():

@@ -59,12 +59,13 @@
 {% include 'stock/partion/add_third_info.html' %}
 
 <script type="text/javascript">
+
 var infoPage = {
   code: '{{ code|safe }}',
   yeahLoad: false, // 网易
   qqLoad: false,
   sinaLoad: false,
-  isLogin:'{{ current_user.is_authenticated|safe }}'
+  isLogin:'{{ current_user.is_authenticated != False }}'
 };
 
 

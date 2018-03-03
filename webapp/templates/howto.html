@@ -1,0 +1,50 @@
+{% extends "index_layout.html" %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='styles/content.css',v=version_no) }}" rel="stylesheet" type="text/css" media="all">
+{% endblock %}
+
+{% block body %}
+<div id="colwrap">
+    <section id="content">
+        <div class="main-content row">
+
+                <h1>快速开始</h1>
+                <h2>1）添加感兴趣的股票到股池</h2>
+                <p><img src="/static/images/how-1.jpg" alt="添加感兴趣的股票到股池"/></p>
+                <h2>2）收集股票信息</h2>
+                <ul>
+                    <li>
+                        <h3>阅读财务报表</h3>
+                        <p>比如查看万家乐的<a href="/stock/report/sz000533" target="_blank">财务报表</a></p><br/>
+                        <p><img src="/static/images/how-2.jpg" alt="阅读财务报表"/></p>
+                    </li>
+                    <li>
+                        <h3>阅读新闻并收藏</h3>
+                        <p>比如阅读有关的万家乐的<a href="/stock/info/sz000533" target="_blank">新闻资讯</a></p><br/>
+                        <p><img src="/static/images/how-3.jpg" alt="阅读新闻"/></p>
+                    </li>
+                </ul>
+
+                <h2>3）随时记录思考心得</h2>
+                <p>投资逻辑复杂、信息零碎而瞬息万变，随时记录，为交易决策提供支持</p>
+                <p><img src="/static/images/how-4.jpg" alt="随时记录思考心得"/></p>
+
+
+                <h2>4）交易前先做预案</h2>
+                <p>买入前记录买入逻辑，买入成功后把股票转移到自选股池，进行重点跟踪。</p>
+                <p>卖出前记录卖出逻辑，卖出成功后把股票转移到备选股池，保持专注。</p>
+
+                <h2>5）每周或每月对股池中股票进行跟踪，评估变化，重新思考</h2><br/><br/>
+
+            <p class="secondary-text">
+                <em>想了解普通投资者为什么要做投资笔记？请<a href="/why" target="_blank">点击这里</a>。</em>
+            </p>
+                <div class="button-container">
+                    <a class="button-primary--round button" href="/register">注册试用</a>
+                </div>
+
+        </div>
+    </section>
+</div>
+{% endblock %}
