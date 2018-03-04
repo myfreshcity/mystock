@@ -70,11 +70,11 @@ $(function(){
       success:function(data) {
           if(data.msg =="true" ){
               //window.location.reload();
-              if(list_table){
+
               list_table.row.add(data.stock).draw();
-              }else{
-              window.location.reload();
-              }
+              $('#example').removeClass("hidden");
+              $("#guide").addClass("hidden");
+
               modal.modal('hide');
           }else{
               modal.find('.modal-body #flash_msg').text(data.msg);

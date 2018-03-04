@@ -131,10 +131,10 @@ function valuation(result){
  var resultTData = result.data.tableData;
  //第一次访问时，显示引导
  if(resultTData.length==0 && page_title=='备选股'){
-    $("#guide").removeClass("hidden");
-    return;
+     $("#guide").removeClass("hidden");
+ }else{
+     $('#example').removeClass("hidden");
  }
- $('#example').removeClass("hidden");
 
  list_table = $('#example').DataTable({
     "paging": false,
@@ -158,7 +158,7 @@ function valuation(result){
                       "targets": [0],
                       "width": "10",
                       "render": function(data, type, full) {
-                          return '<span class="label label-warning">'+data+'</span>'
+                          return '<span class="label label-warning">'+data+'</span>';
                       }
                   },
                   {
