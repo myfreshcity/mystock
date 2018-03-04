@@ -2,6 +2,13 @@
 
 {% block head %}
 <link href="{{ url_for('static', filename='styles/content.css',v=version_no) }}" rel="stylesheet" type="text/css" media="all">
+<style>
+    .img-responsive {
+  display: inline-block;
+  height: auto;
+  max-width: 100%;
+}
+</style>
 {% endblock %}
 
 {% block body %}
@@ -11,24 +18,24 @@
 
                 <h1>快速开始</h1>
                 <h2>1）添加感兴趣的股票到股池</h2>
-                <p><img src="/static/images/how-1.jpg" alt="添加感兴趣的股票到股池"/></p>
+                <p><img src="/static/images/how-1.jpg" alt="添加感兴趣的股票到股池" class="img-responsive"/></p>
                 <h2>2）收集股票信息</h2>
                 <ul>
                     <li>
                         <h3>阅读财务报表</h3>
                         <p>比如查看万家乐的<a href="/stock/report/sz000533" target="_blank">财务报表</a></p><br/>
-                        <p><img src="/static/images/how-2.jpg" alt="阅读财务报表"/></p>
+                        <p><img src="/static/images/how-2.jpg" alt="阅读财务报表" class="img-responsive"/></p>
                     </li>
                     <li>
                         <h3>阅读新闻并收藏</h3>
                         <p>比如阅读有关的万家乐的<a href="/stock/info/sz000533" target="_blank">新闻资讯</a></p><br/>
-                        <p><img src="/static/images/how-3.jpg" alt="阅读新闻"/></p>
+                        <p><img src="/static/images/how-3.jpg" alt="阅读新闻" class="img-responsive"/></p>
                     </li>
                 </ul>
 
                 <h2>3）随时记录思考心得</h2>
                 <p>投资逻辑复杂、信息零碎而瞬息万变，随时记录，为交易决策提供支持</p>
-                <p><img src="/static/images/how-4.jpg" alt="随时记录思考心得"/></p>
+                <p><img src="/static/images/how-4.jpg" alt="随时记录思考心得" class="img-responsive"/></p>
 
 
                 <h2>4）交易前先做预案</h2>
