@@ -36,6 +36,7 @@ def why():
 
 @blueprint.route('/login', methods=['GET', 'POST'])
 def login():
+    title = '登录'
     info = {}
     info['m_name'] = session['name'] if 'name' in session else ''
     if request.method == 'POST':
@@ -59,10 +60,11 @@ def login():
                               identity=Identity(user.id))
 
         return jsonify(msg='OK',status='200')
-    return render_template('login.html', info=info)
+    return render_template('login_v2.html', info=info,title=title)
 
 @blueprint.route('/register', methods=['GET', 'POST'])
 def register():
+    title = '注册'
     info = {}
     if request.method == 'POST':
         username = request.form.get('mobile')
@@ -80,7 +82,7 @@ def register():
                                   identity=Identity(user.id))
 
             return jsonify(msg='OK', status='200')
-    return render_template('register.html', info=info)
+    return render_template('register_v2.html', info=info,title=title)
 
 @blueprint.route('/logout', methods=['GET', 'POST'])
 def logout():

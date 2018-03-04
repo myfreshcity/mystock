@@ -1,0 +1,180 @@
+{% extends "index_layout.html" %}
+
+{% block head %}
+<link href="{{ url_for('static', filename='styles/homepage.css',v=version_no) }}" rel="stylesheet" type="text/css" media="all">
+
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
+<script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='app.js',v=version_no) }}"></script>
+{% endblock %}
+
+{% block body %}
+
+<section class="bottom-cta">
+  <div class="row">
+
+    <h2>立即注册</h2>
+    <p>开创崭新投资生活</p>
+
+        <div class="registration" novalidate="novalidate">
+      <div class="form-items">
+          <fieldset>
+              <legend>注册表格</legend>
+              <div class="field-item left">
+                  <label for="mobile" class="show-hide-label">手机号码</label>
+                  <input type="email" name="email" id="mobile" data-validate="required, email, email_in_use"
+                         placeholder="请输入您的手机号码" aria-required="true" aria-describedby="email2-email_in_use-error">
+                  <span class="error-message mobile" id="mobile-error" role="alert"></span>
+              </div>
+              <div class="field-item right">
+                  <label for="password" class="show-hide-label">密码</label>
+                  <input type="password" name="password" id="password" data-validate="required, password"
+                         placeholder="请输入密码 8位以上" aria-required="true"
+                         aria-describedby="password-login2-password-error">
+                  <span class="error-message required" id="password-error" role="alert"></span>
+              </div>
+          </fieldset>
+          <p class="button-container">
+              <input type="hidden" name="hashcode" id="hashcode"
+                     value="VmNSPQVnDSAHNABmBjtedA03DTwDLFNgAzNRfVwwC2EKPgNkBWQMP1xsUzoFM1Zm"/>
+              <input type="hidden" name="origin" class="origin">
+              <input type="hidden" name="offer" class="offer">
+              <input type="hidden" name="businessAutoApproveDomainOverride" value="true">
+          <!-- p class="legal">点击注册即表明你同意本<a href="#">服务条款</a>和<a href="#">隐私条款</a>。</p -->
+          <button name="register" class="click_tracking button-pricing--premium" data-label="home_CTA"
+                  data-action="Sign up for free" id="regbtn">免费注册
+          </button>
+          <p class="legal" style="margin-top:10px;">
+              已有帐号？<a href="/login">立即登录</a>
+          </p>
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+<script type="text/javascript">
+function isEmail(val){
+ var reg = /^([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+.[a-zA-Z]{2,4}$/;
+ return reg.test(val);
+};
+function isMobile(val){
+ var reg = /^1[34578]\d{9}$/;
+ return reg.test(val);
+};
+
+function checkMobile(){
+	var mobile = $.trim($("#mobile").val());
+	if(!isMobile(mobile))
+	{
+        $(".registration").addClass('has-error');
+        $("#mobile-error").html('手机号有误').css("display","block");
+	}else{
+	    $("#mobile-error").html('').hide();
+	}
+};
+
+
+function checkPassword(){
+	var password = $.trim($("#password").val());
+	if(password.length<8)
+	{
+		$(".registration").addClass('has-error');
+		$("#password-error").html('密码八位以上').css("display","block");
+	}else{
+	    $("#password-error").html('').hide();
+	}
+};
+
+function checkVerifycode(){
+    var verifycode = $.trim($("#verifycode").val());
+    var reg = /^\d{6}$/;
+	if(!reg.test(verifycode))
+	{
+		$(".registration").addClass('has-error');
+		$("#verifycodehint").html('<span class="red">无效的验证码</span>');
+	}
+};
+
+function forwardLoginPage(){
+    var _hostName = parseURL(document.location.href).host;
+    document.location.href = '/login';
+}
+
+
+$("#mobile").on('focus', function(){
+	$(".registration").removeClass('has-error');
+	$("#mobile-error").hide();
+}).on('blur', checkMobile);
+
+$("#password").on('focus', function(){
+	$(".registration").removeClass('has-error');
+	$("#password-error").hide();
+}).on('blur', checkPassword);
+
+
+$("#regbtn").on('click', function(){
+    $("#reghint").html('');
+    checkMobile();
+    checkPassword();
+    //checkVerifycode();
+
+	if($(".has-error").length>0) return false;
+
+	var mobile = $.trim($("#mobile").val());
+	var password = $.trim($("#password").val());
+    //var verifycode = $.trim($("#verifycode").val());
+    var hashcode = $.trim($("#hashcode").val());
+
+    	$.ajax({
+                    url: '/register',
+                    type: 'post',
+                    data: {password:password, mobile:mobile,hashcode:hashcode},
+                    dataType: 'json',
+                    beforeSend: function () {
+                     $.blockUI({
+                    message: '注册中...',
+                    baseZ: 20000,
+                    css: {
+                        border: '1px solid #ddd',
+                        padding: '7px',
+                        fontSize: '13px',
+                        position: 'fixed',
+                        backgroundColor: '#eee'
+                    },
+                    overlayCSS: {
+                        backgroundColor: '#555',
+                        opacity: 0.5,
+                        cursor: 'wait'
+                    }
+                });
+
+                     },
+                    complete: function (){
+                    $.unblockUI();
+                    },
+                    success: function (data,status) {
+                        if(data.status == 200)
+                            {
+                                //$("#reghint").html("注册成功，正在跳转登录...");
+                                //setTimeout(function(){ forwardLoginPage();},3000);
+                                document.location.href = "/stock/mystock/1";
+                            }
+                            else
+                            {
+                                $("#mobile-error").html(data.msg).css("display","block");
+                            }
+                    }
+                });
+
+
+})
+
+
+</script>
+
+
+{% endblock %}
