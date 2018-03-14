@@ -41,6 +41,11 @@
 
 
         $(function(){
+            //记录最近登录页面
+            redirect_url = parseURL(document.location.href).path;
+            $.cookie("redirect_url",redirect_url,{path: '/' });
+
+
             //统一加载效果
 
             $.ajaxSetup({
@@ -154,7 +159,7 @@
                         <li><a href="/stock/mystock/1" target="_blank">备选股</a></li>
                         <li role="separator" class="divider"></li>
                         <li><a href="http://data.eastmoney.com/xuangu/" target="_blank">选股器(东方财富)</a></li>
-                        <li><a href="#">私募选股</a></li>
+                        <li><a href="/holderFindStock">私募选股</a></li>
                         <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
                         <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">热门基金排行</a></li>
                         <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">财报预约披露时间表</a></li>

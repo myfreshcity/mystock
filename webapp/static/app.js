@@ -52,29 +52,125 @@ function parseURL(url) {
 }
 
 
-function addStock(code){
+function addMyStock(code,cnname,stype){
     bootbox.confirm("确认添加该股票吗？", function(result){
      /* your callback code */
       if(result==true){
             var aj = $.ajax( {
           url:$SCRIPT_ROOT + '/stock/add',
           data:{
-                   code : code
+                   code : code,
+                   cname : cnname,
+                   stype : stype
           },
           type:'post',
           cache:false,
           dataType:'json',
           success:function(data) {
               if(data.msg =="true" ){
-                  bootbox.alert('添加成功');
+                  //bootbox.alert('添加成功');
+                  toastr.info('添加成功');
+                  setTimeout("window.location.reload();",1500);
               }else{
-                  bootbox.alert(data.msg);
+                  //bootbox.alert(data.msg);
+                  toastr.error(data.msg);
               }
            }
           });
       }
      })
 }
+
+
+// 选为备选股
+function unselStock(code,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/remove',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+            if(typeof(list_table) != "undefined")
+            list_table.row($(el).parents('tr')).remove().draw( false );
+            else{
+            toastr.info('操作成功');
+            setTimeout("window.location.reload();",1500);
+            }
+
+            //window.location.reload();
+        }else{
+            toastr.error(data.msg);
+            //console.warn("server result is:"+data.msg);
+        }
+     }
+    });
+  };
+
+//选为自选股
+function selStock(code,el) {
+    var aj = $.ajax( {
+    url:$SCRIPT_ROOT + '/stock/rollback',
+    data:{
+             code : code
+    },
+    type:'post',
+    cache:false,
+    dataType:'json',
+    success:function(data) {
+        if(data.msg =="true" ){
+            if(typeof(list_table) != "undefined")
+            list_table.row($(el).parents('tr')).remove().draw(false);
+            else{
+            toastr.info('操作成功');
+            setTimeout("window.location.reload();",1500);
+            }
+            //window.location.reload();
+        }else{
+            //console.warn("server result is:"+data.msg);
+            toastr.error(data.msg);
+        }
+     }
+    });
+  };
+
+
+// 取消关注，从备选股清除
+function delStock(code,el) {
+    bootbox.confirm("确认从所有股池中删除该股票吗？", function(result){
+     /* your callback code */
+      if(result==true){
+            var aj = $.ajax( {
+            url:$SCRIPT_ROOT + '/stock/del',
+            data:{
+                     code : code
+            },
+            type:'post',
+            cache:false,
+            dataType:'json',
+            success:function(data) {
+                if(data.msg =="true" ){
+                if(typeof(list_table) != "undefined")
+                    list_table.row($(el).parents('tr')).remove().draw(false);
+                else{
+                    toastr.info('操作成功');
+                    setTimeout("window.location.reload();",1500);
+                    }
+                    //window.location.reload();
+                }else{
+                     toastr.error(data.msg);
+                    //console.warn("server result is:"+data.msg);
+                }
+             }
+            });
+        }
+      })
+}
+
+
 
 
 function onCommentEdit(id,pid){

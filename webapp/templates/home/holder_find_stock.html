@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+
+{% block nav %}
+
+{% endblock %}
+
+{% block body %}
+
+<div class="container-fluid">
+    <div class="panel panel-default" id="stock-choose">
+    <div class="panel-body">
+        <form class="form-inline">
+            <div class="radio">
+                <label class="radio-inline">
+                    <input type="radio" name="optionsRadiosinline" id="optionsRadios3" value="option1" checked> 淡水泉
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="optionsRadiosinline" id="optionsRadios4" value="option2"> 重阳
+                </label>
+
+                <label class="radio-inline">
+                    <input type="radio" name="optionsRadiosinline" id="optionsRadios5" value="option3">
+                    其他
+                    <input type="text" class="form-control" id="bs_cname" data-provide="typeahead" data-value=""
+                           autocomplete="off" placeholder="请输入关键词"/>
+                    <input type="hidden" id="bs_code"/>
+                </label>
+            </div>
+            <button type="button" class="btn btn-default" id="bs_btn" onclick="getTargetStocks()">提交</button>
+            <a href="javascript:void(0);" onclick="clearSearch()" id="backBtn" style="display:none;">返回</a>
+
+        </form>
+    </div>
+</div>
+
+    <table id="example" class="display" cellspacing="0" width="100%">
+        <thead>
+        <tr>
+            <th>报告日期</th>
+            <th>股东</th>
+            <th></th>
+            <th>代码</th>
+            <th>名称</th>
+            <th>市现率(PCF)</th>
+            <th>市盈率(PE)</th>
+            <th>市净率(PB)</th>
+            <th>持有市值(亿)</th>
+            <th>比例</th>
+            <th></th>
+        </tr>
+        </thead>
+    </table>
+</div>
+<script type="text/javascript" src="{{ url_for('static', filename='home/holder_find_stock.js',v=version_no) }}"></script>
+<script type=text/javascript>
+
+var default_stock = '{{code|e}}';
+
+</script>
+
+{% include 'stock/partion/holder_track.html' %}
+{% endblock %}

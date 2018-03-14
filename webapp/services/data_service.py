@@ -4,6 +4,7 @@ import traceback
 
 import http
 from bs4 import  BeautifulSoup,BeautifulStoneSoup
+from pandas.tseries.offsets import QuarterEnd,DateOffset
 from sqlalchemy import *
 from flask import g
 import pandas as pd
@@ -200,6 +201,26 @@ def getPerStockHighPrice(df):
         st_codes.append(index)
     index = pd.Index(st_codes, name='code')
     return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
+
+def findStocksByHolder(mkey):
+    sql = "select max(report_date) from stock_holder sh where sh.holder_name like :mkey and sh.holder_type != '自然人股'";
+    resultProxy = db.session.execute(text(sql), {'mkey': '%' + mkey + '%'})
+    _max_date = resultProxy.scalar()
+    if (_max_date == None):
+        _max_date = pd.to_datetime('2000-06-30')
+    _next_date = QuarterEnd().rollback(_max_date - DateOffset(days=1))
+
+    bdf = pd.read_sql_query(
+        "select sh.* from stock_holder sh " \
+        "where sh.holder_name like %(mkey)s and sh.report_date >= %(mdate)s and sh.holder_type != '自然人股'", db.engine, \
+        params={'mkey': '%' + mkey + '%', 'mdate': _next_date})
+
+    df3 = dbs.get_global_data()
+
+    df = pd.merge(bdf, df3, how='left', on='code')
+    df['holder_amt'] = df['t_cap'] * df['rate']
+
+    return df
 
 def getMyStocks(uid,flag,isSingle=False):
     user_id = uid

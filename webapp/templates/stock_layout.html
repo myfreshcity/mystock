@@ -88,8 +88,23 @@
         </li>
     </ul>
 </li>
-<li>
-    <a href="#" onclick="updateData('{{ code[2:]|safe }}')">数据更新</a>
+<li class="dropdown">
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+       aria-expanded="false">操作 <span class="caret"></span></a>
+    <ul class="dropdown-menu">
+        <li><a href="javascript:void(0);" onclick="updateData('{{ code[2:]|safe }}')">数据更新</a></li>
+        {% if stock.stype %}
+        <li><a href="javascript:void(0);" onclick="addMyStock('{{ code[2:]|safe }}','{{ stock.name}}',1)">加为备选股</a></li>
+        <li><a href="javascript:void(0);" onclick="addMyStock('{{ code[2:]|safe }}','{{ stock.name}}',0)">加为自选股</a></li>
+        {% elif stock.flag == 0 %}
+         <li><a href="javascript:void(0);" onclick="unselStock('{{ code[2:]|safe }}',this)">选为备选股</a></li>
+         <li><a href="javascript:void(0);" onclick="delStock('{{ code[2:]|safe }}',this)">取消关注</a></li>
+        {% else %}
+        <li><a href="javascript:void(0);" onclick="selStock('{{ code[2:]|safe }}',this)">选为自选股</a></li>
+        <li><a href="javascript:void(0);" onclick="delStock('{{ code[2:]|safe }}',this)">取消关注</a></li>
+        {% endif %}
+    </ul>
+
 </li>
 
 {% else %}

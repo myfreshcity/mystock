@@ -96,6 +96,27 @@ def get_global_finance_data():
     global_fdf = fdf.groupby([fdf['code']]).last()
     return global_fdf
 
+#所有股票数据
+@cache.memoize(timeout=3600*24*30)
+def get_global_data():
+    # 获取交易数据
+    global_tdf = get_global_trade_data()
+    # 获取财务数据
+    global_fdf = get_global_finance_data()
+    # 获取财务数据
+    global_bdf = get_global_basic_data()
+
+    df3 = pd.concat([global_tdf, global_fdf, global_bdf], axis=1, join='inner')
+    df3[['trade_date']] = df3[['trade_date']].apply(pd.to_datetime, errors='ignore')  # 转换类型
+    df = df3.reset_index()
+
+    df['pe'] = df['t_cap'] / (df['jlr_ttm'] * 10000)
+    df['pcf'] = df['t_cap'] / (df['zyysr_ttm'] * 10000)
+    df['ps'] = df['t_cap'] / (df['jyjxjl_ttm'] * 10000)
+    df['pb'] = df['t_cap'] / (df['gdqy'] * 10000)
+
+    return df
+
 
 #获取每季度现金变化情况
 def get_cash_rate(code):
@@ -491,6 +512,18 @@ def get_random_warning():
     iws = db.session.query(InvestWarning).all()
     return random.sample(iws,1)[0]
 
+def get_stock_info(user,code):
+    stock = None
+    if user.is_authenticated:
+        uid = user.id
+        stock = getMyStock(uid, code[2:])
+
+    #未登录或未关注股票
+    if stock is None:
+        stock = getStock(code[2:])
+
+    stock.stype = isinstance(stock, Stock)
+    return stock
 
 def getStock(code):
     code = fn.get_code(code)

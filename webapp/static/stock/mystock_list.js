@@ -1,26 +1,6 @@
 var modal_datatable;
 var list_table;
-// 撤为备选股
-function unsel(code,el) {
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/stock/remove',
-    data:{
-             code : code
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:function(data) {
-        if(data.msg =="true" ){
-            list_table.row($(el).parents('tr')).remove().draw( false );
-            //window.location.reload();
-        }else{
-            toastr.error(data.msg);
-            //console.warn("server result is:"+data.msg);
-        }
-     }
-    });
-  };
+
 
 function updateData(code){
     var aj = $.ajax( {
@@ -41,48 +21,7 @@ function updateData(code){
     });
 
 };
-// 选为自选股
-function sel(code,el) {
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/stock/rollback',
-    data:{
-             code : code
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:function(data) {
-        if(data.msg =="true" ){
-            list_table.row($(el).parents('tr')).remove().draw(false);
-            //window.location.reload();
-        }else{
-            //console.warn("server result is:"+data.msg);
-            toastr.error(data.msg);
-        }
-     }
-    });
-  };
-// 从备选股清除
-function del(code,el) {
-    var aj = $.ajax( {
-    url:$SCRIPT_ROOT + '/stock/del',
-    data:{
-             code : code
-    },
-    type:'post',
-    cache:false,
-    dataType:'json',
-    success:function(data) {
-        if(data.msg =="true" ){
-        list_table.row($(el).parents('tr')).remove().draw(false);
-            //window.location.reload();
-        }else{
-             toastr.error(data.msg);
-            //console.warn("server result is:"+data.msg);
-        }
-     }
-    });
-  };
+
 
 // 从相关股清除
 function delRelation(mcode,scode,el) {
@@ -109,16 +48,16 @@ function delRelation(mcode,scode,el) {
 //根据title确定菜单内容
 function getSubMenu(code){
      if (page_title=='自选股')
-        return '<li><a href="#" onclick="javascript:unsel(\''+code+'\',this);return false;">撤回备选股</a></li>';
+        return '<li><a href="#" onclick="javascript:unselStock(\''+code+'\',this);return false;">选为备选股</a></li>';
 
      if (page_title=='备选股')
-        return '<li><a href="#" onclick="javascript:sel(\''+code+'\',this);return false;">选为自选股</a></li>'+
-               '<li><a href="#" onclick="javascript:del(\''+code+'\',this);return false;">从备选股清除</a></li>';
+        return '<li><a href="#" onclick="javascript:selStock(\''+code+'\',this);return false;">选为自选股</a></li>'+
+               '<li><a href="#" onclick="javascript:delStock(\''+code+'\',this);return false;">取消关注</a></li>';
 
      if (page_title=='相关股' && code != default_stock)
         return '<li><a href="#" onclick="javascript:delRelation(\''+default_stock+'\',\''+code+'\',this);return false;">从相关股清除</a></li>';
 
-
+     return '';
 }
 
 
@@ -235,9 +174,6 @@ function valuation(result){
 
 //加载完毕自动执行
 $(function(){
-
-//重置登录后页面
-$.cookie("redirect_url",redirect_url,{path: '/' });
 
 mystock_ajax_option.success = valuation;
 

@@ -42,10 +42,12 @@ def mystock(code):
 def mystockJson():
     code = request.args.get('code')
     uid = current_user.id
-    if code == '1':
+    if code == '0':
         data = dts.getMyStocks(uid, code)
-    elif code == '0':
+    elif code == '1':
         data = dts.getMyStocks(uid, code)
+    elif code == '2':
+        data = ds.get_global_data()
     else:
         data = dts.getMyStocks(uid, code)
 
@@ -99,7 +101,7 @@ def person_stockholder_rank():
 
 @blueprint.route('/<code>', methods=['GET'])
 def home(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     #price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
@@ -108,7 +110,7 @@ def home(code):
 
 @blueprint.route('/report/<code>', methods=['GET'])
 def report(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     #price = stock.current_price
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
@@ -118,7 +120,7 @@ def report(code):
 @blueprint.route('/info/<code>', methods=['GET'])
 def info(code):
     mynews = []
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     if not current_user.is_anonymous:
         uid = current_user.id
         mynews = ds.getMyStockNews(uid,code[2:])
@@ -127,17 +129,17 @@ def info(code):
 
 @blueprint.route('/cash/<code>', methods=['GET'])
 def cash(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     return render_template('stock/cash.html', title='现金-%s'%stock.name, stock=stock,code=code)
 
 @blueprint.route('/holder/<code>', methods=['GET'])
 def holder(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     return render_template('stock/holder.html', title="股东-%s"%(stock.name), stock=stock,code=code)
 
 @blueprint.route('/debet/<code>', methods=['GET'])
 def debet(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     return render_template('stock/debet.html', title='负债-'+stock.name, stock=stock,code=code)
 
 @blueprint.route('/blog/<code>', methods=['GET'])
@@ -148,13 +150,13 @@ def blog(code):
     stock = ds.getMyStock(uid,cd)
     sname = '' if stock is None else stock.name
     #price = stock.current_price
-    return render_template('stock/blog2.html', title='日志-'+sname, code=code)
+    return render_template('stock/blog2.html', title='日志-'+sname, code=code, stock=stock)
 
 @blueprint.route('/valuation/<code>', methods=['GET'])
 def valuation(code):
-    stock = ds.getStock(code[2:])
+    stock = ds.get_stock_info(current_user,code)
     #price = stock.current_price
-    return render_template('stock/valuation.html', title='估值-'+stock.name, code=code)
+    return render_template('stock/valuation.html', title='估值-'+stock.name, code=code, stock=stock)
 
 @blueprint.route('/valuationJson', methods=['GET'])
 @cache.cached(timeout=3600*24*7, key_prefix=fn.make_cache_key)

@@ -8,6 +8,7 @@ import pandas as pd
 from flask import current_app as app
 from webapp.extensions import cache
 from webapp import functions as fn
+from webapp.services import getHeaders, db_service as dbs,data_service as dts
 from flask_principal import Principal, Identity, AnonymousIdentity,identity_changed
 
 from flask_login import login_required, login_user, logout_user,current_user
@@ -94,6 +95,41 @@ def logout():
         identity=AnonymousIdentity())
     return redirect(url_for('home.login'))
 
+@blueprint.route('/holderFindStock', methods = ['GET'])
+def holderFindStock():
+    return render_template('home/holder_find_stock.html', title='股东选股')
+
+@blueprint.route('/holderFindStockJson', methods=['GET'])
+def holderFindStockJson():
+    skey = request.args.get('skey')
+
+    sdata = []
+    data = dts.findStocksByHolder(skey)
+
+    def fixBadData(x):
+        import math
+        return '-' if math.isnan(x) else round(x,2)
+
+    for index, row in data.iterrows():
+        sdata.append(
+            {'name': row['name'],
+             'code': row.code,
+             'holder_name': row.holder_name,
+             'holder_code': row.holder_code,
+             'ncode': fn.code_to_ncode(row.code),
+             'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
+             'price': fixBadData(row.close),
+             'rate': fixBadData(row.rate),
+             'mvalue': fixBadData(round(row.holder_amt / (10000 * 10000), 2)),
+             'pe': fixBadData(row.pe),
+             'ps': fixBadData(row.ps),
+             'pcf': fixBadData(row.pcf),
+             'pb': fixBadData(row.pb),
+             'report_type': row.report_type.strftime('%Y-%m-%d')
+             }
+        )
+
+    return jsonify(data={'tableData':sdata})
 
 @blueprint.route('/test', methods = ['GET'])
 def test():
