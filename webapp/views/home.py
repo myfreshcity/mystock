@@ -116,6 +116,7 @@ def holderFindStockJson():
              'code': row.code,
              'holder_name': row.holder_name,
              'holder_code': row.holder_code,
+             'stock_industry': row.industry,
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
              'price': fixBadData(row.close),
@@ -125,7 +126,7 @@ def holderFindStockJson():
              'ps': fixBadData(row.ps),
              'pcf': fixBadData(row.pcf),
              'pb': fixBadData(row.pb),
-             'report_type': row.report_type.strftime('%Y-%m-%d')
+             'report_type': row.report_date.strftime('%Y-%m-%d')
              }
         )
 

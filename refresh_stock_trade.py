@@ -26,7 +26,7 @@ sys.setdefaultencoding('utf8')
 from Queue import Queue
 
 urls_queue = Queue()
-data_queue = Queue()
+data_queue = Queue(maxsize=200)
 
 #共享数据
 lock = threading.Lock()

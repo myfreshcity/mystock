@@ -12,22 +12,34 @@
         <form class="form-inline">
             <div class="radio">
                 <label class="radio-inline">
-                    <input type="radio" name="optionsRadiosinline" id="optionsRadios3" value="option1" checked> 淡水泉
+                    <input type="radio" name="optionsRadiosinline" value="淡水泉" checked> 淡水泉
                 </label>
                 <label class="radio-inline">
-                    <input type="radio" name="optionsRadiosinline" id="optionsRadios4" value="option2"> 重阳
+                    <input type="radio" name="optionsRadiosinline" value="重阳"> 重阳
                 </label>
+                <label class="radio-inline">
+                    <input type="radio" name="optionsRadiosinline" value="丰岭"> 丰岭
+                </label>
+                <label class="radio-inline">
+                    <input type="radio" name="optionsRadiosinline" value="富恩德"> 富恩德
+                </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="世诚"> 世诚 </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="易同"> 易同 </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="沣杨"> 沣杨 </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="高毅"> 高毅 </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="泓澄"> 泓澄 </label>
+                <label class="radio-inline"><input type="radio" name="optionsRadiosinline" value="观富"> 观富 </label>
 
                 <label class="radio-inline">
                     <input type="radio" name="optionsRadiosinline" id="optionsRadios5" value="option3">
                     其他
                     <input type="text" class="form-control" id="bs_cname" data-provide="typeahead" data-value=""
-                           autocomplete="off" placeholder="请输入关键词"/>
+                           autocomplete="off" placeholder="请输入关键词" disabled="true"/>
                     <input type="hidden" id="bs_code"/>
                 </label>
             </div>
             <button type="button" class="btn btn-default" id="bs_btn" onclick="getTargetStocks()">提交</button>
-            <a href="javascript:void(0);" onclick="clearSearch()" id="backBtn" style="display:none;">返回</a>
+            <a href="javascript:void(0);" onclick="clearSearch()" id="backBtn" style="display:none;">重置</a>
 
         </form>
     </div>
@@ -38,9 +50,10 @@
         <tr>
             <th>报告日期</th>
             <th>股东</th>
-            <th></th>
+            <th>股东代码</th>
             <th>代码</th>
             <th>名称</th>
+            <th>所在行业</th>
             <th>市现率(PCF)</th>
             <th>市盈率(PE)</th>
             <th>市净率(PB)</th>

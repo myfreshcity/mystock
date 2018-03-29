@@ -19,16 +19,14 @@ function filterByHolderName(mkey){
 function getTargetStocks(){
     var checkVal=$("input:radio[name='optionsRadiosinline']:checked").val();
     var smsg = $('#bs_cname').val().replace(/(^s*)|(s*$)/g, "");
-    if(checkVal=='option3' && smsg.length >0){
-        skey = smsg;
-
-    }else if(checkVal=='option1'){
-        skey = '淡水泉';
-
-    }else if(checkVal=='option2'){
-        skey = '重阳';
+    if(checkVal=='option3'){
+        if(smsg.length >0)
+           skey = smsg;
+        else
+           return;
     }else{
-        return;
+        //skey = checkVal.next().text();
+        skey = checkVal;
     }
 
 
@@ -51,6 +49,7 @@ function redrawTable(resultTData){
 
  if(list_table){
       list_table.destroy();
+      $('#backBtn').hide();
  }
 
  list_table = $('#example').DataTable({
@@ -66,6 +65,7 @@ function redrawTable(resultTData){
         { "data": 'holder_code' },
         { "data": 'code' },
         { "data": 'name' },
+        { "data": 'stock_industry' },
         { "data": 'pcf' },
         { "data": 'pe' },
         { "data": 'pb' },
@@ -75,28 +75,24 @@ function redrawTable(resultTData){
     ],
     columnDefs: [
                   {
-                      "targets": [1],
+                      "targets": [2],
                       "render": function(data, type, full) {
                           //return '<a href="#holderTrackModal" >'+data+'</a>';
                           return '<a href="javascript:void(0);" onclick="filterByHolderName('+full.holder_code+')">'+data+'</a>';
                       }
                   },
                   {
-                      "targets": [2],
+                      "targets": [1],
                       "visible": false
                   },
                   {
-                      "targets": [5,6,7],
-                      "width": "2%"
-                  },
-                  {
-                      "targets": [8],
+                      "targets": [9],
                       "render": function(data, type, full) {
-                          return '<a href="#holderTrackModal" data-stock="'+full.code+'" data-holder-name="'+full.name+'" data-holder-code="'+full.holder_code+'" data-toggle="modal">'+data+'</a>';
+                          return '<a href="#holderTrackModal" data-stock="'+full.code+'" data-holder-name="'+full.holder_name+'" data-holder-code="'+full.holder_code+'" data-toggle="modal">'+data+'</a>';
                       }
                   },
                   {
-                      "targets": [10],
+                      "targets": [11],
                       "render": function(data, type, full) {
                           return '<a href="/stock/valuation/'+full['ncode']+'" target="_blank">详细</a>';
                       }
@@ -109,6 +105,23 @@ function redrawTable(resultTData){
 
 //加载完毕自动执行
 $(function(){
+
+$("input:radio[name='optionsRadiosinline']").change(function (){
+
+var checkVal=$("input:radio[name='optionsRadiosinline']:checked").val();
+
+    if(checkVal=='option3'){
+    //指定股票
+    //$('#bs_cname').show();
+    $('#bs_cname').prop('disabled', false);
+    //$('#bs_btn').prop('disabled', true);
+    }else{
+    //$('#bs_cname').hide();
+    $('#bs_cname').prop('disabled', true);
+    //$('#bs_btn').prop('disabled', false);
+    }
+
+});
 
 getTargetStocks();
 
