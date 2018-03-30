@@ -218,7 +218,7 @@ def findStocksByHolder(mkey):
     df3 = dbs.get_global_data()
 
     df = pd.merge(bdf, df3, how='left', on='code')
-    df['holder_amt'] = df['t_cap'] * df['rate']
+    df['holder_amt'] = df['t_cap'] * df['rate'] / 100
 
     return df
 
@@ -226,7 +226,7 @@ def getMyStocks(uid,flag,isSingle=False):
     user_id = uid
     if flag == '0' or flag == '1':
         global_bdf = pd.read_sql_query(
-            "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+            "select ms.*,sb.zgb,sb.launch_date,sb.grow_type,sb.industry from my_stocks ms,stock_basic sb " \
             "where ms.code=sb.code and sb.flag=0 and ms.user_id = %(uid)s", db.engine, \
             params={'uid': user_id}, \
             index_col='code')
@@ -234,7 +234,7 @@ def getMyStocks(uid,flag,isSingle=False):
         bdf = bdf.sort_values(by='created_time', ascending=False)
     elif isSingle:  # 如果是股票代码
         bdf = pd.read_sql_query(
-            "select ms.*,sb.zgb,sb.launch_date,sb.grow_type from my_stocks ms,stock_basic sb " \
+            "select ms.*,sb.zgb,sb.launch_date,sb.grow_type,sb.industry from my_stocks ms,stock_basic sb " \
             "where ms.code=sb.code and sb.flag=0 and ms.code = %(code)s and ms.user_id = %(uid)s", db.engine,
             params={'code': flag, 'uid': user_id}, \
             index_col='code')

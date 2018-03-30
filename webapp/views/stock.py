@@ -64,6 +64,7 @@ def result_list_to_array(data):
         sdata.append(
             {'name': row['name'],
              'code': row.code,
+             'industry': row.industry,
              'tag': row.tag if hasattr(row, 'tag') else '',
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),

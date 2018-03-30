@@ -40,7 +40,7 @@ function getTargetStocks(){
     dataType:'json',
     success:function(result){redrawTable(result.data.tableData);},
     error: function(XMLHttpRequest, textStatus, errorThrown) {
-      console.log(textStatus);
+      console.log(errorThrown.stack);
     }
     });
 }

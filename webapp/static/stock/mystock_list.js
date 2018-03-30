@@ -79,11 +79,14 @@ function valuation(result){
     "paging": false,
     data: resultTData,
     "order": [],
-    scrollY: 600,
+    "language": {
+                "url": "https://cdn.datatables.net/plug-ins/1.10.16/i18n/Chinese.json"
+            },
     columns: [
         { data: 'tag' },
         { data: 'code' },
         { data: 'name' },
+        { data: 'industry' },
         { data: 'jlr_rate' },
         { data: 'roe' },
         { data: 'pcf' },
@@ -105,18 +108,12 @@ function valuation(result){
                       "width": "6%"
                   },
                   {
-                    "targets": [2],
-                    "width": "10%"
+                    "targets": [2,3],
+                    "width": "8%"
                   },
                   {
-                    "targets": [3],
-                    "width": "10%"
-                  },
-                  {
-                      "targets": [4],
-                      "render": function(data, type, full) {
-                          return data;
-                      }
+                    "targets": [4,5,6,7,8],
+                    "width": "2%"
                   },
                   {
                       "targets": [5],
@@ -139,17 +136,23 @@ function valuation(result){
                   {
                       "targets": [8],
                       "render": function(data, type, full) {
-                          return '<a href="https://xueqiu.com/S/'+full['ncode']+'" target="_blank">'+data+'</a>';
+                          return data;
                       }
                   },
                   {
                       "targets": [9],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a> | <a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">笔记</a>';
+                          return '<a href="https://xueqiu.com/S/'+full['ncode']+'" target="_blank">'+data+'</a>';
                       }
                   },
                   {
                       "targets": [10],
+                      "render": function(data, type, full) {
+                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a> | <a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">笔记</a>';
+                      }
+                  },
+                  {
+                      "targets": [11],
                       "render": function(data, type, full) {
                           return '\
                   <div class="btn-group pull-right">\

@@ -441,7 +441,8 @@ def getStockValuationN(code,peroid):
     i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
     tdf = tdf.set_index(i)
     tdf = tdf.sort_index(ascending=False)
-    gdf = tdf.groupby([pd.TimeGrouper(freq='M')])
+    fm = 'M' if peroid>3 else 'W' #3年以上为月线，3年以下为周线
+    gdf = tdf.groupby([pd.TimeGrouper(freq=fm)])
     agdf = gdf['trade_date'].agg({'max': np.max})
     tdf = tdf.iloc[tdf.index.isin(agdf['max'])]
 
