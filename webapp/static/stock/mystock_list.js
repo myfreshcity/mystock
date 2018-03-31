@@ -104,19 +104,8 @@ function valuation(result){
                       }
                   },
                   {
-                      "targets": [1],
-                      "width": "6%"
-                  },
-                  {
-                    "targets": [2,3],
-                    "width": "8%"
-                  },
-                  {
-                    "targets": [4,5,6,7,8],
-                    "width": "2%"
-                  },
-                  {
-                      "targets": [5],
+                      "targets": [4,5],
+                      "visible": false,
                       "render": function(data, type, full) {
                           return data;
                       }
