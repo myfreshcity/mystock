@@ -1,60 +1,63 @@
 {% extends "layout.html" %}
 
-{% block nav %}
-    {% if title=='备选股' %}
-    <li><a href="#addStockModal"  data-stype="1" data-toggle="modal">添加备选股</a></li>
-    {% endif %}
-    {% if title=='自选股' %}
-    <li><a href="#addStockModal"  data-stype="0" data-toggle="modal">添加自选股</a></li>
-    {% endif %}
-    {% if title=='相关股' %}
-    <li><a href="#addRelationStockModal"  data-toggle="modal" data-stock="{{code|e}}">添加相关股票</a></li>
-    {% endif %}
-{% endblock %}
-
 {% block body %}
 
-<style>
-.col-center-block {
-    float: none;
-    display: block;
-    margin-top:100px;
-    margin-left: auto;
-    margin-right: auto;
-    height:300px;
-}
-</style>
+<div class="page-header">
+							<h1>
+								Tables
+								<small>
+									<i class="ace-icon fa fa-angle-double-right"></i>
+									Static &amp; Dynamic Tables
+								</small>
+							</h1>
+						</div><!-- /.page-header -->
 
-<div class="container-fluid">
-    <table id="example" class="display hidden" cellspacing="0" width="98%">
-        <thead>
-        <tr>
-            <th></th>
-            <th>代码</th>
-            <th>名称</th>
-            <th>行业</th>
-            <th>净利润TTM增长率(%)</th>
-            <th><a href="#" data-toggle="tooltip" title="净资产收益率">ROE(PE/PB)</a></th>
-            <th>市现率(PCF)</th>
-            <th>市盈率(PE)</th>
-            <th>市净率(PB)</th>
-            <th>市值(亿)</th>
-            <th></th>
-            <th></th>
-        </tr>
-        </thead>
-    </table>
+<div class="row">
+	<div class="col-xs-12">
+		<!-- PAGE CONTENT BEGINS -->
+		<div class="row">
+			<div class="col-xs-12">
+				<div class="clearfix">
+					<div class="pull-right tableTools-container"></div>
+				</div>
 
-    <div class="row myCenter hidden" id="guide">
-        <div class="col-xs-6 col-md-4 col-center-block">
+				<!-- div.table-responsive -->
 
-            <h4>欢迎,股票是一切的开始。</h4><h4>您现在可以添加第一只股票了。</h4>
-            <button type="button" class="btn btn-primary col-md-4" data-toggle="modal" data-target="#addStockModal" data-stype="1">立刻添加</button>
+				<!-- div.dataTables_borderWrap -->
+				<div>
+					<table id="example" class="table table-striped table-bordered table-hover">
+						<thead>
+						<tr>
+							<th></th>
+							<th>代码</th>
+							<th>名称</th>
+							<th>行业</th>
+							<th>净利润TTM增长率(%)</th>
+							<th><a href="#" data-toggle="tooltip" title="净资产收益率">ROE(PE/PB)</a></th>
+							<th>市现率(PCF)</th>
+							<th>市盈率(PE)</th>
+							<th>市净率(PB)</th>
+							<th>市值(亿)</th>
+							<th></th>
+							<th></th>
+						</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
 
-        </div>
-    </div>
-</div>
+		<!-- PAGE CONTENT ENDS -->
+	</div><!-- /.col -->
+</div><!-- /.row -->
+
+{% endblock %}
+
+{% block pagescript %}
 <script type="text/javascript" src="{{ url_for('static', filename='stock/mystock_list.js',v=version_no) }}"></script>
+{% endblock %}
+
+{% block inlinescript %}
 <script type=text/javascript>
 
 var default_stock = '{{code|e}}';
@@ -70,17 +73,4 @@ var mystock_ajax_option =  {
     dataType:'json'
     };
 </script>
-
-{% include 'stock/partion/buy_stock.html' %}
-{% include 'stock/partion/edit_tag.html' %}
-{% include 'stock/partion/pe.html' %}
-{% include 'stock/partion/pb.html' %}
-{% include 'stock/partion/pcf.html' %}
-{% include 'stock/partion/roe.html' %}
-{% include 'stock/partion/debet.html' %}
-{% include 'stock/partion/grow.html' %}
-{% include 'stock/partion/relation.html' %}
-{% include 'stock/partion/add_relation_stock.html' %}
-{% include 'stock/partion/add_stock.html' %}
-
 {% endblock %}

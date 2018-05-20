@@ -144,18 +144,17 @@ function valuation(result){
                       "targets": [11],
                       "render": function(data, type, full) {
                           return '\
-                  <div class="btn-group pull-right">\
-                    <button type="button" class="btn btn-default　btn-sm dropdown-toggle" data-toggle="dropdown"\
-                            aria-haspopup="true" aria-expanded="false">\
-                        操作 <span class="caret"></span>\
-                    </button>\
-                    <ul class="dropdown-menu">'
-                        +getSubMenu(full['code'])+
-                        '<li><a href="#editTagModal" data-stock="'+full['code']+'" data-tag="'+full['tag']+'" data-toggle="modal">标注</a></li>'+
-                        '<li><a href="#relationModal" data-stock="'+full['code']+'" data-name="'+full['name']+'" data-toggle="modal">行业对比</a></li>'+
-                    '</ul>\
-                  </div>';
-
+                              <div class="hidden-sm hidden-xs action-buttons">\
+                                <a class="blue" href="#editTagModal" data-stock="'+full['code']+'" data-tag="'+full['tag']+'" data-toggle="modal" title="Example tooltip">\
+                                    <i class="ace-icon fa fa-search-plus bigger-130"></i>\
+                                </a>\
+                                <a class="green" href="#relationModal" data-stock="'+full['code']+'" data-name="'+full['name']+'" data-toggle="modal" title="Example tooltip">\
+                                    <i class="ace-icon fa fa-pencil bigger-130"></i>\
+                                </a>\
+                                <a class="red" href="#" data-toggle="tooltip" title="Example tooltip">\
+                                    <i class="ace-icon fa fa-trash-o bigger-130" ></i>\
+                                </a>\
+                              </div>';
                       }
                   },
         ]

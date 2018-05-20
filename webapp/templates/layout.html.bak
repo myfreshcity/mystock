@@ -1,0 +1,267 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="做投资笔记是执行投资、学习投资、股市复盘的重要前提。投资笔记帮你随时记录，永久保存。"/>
+    <meta name="keywords" content="投资笔记 交易笔记 云笔记 笔记 投资 价值投资 {{ title }}"/>
+    <meta name="author" content="">
+    <title>{{ title }} | 投资笔记</title>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css',v=version_no) }}">
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/datatables/1.10.16/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
+
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedColumns.dataTables.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='fixedHeader.dataTables.min.css') }}">
+
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/jquery-cookie/1.4.1/jquery.cookie.js"></script>
+    <script src="https://cdn.bootcss.com/highcharts/6.0.3/highcharts.js"></script>
+    <script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootbox.min.js') }}"></script>
+    <script src="https://cdn.bootcss.com/datatables/1.10.16/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedColumns.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='dataTables.fixedHeader.min.js') }}"></script>
+    <script src="https://cdn.bootcss.com/jquery.blockUI/2.70.0-2014.11.23/jquery.blockUI.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap-3-typeahead/4.0.2/bootstrap3-typeahead.min.js"></script>
+
+    <script type="text/javascript" src="{{ url_for('static', filename='app.js',v=version_no) }}"></script>
+
+    <script type=text/javascript>
+        $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        toastr.options.positionClass = 'toast-bottom-right';
+        toastr.options.showMethod = 'slideDown';
+        toastr.options.hideMethod = 'slideUp';
+        toastr.options.timeOut = 2000; //1秒
+
+
+        $(function(){
+            //记录最近登录页面
+            redirect_url = parseURL(document.location.href).path;
+            $.cookie("redirect_url",redirect_url,{path: '/' });
+
+
+            //统一加载效果
+
+            $.ajaxSetup({
+            beforeSend:function(){
+                $.blockUI({
+                    message: '加载中...',
+                    baseZ: 20000,
+                    css: {
+                        border: '1px solid #ddd',
+                        padding: '7px',
+                        fontSize: '13px',
+                        position: 'fixed',
+                        backgroundColor: '#eee'
+                    },
+                    overlayCSS: {
+                        backgroundColor: '#555',
+                        opacity: 0.5,
+                        cursor: 'wait'
+                    }
+                });
+                // console.debug('start');
+            },
+            complete:function(){
+                $.unblockUI();
+                // console.debug('end');
+            }
+
+              });
+
+
+
+              //股票查找
+              $('#l_cname').typeahead({
+              source: function (query, process) {
+                return $.ajax({
+                    url: $SCRIPT_ROOT + '/stock/query',
+                    type: 'get',
+                    data: { query: query },
+                    dataType: 'json',
+                    beforeSend: function () { },
+                    complete: function (){ },
+                    success: function (data) {
+                        //重置数据
+                        //stockCode.attr('value', '');
+                        //modal.find('.modal-body #flash_msg').text('');
+                        var resultList = data.result.map(function (item) {
+                            var aItem = {id: item.id, name: item.name,ncode: item.ncode};
+                            return JSON.stringify(aItem);
+                        });
+                        return process(resultList);
+
+                    }
+                });
+
+            },
+            /**
+         * 使用指定的方式，高亮(指出)匹配的部分
+         *
+         * @param obj 数据源中返回的单个实例
+         * @returns {XML|void|string|*} 数据列表中数据的显示方式（如匹配内容高亮等）
+         */
+        highlighter: function (obj) {
+            var item = JSON.parse(obj);
+            var query = this.query.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, '\\$&');
+            return item.name.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return  '<strong>' + match + '</strong>'
+            }) + '&nbsp;&nbsp;'
+            + item.id.replace(new RegExp('(' + query + ')', 'ig'), function ($1, match) {
+                return match
+            });
+        },
+        /**
+         * 在选中数据后的操作，这里的返回值代表了输入框的值
+         *
+         * @param obj
+         * @return 选中后，最终输入框里的值
+         */
+        updater: function (obj) {
+            var item = JSON.parse(obj);
+            //stockCode.attr('value', item.id);
+            document.location.href = '/stock/valuation/'+item.ncode;
+            return item.name;
+        },
+            minLength:1,
+            items: 10,   //显示10条
+            delay: 800,  //延迟时间
+        });
+
+
+        });
+    </script>
+</head>
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand header-sprite" href="/"></a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav">
+                {% if current_user.is_authenticated %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">漫游 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/stock/mystock/0">自选股</a></li>
+                        <li><a href="/stock/mystock/1" target="_blank">备选股</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="http://data.eastmoney.com/xuangu/" target="_blank">选股器(东方财富)</a></li>
+                        <li><a href="/holderFindStock">私募选股</a></li>
+                        <li><a href="http://quotes.money.163.com/old/#query=NBJY&DataType=nbjy&sort=REPORTDATE&order=desc&count=25&page=0" target="_blank">内部交易</a></li>
+                        <li><a href="http://fund.eastmoney.com/trade/pg.html" target="_blank">热门基金排行</a></li>
+                        <li><a href="http://www.cninfo.com.cn/cninfo-new/information/prbookinfo" target="_blank">财报预约披露时间表</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="/macro">宏观指标</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+                {% if title %}
+                <li class="active"><a href="#">{{ title }} <span class="sr-only">(current)</span></a></li>
+                {% endif %}
+                {% block nav %}{% endblock %}
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+
+                <li id="lookup-stock">
+                    <input type="text" class="form-control" id="l_cname" data-provide="typeahead" data-value="" autocomplete="off" placeholder="搜索股票代码或名称"/>
+                    <input type="hidden" id="l_code" />
+                </li>
+
+                {% if current_user.is_authenticated %}
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                       aria-expanded="false">系统 <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#contactInfoModal" data-toggle="modal">联系我</a></li>
+                        {% if admin_permission.can() %}
+                        <li><a href="/stock/mystock/2">所有股票</a></li>
+                        <li><a href="/setting/stocks">数据更新</a></li>
+                        {% endif %}
+                        <li><a href="/logout">退出登录</a></li>
+                    </ul>
+                </li>
+                {% else %}
+                <li><a href="/">关于我们</a></li>
+                <li><a href="/login">登录</a></li>
+                {% endif %}
+            </ul>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+
+<div class="modal fade" id="contactInfoModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title" id="myModalLabel">联系信息</h4>
+            </div>
+            <div class="modal-body">使用过程中如遇到问题或有好的建议，欢迎通过微信号(QQ) 5692322 联系我</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<div class="container">
+    <div class="row" style="min-height:600px;">
+        <h4>{{ title }}</h4>
+        {% for message in get_flashed_messages() %}
+        <div class="flash alert alert-danger">{{ message }}</div>
+        {% endfor %}
+        {% block body %}{% endblock %}
+    </div>
+    <hr>
+    <footer class="footer">
+        <div class="container">
+            <p> <span>&copy; 版权所有 2018</span>
+                <a href="http://www.miibeian.gov.cn/">辽ICP备17020606号</a> 联系方式：5692322@qq.com
+                <a href="/stockList" target="_blank">股票清单</a>
+            </p>
+        </div>
+    </footer>
+</div>
+
+<div class="note-edit">
+    {% if current_user.is_authenticated %}
+    <a class="pull-right btn btn-success btn-lg" href="#editBlogModal"
+       data-stock="{{code|default('sh00000A')|e}}" data-toggle="modal"
+       role="button">
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>添加笔记
+    </a>
+    {% else %}
+    <a class="pull-right btn btn-success btn-lg" href="javascript:void(0);" onclick="request_login()" >
+        <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>添加笔记
+    </a>
+    {% endif %}
+</div>
+
+{% include 'stock/partion/edit_blog.html' %}
+
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+</body>
+</html>
