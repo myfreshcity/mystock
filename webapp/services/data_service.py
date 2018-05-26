@@ -120,7 +120,8 @@ def getLinkContent(url,src):
     req = urllib2.Request(url=url, headers=headers)
     feeddata = urllib2.urlopen(req).read()
     soup = BeautifulSoup(feeddata, "html5lib")
-    [s.extract() for s in soup(['script', 'iframe'])]  # 去除一些不必要的标签
+    #soup = bfs.prettify() # 标签补全
+    [s.extract() for s in soup(['script', 'iframe','noscript','link','style','ins','head'])]  # 去除一些不必要的标签
 
     if src == 'qq':
         paper_name = soup.html.body.find(id="Cnt-Main-Article-QQ")

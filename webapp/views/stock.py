@@ -107,7 +107,7 @@ def home(code):
     #app.logger.info('stock current price is:'+stock.current_price)
     dateTime = pd.date_range(start='20001231', periods=15, freq='3M').to_series()
     date = [pd.to_datetime(str(value)).strftime('%Y-%m-%d') for value in dateTime]
-    return render_template('stock/home.html', title='成长-'+stock.name, mydate=date,code=code)
+    return render_template('stock/home.html', title='成长-'+stock.name, mydate=date,code=code, stock=stock)
 
 @blueprint.route('/report/<code>', methods=['GET'])
 def report(code):
