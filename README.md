@@ -55,6 +55,11 @@ pip install -r requirements.txt
 调试工具
    jupyter notebook
 
+Celery 启动命令
+   venv/bin/celery -A mycelery:celery worker --loglevel=info --beat --logfile=./celery.beat.log
+
+   stop:
+   ps auxww | grep 'celery worker' | awk '{print $2}' | xargs kill -9
 
 文档参考：
 

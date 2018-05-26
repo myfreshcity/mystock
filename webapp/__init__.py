@@ -11,6 +11,7 @@
 
 import os, sys
 
+from celery import Celery
 from flask_login import current_user
 from flask_principal import identity_loaded, RoleNeed, UserNeed
 
@@ -29,6 +30,12 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 app.debug_log_format = '[%(levelname)s] %(message)s'
 app.debug = True
+
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+# app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 # Configuration application
 def config_app(app, config):

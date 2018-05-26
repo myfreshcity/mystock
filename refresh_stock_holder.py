@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import os, sys
+
+from webapp.models import Stock
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import threading,multiprocessing
@@ -10,7 +13,7 @@ import time
 from flask import Flask, render_template, abort, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager, Shell
-from webapp import app, db, config_app,register_blueprints
+from webapp import app, db, config_app, register_blueprints, celery
 from webapp.services import db_service as ds,data_service as dts,holder_service as hs
 from webapp.functions import profile
 
@@ -23,9 +26,7 @@ urls_queue = Queue()
 data_queue = Queue(maxsize=200)
 
 #共享数据
-lock = threading.Lock()
-config_app(app, 'scriptfan.cfg')
-ctx = app.app_context()
+
 
 class ThreadCrawl(threading.Thread):
 
@@ -46,10 +47,9 @@ class ThreadCrawl(threading.Thread):
 
 class ThreadWrite(threading.Thread):
 
-    def __init__(self, queue, lock,ctx):
+    def __init__(self, queue, ctx):
         threading.Thread.__init__(self)
         self.queue = queue
-        self.lock = lock
         self.ctx = ctx
 
     def run(self):
@@ -63,10 +63,15 @@ class ThreadWrite(threading.Thread):
         dts.updateStockHolder(item)
         #print 'write %s' % item
 
+
 @profile
-def main():
-    ctx.push()
+def main(ctx):
+    app.debug_log_format = '[%(levelname)s] %(message)s'
+    app.debug = True
+    app.logger.debug('begin matching ...')
+
     #准备数据
+    # datas = ['000002']
     datas = hs.getRefreshStocks()
     for d in datas:
         urls_queue.put(d)
@@ -80,7 +85,7 @@ def main():
 
     #开线程消费数据
     for i in range(10):
-        t = ThreadWrite(data_queue,lock,ctx)
+        t = ThreadWrite(data_queue,ctx)
         t.setDaemon(True)
         t.start()
 

@@ -16,7 +16,7 @@ import time
 from flask import Flask, render_template, abort, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from flask_script import Manager, Shell
-from webapp import app, db, config_app,register_blueprints
+from webapp import app, db, config_app, register_blueprints, celery
 from webapp.services import getHeaders,db_service as ds,data_service as dts,holder_service as hs,ntes_service as ns,xueqiu_service as xues
 from webapp.functions import profile
 
@@ -30,8 +30,6 @@ data_queue = Queue(maxsize=200)
 
 #共享数据
 lock = threading.Lock()
-config_app(app, 'scriptfan.cfg')
-ctx = app.app_context()
 
 class ThreadCrawl(threading.Thread):
 
@@ -66,11 +64,11 @@ class ThreadWrite(threading.Thread):
             self.queue.task_done()
 
 @profile
-def main():
-    ctx.push()
+def main(ctx):
     #准备数据
+    # datas = ['000002']
     datas = ds.get_refresh_finance_stocks()
-    #datas = ['000002']
+    
     for d in datas:
         urls_queue.put(d)
     app.logger.info('target stocks size is %s' % urls_queue.qsize())
@@ -89,6 +87,3 @@ def main():
 
     urls_queue.join()
     data_queue.join()
-
-if __name__ == '__main__':
-    main()
