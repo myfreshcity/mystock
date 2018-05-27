@@ -517,11 +517,11 @@ def get_stock_info(user,code):
     stock = None
     if user.is_authenticated:
         uid = user.id
-        stock = getMyStock(uid, code[2:])
+        stock = getMyStock(uid, code)
 
     #未登录或未关注股票
     if stock is None:
-        stock = getStock(code[2:])
+        stock = getStock(code)
 
     stock.stype = isinstance(stock, Stock)
     return stock
@@ -545,7 +545,8 @@ def get_refresh_trade_stocks():
     return map(lambda x:x.code, stocks)
 
 def getMyStock(uid,code):
-    stock = db.session.query(MyStock).filter_by(code = code, user_id = uid).first()
+    ncode = fn.get_code(code)
+    stock = db.session.query(MyStock).filter_by(code = ncode, user_id = uid).first()
     return stock
 
 def getMyStockNews(uid,code):
@@ -620,12 +621,12 @@ def addRelationStock(uid,mcode,scode):
     rstock2 = getRelationStock(uid,scode,mcode)
 
     if (not rstock1) and (not rstock2):
-        rstock = RelationStock(mcode,scode)
-        rstock = uid
-        db.session.add(rstock)
-        rstock = RelationStock(scode,mcode)
-        rstock = uid
-        db.session.add(rstock)
+        rstock1 = RelationStock(mcode,scode)
+        rstock1.user_id = uid
+        db.session.add(rstock1)
+        rstock2 = RelationStock(scode,mcode)
+        rstock2.user_id = uid
+        db.session.add(rstock2)
         return None
     else:
         return "'"+code+"'股票已存在"
