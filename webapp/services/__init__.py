@@ -25,6 +25,9 @@ def getHeaders(url):
     return headers
 
 def getXueqiuHeaders():
+    from requests.adapters import HTTPAdapter
+    from requests.packages.urllib3.util.retry import Retry
+
     # 构造 Request headers
     agent = 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36'
     headers = {
@@ -37,6 +40,11 @@ def getXueqiuHeaders():
     }
 
     session = requests.session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
     url = 'https://xueqiu.com/'
     session.get(url, headers=headers)  # 访问首页产生 cookies
     headers['Referer'] = "https://xueqiu.com/"

@@ -82,19 +82,22 @@ def get_global_trade_data():
 @cache.memoize(timeout=3600*24*30)
 def get_global_finance_data():
     fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
-                                            from stock_finance_data order by report_type desc limit 6000", db.engine,
-                             index_col=['code', 'report_type'])
+                                        from stock_finance_data order by report_type desc limit 6000", db.engine)
     fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                                            from xueqiu_finance_cash order by report_type desc limit 6000", db.engine,
-                             index_col=['code', 'report_type'])
+                                            from xueqiu_finance_cash order by report_type desc limit 6000", db.engine)
     fdf3 = pd.read_sql_query("select code,report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                                            from xueqiu_finance_asset order by report_type desc limit 6000", db.engine,
-                             index_col=['code', 'report_type'])
+                                            from xueqiu_finance_asset order by report_type desc limit 6000", db.engine)
 
-    fdf = pd.concat([fdf1, fdf2, fdf3], axis=1, join='inner')
+    def re_defind(fdf):
+        fdf = fdf.groupby([fdf['code']]).first()
+        fdf = fdf.reset_index()
+        fdf.set_index(['code','report_type'],inplace=True)
+        return fdf
+
+    fdf = pd.concat([re_defind(fdf1), re_defind(fdf2), re_defind(fdf3)], axis=1, join='inner')
     fdf = fdf.reset_index()
-    global_fdf = fdf.groupby([fdf['code']]).last()
-    return global_fdf
+    fdf.set_index(['code'],inplace=True)
+    return fdf
 
 #所有股票数据
 @cache.memoize(timeout=3600*24*30)
@@ -106,7 +109,8 @@ def get_global_data():
     # 获取财务数据
     global_bdf = get_global_basic_data()
 
-    df3 = pd.concat([global_tdf, global_fdf, global_bdf], axis=1, join='inner')
+    df3 = global_bdf.join([global_fdf, global_tdf], how='left')
+
     df3[['trade_date']] = df3[['trade_date']].apply(pd.to_datetime, errors='ignore')  # 转换类型
     df = df3.reset_index()
 
@@ -511,7 +515,10 @@ def getStockData(code):
 
 def get_random_warning():
     iws = db.session.query(InvestWarning).all()
-    return random.sample(iws,1)[0]
+    if iws:
+        return random.sample(iws,1)[0]
+    else:
+        return ""
 
 def get_stock_info(user,code):
     stock = None

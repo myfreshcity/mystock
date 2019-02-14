@@ -57,8 +57,6 @@ def update():
 @blueprint.route('/updateHolder/', methods = ['GET','POST'])
 def updateHolder():
     code = request.args.get('code')
-    #heads = getHeaders('https://xueqiu.com')
-    (session,heads) = getXueqiuHeaders()
     data = hs.getStockHolderFromNet(code)
     dts.updateStockHolder(data)
     return jsonify(msg=True)

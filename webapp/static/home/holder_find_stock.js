@@ -1,6 +1,4 @@
 
-var skey='淡水泉';
-
 var list_table;
 
 function clearSearch(){
@@ -16,24 +14,21 @@ function filterByHolderName(mkey){
     $('#backBtn').show();
 }
 
-function getTargetStocks(){
-    var checkVal=$("input:radio[name='optionsRadiosinline']:checked").val();
-    var smsg = $('#bs_cname').val().replace(/(^s*)|(s*$)/g, "");
-    if(checkVal=='option3'){
-        if(smsg.length >0)
-           skey = smsg;
-        else
-           return;
-    }else{
-        //skey = checkVal.next().text();
-        skey = checkVal;
-    }
+function search(){
+    var skey = $('#bs_cname').val().replace(/\s*/g,"");
+    requestServer(skey);
+}
 
+function linkSearch(ele){
+    requestServer($(ele).text());
+}
 
+function requestServer(msg){
+    $('#docTitle').html('');
     $.ajax({
-    url:$SCRIPT_ROOT + '/holderFindStockJson',
+    url:$SCRIPT_ROOT + '/findHolderJson',
     data:{
-             skey : skey
+             skey : msg
     },
     type:'get',
     cache:false,
@@ -49,52 +44,29 @@ function redrawTable(resultTData){
 
  if(list_table){
       list_table.destroy();
-      $('#backBtn').hide();
  }
 
  list_table = $('#example').DataTable({
     "paging": false,
     data: resultTData,
-    "order": [],
-    "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.10.16/i18n/Chinese.json"
-            },
+    "ordering": false,
+    searching: false,
+    "info": false,
     columns: [
-        { "data": 'report_type' },
-        { "data": 'holder_name' },
-        { "data": 'holder_code' },
-        { "data": 'code' },
-        { "data": 'name' },
-        { "data": 'stock_industry' },
-        { "data": 'pcf' },
-        { "data": 'pe' },
-        { "data": 'pb' },
-        { "data": 'mvalue' },
-        { "data": 'rate' },
-        { "data": 'ncode' }
+        { title: "","data": 'code' },
+        { title: "名称","data": 'name' },
+        { title: "频率","data": 'size' },
+        { title: "最近日期","data": 'date' },
     ],
     columnDefs: [
                   {
-                      "targets": [2],
-                      "render": function(data, type, full) {
-                          //return '<a href="#holderTrackModal" >'+data+'</a>';
-                          return '<a href="javascript:void(0);" onclick="filterByHolderName('+full.holder_code+')">'+data+'</a>';
-                      }
-                  },
-                  {
-                      "targets": [1],
+                      "targets": [0],
                       "visible": false
                   },
                   {
-                      "targets": [9],
+                      "targets": [1],
                       "render": function(data, type, full) {
-                          return '<a href="#holderTrackModal" data-stock="'+full.code+'" data-holder-name="'+full.holder_name+'" data-holder-code="'+full.holder_code+'" data-toggle="modal">'+data+'</a>';
-                      }
-                  },
-                  {
-                      "targets": [11],
-                      "render": function(data, type, full) {
-                          return '<a href="/stock/valuation/'+full['ncode']+'" target="_blank">详细</a>';
+                          return '<a href="'+$SCRIPT_ROOT + '/holder/'+full.code+'" target="_blank">'+ data +'</a>';
                       }
                   },
         ]
@@ -105,25 +77,6 @@ function redrawTable(resultTData){
 
 //加载完毕自动执行
 $(function(){
-
-$("input:radio[name='optionsRadiosinline']").change(function (){
-
-var checkVal=$("input:radio[name='optionsRadiosinline']:checked").val();
-
-    if(checkVal=='option3'){
-    //指定股票
-    //$('#bs_cname').show();
-    $('#bs_cname').prop('disabled', false);
-    //$('#bs_btn').prop('disabled', true);
-    }else{
-    //$('#bs_cname').hide();
-    $('#bs_cname').prop('disabled', true);
-    //$('#bs_btn').prop('disabled', false);
-    }
-
-});
-
-getTargetStocks();
 
 
 });

@@ -95,9 +95,30 @@ def logout():
         identity=AnonymousIdentity())
     return redirect(url_for('home.login'))
 
+
+@blueprint.route('/holder/<code>', methods=['GET'])
+def holder(code):
+    return render_template('home/holder_stock.html', title='股东持股',code=code)
+
+
 @blueprint.route('/holderFindStock', methods = ['GET'])
 def holderFindStock():
     return render_template('home/holder_find_stock.html', title='股东选股')
+
+@blueprint.route('/findHolderJson', methods=['GET'])
+def findHolderJson():
+    skey = request.args.get('skey')
+    result = []
+    data = dts.findHolder(skey)
+    for index, row in data.iterrows():
+        result.append(
+            {'code': row['holder_code'],
+             'name': row['holder_name'],
+             'type': row['holder_type'],
+             'size': row['hold_size'],
+             'date': row['report_date'].strftime('%Y-%m-%d'),
+             })
+    return jsonify(data={'tableData': result})
 
 @blueprint.route('/holderFindStockJson', methods=['GET'])
 def holderFindStockJson():
@@ -116,12 +137,13 @@ def holderFindStockJson():
              'code': row.code,
              'holder_name': row.holder_name,
              'holder_code': row.holder_code,
+             'hold_length': row.hold_length,
              'stock_industry': row.industry,
              'ncode': fn.code_to_ncode(row.code),
              'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
              'price': fixBadData(row.close),
              'rate': fixBadData(row.rate),
-             'mvalue': fixBadData(round(row.holder_amt / (10000 * 10000), 2)),
+             'mvalue': fixBadData(round(row.hold_amt / (10000 * 10000), 2)),
              'pe': fixBadData(row.pe),
              'ps': fixBadData(row.ps),
              'pcf': fixBadData(row.pcf),

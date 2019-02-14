@@ -99,43 +99,63 @@ def getStockHolderRank():
     return t7_df
 
 def getStockHolderFromNet(code):
-    #app.logger.info('checking stock holder for:' + code)
-    mc = 'SH' if code[:2] == '60' else 'SZ'
-    url = "https://xueqiu.com/stock/f10/shareholder.json?symbol=" + mc + code + "&page=1&size=4"
-    #app.logger.debug('stock holder url is:' + url)
-    # req = urllib2.Request(url=url, headers=headers)
-    # feeddata = urllib2.urlopen(req).read()
-    res1 = session.get(url, headers=headers)
-    return {'code':code,'data':json.loads(res1.content)}
+    import re
+    latest_val = ''
+    url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
+    req = urllib2.Request(url=url, headers=headers)
+    feeddata = session.get(url, headers=headers)
+    soup = BeautifulSoup(feeddata.content, "html5lib")
+    paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
+
+    report_date = []
+    holder_name = []
+    holder_code = []
+    amount = []
+    rate = []
+    holder_type = []
+    holder_parent = []
+    rdate = ''
+    i = 0
+    for e in paper_name:
+        t = e.find_all('td')
+        s = e.find_all('strong')
+        if len(s) > 0:
+            if s[0].string == '截止日期':
+                rdate = t[1].string
+                i += 1
+                if i ==1:
+                    latest_val = rdate
+
+        if t[0].div:
+            if t[0].div.string:
+                if t[0].div.string.isdigit():
+                    hname = t[1].div.text
+                    report_date.append(rdate)
+                    holder_name.append(hname)
+                    amount.append(t[2].div.string)
+                    rate.append(t[3].div.string)
+                    holder_type.append(t[4].div.string)
+                    hcode = re.sub(u"[\–\-\－\：\s+\.\!\/_,$%^*(+\"\')]+|[+——()?【】“”！，。？、~@#￥%……&*（）]+", "", hname)
+                    holder_code.append(hcode)
+                    hname_array = re.compile(u'－|-').split(hname)
+                    holder_parent.append(hname_array[0])
+    df1 = pd.DataFrame({
+        'code': code,
+        'report_date': report_date,
+        'holder_name': holder_name,
+        'holder_code': holder_code,
+        'amount': amount,
+        'rate': rate,
+        'holder_type': holder_type,
+        'holder_parent': holder_parent
+    })
+    return {'code': code, 'data': df1}
 
 def updateStockHolder(data):
     code = data['code']
-    fd = data['data']
-    fArray = []
+    df1 = data['data']
 
     st = dbs.getStock(code)
-
-    if fd['list'] is None:
-        return
-
-    for e in fd['list']:
-        fArray = fArray + e['list']
-    ndf = pd.DataFrame(fArray)
-
-    df1 = pd.DataFrame({
-        'code': code,
-        'report_date': ndf['enddate'].map(lambda x: pd.to_datetime(x).strftime("%Y-%m-%d")),
-        'rank': ndf['rank2'],
-        'holder_name': ndf['shholdername'],
-        'holder_code': ndf['shholdercode'],
-        'amount': ndf['holderamt'],
-        'rate': ndf['holderrto'].map(lambda x: round(float(x),2)),
-        'holder_nature': ndf['shholdertype'],
-        'holder_type': ndf['shholdernature'],
-        'holder_parent': ndf['shholdername'].map(lambda x: x.split('-')[0])
-
-    })
-
     sql = "select max(report_date) from stock_holder where code=:code";
     resultProxy = db.session.execute(text(sql), {'code': code})
     s_date = resultProxy.scalar()
@@ -161,6 +181,60 @@ def updateStockHolder(data):
     #app.logger.info(code +' update done. the latest report date is:' + latest_report)
 
 
+def getLatestStockHolder(code):
+    today = datetime.now()
+    dt_2 = QuarterEnd().rollback(today - DateOffset(years=3))
+    submit_date = dt_2.date()
+
+    hdf = pd.read_sql_query("select id, code,report_date,holder_type,holder_name,holder_code,rate,amount \
+                                from stock_holder where code=%(name)s and report_date>=%(submit_date)s \
+                                order by report_date asc,rate desc", db.engine, \
+                            params={'name': code, 'submit_date': submit_date.strftime('%Y-%m-%d')})
+
+    grouped = hdf.groupby('report_date')
+    pre_group = pd.DataFrame()
+
+    def getValue(x, attri):
+        d1 = m1_df[m1_df['holder_code'] == x]
+        v1 = d1.get(attri + '_x')
+        v2 = d1.get(attri + '_y')
+        if v1.item() != v1.item():  # 空值判断
+            return v2.item()
+        else:
+            return v1.item()
+
+    def countVar(x):
+        d1 = m1_df[m1_df['holder_code'] == x]
+        v1 = d1.get('rate_x')
+        v2 = d1.get('rate_y')
+        if v1.item() != v1.item():  # 空值判断
+            return '-'
+        elif v2.item() != v2.item():
+            return '+'
+        elif v1.item() == v2.item():
+            return '0'
+        else:
+            return format(v1.item() - v2.item(), ',')
+
+    result = []
+
+    for name, group in grouped:
+        if not pre_group.empty:
+            m1_df = pd.merge(group, pre_group, on='holder_code', how='outer')
+            m2_df = pd.DataFrame({
+                'name': m1_df['holder_code'].apply(getValue, args=('holder_name',)),
+                'code': m1_df['holder_code'],
+                'report_date': name,
+                'amount': m1_df['holder_code'].apply(getValue, args=('amount',)),
+                'rate': m1_df['holder_code'].apply(getValue, args=('rate',)),
+                'var': m1_df['holder_code'].apply(countVar)
+            })
+            result.append({'report_date': name, 'data': m2_df})
+
+        pre_group = group  # 重新设置比较列表
+
+    return result
+
 #近期持股情况比较
 def getStockHolder(code,report_date,direction):
     sql = "select max(report_date) from stock_holder where code=:code";
@@ -185,8 +259,8 @@ def getStockHolder(code,report_date,direction):
 
     hdf = pd.read_sql_query("select id, code,report_date,holder_type,holder_name,holder_code,rate,amount \
                                 from stock_holder where code=%(name)s and report_date>=%(submit_date)s and report_date<=%(report_date)s \
-                                order by report_date desc,rank asc", db.engine, \
-                            params={'name': code, 'submit_date': submit_date, 'report_date': _next_date})
+                                order by report_date desc,amount desc", db.engine, \
+                            params={'name': code, 'submit_date': submit_date.strftime('%Y-%m-%d'), 'report_date': _next_date.strftime('%Y-%m-%d')})
 
     def fixHolderName(x):
         d1 = hdf[hdf['id'] == x]

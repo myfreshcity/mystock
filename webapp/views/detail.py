@@ -415,34 +415,25 @@ def roeJson():
 @blueprint.route('/holderJson', methods=['GET'])
 def holderJson():
     code = request.args.get('code')
-    reportDate = request.args.get('report_date')
-    direction = request.args.get('forward_dirc')
 
+    result = []
+    st_result = hs.getLatestStockHolder(code)
+    for r in st_result:
+        report_date = r['report_date'].strftime('%Y-%m-%d')
+        df = r['data']
+        tableData = []
+        for index, row in df.iterrows():
+            tableData.append(
+                [report_date,
+                 row['name'],
+                 row['code'],
+                 row['rate'],
+                 format(row['amount'], ','),
+                 row['var']
+                 ])
+        result.append({"r_date": report_date, "data": tableData})
 
-    tableData = []
-    (_report_date,_result_df) = hs.getStockHolder(code,reportDate,direction)
-    for index, row in _result_df.iterrows():
-        report_date = row['report_date'].strftime('%Y-%m-%d')
-        tableData.append(
-            [report_date,
-             row['name'],
-             row['code'],
-             row['rate'],
-             format(row['amount'], ','),
-             row['var']
-             ])
-
-    sizeArray = []
-    sumArray = []
-    (size_df,sum_df) = hs.getStockHolderHistory(code)
-    it_1 = size_df.iterrows()
-    it_2 = sum_df.iterrows()
-    for index, row in it_1:
-        sizeArray.append([index.strftime('%Y-%m-%d'), row['size']])
-    for index, row in it_2:
-        sumArray.append([index.strftime('%Y-%m-%d'), row['sum']])
-
-    return jsonify(data={'holderSize':sizeArray,'holderSum': sumArray, 'tableData':tableData,'reportDate':_report_date})
+    return jsonify(data=result)
 
 @blueprint.route('/holderTrackJson', methods=['GET'])
 def holderTrackJson():

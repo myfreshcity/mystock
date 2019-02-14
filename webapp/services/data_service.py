@@ -203,23 +203,34 @@ def getPerStockHighPrice(df):
     index = pd.Index(st_codes, name='code')
     return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
 
-def findStocksByHolder(mkey):
-    sql = "select max(report_date) from stock_holder sh where sh.holder_name like :mkey and sh.holder_type != '自然人股'";
-    resultProxy = db.session.execute(text(sql), {'mkey': '%' + mkey + '%'})
-    _max_date = resultProxy.scalar()
-    if (_max_date == None):
-        _max_date = pd.to_datetime('2000-06-30')
-    _next_date = QuarterEnd().rollback(_max_date - DateOffset(days=1))
+def findHolder(mkey):
+    tdf = pd.read_sql_query(
+        "select sh.holder_name,sh.holder_code,sh.holder_type,sh.report_date from stock_holder sh " \
+        "where sh.holder_code like %(mkey)s order by report_date desc", db.engine, \
+        params={'mkey': '%' + mkey + '%'})
+    gtdf = tdf.groupby(['holder_code'])
+    bdf = gtdf.first()
+    bdf['hold_size'] = gtdf.size()
+    bdf = bdf.reset_index()
 
-    bdf = pd.read_sql_query(
+    return bdf
+
+
+def findStocksByHolder(mkey):
+    tdf = pd.read_sql_query(
         "select sh.* from stock_holder sh " \
-        "where sh.holder_name like %(mkey)s and sh.report_date >= %(mdate)s and sh.holder_type != '自然人股'", db.engine, \
-        params={'mkey': '%' + mkey + '%', 'mdate': _next_date})
+        "where sh.holder_code = %(mkey)s order by report_date desc", db.engine, \
+        params={'mkey': mkey})
+    gtdf = tdf.groupby(['code', 'holder_code'])
+    bdf = gtdf.first()
+    bdf['hold_length'] = gtdf.count()['id']
+    bdf = bdf.reset_index()
 
     df3 = dbs.get_global_data()
-
-    df = pd.merge(bdf, df3, how='left', on='code')
-    df['holder_amt'] = df['t_cap'] * df['rate'] / 100
+    df = pd.DataFrame()
+    if not bdf.empty:
+        df = pd.merge(bdf, df3, how='left', on='code')
+        df['hold_amt'] = df['t_cap'] * df['rate'] / 100
 
     return df
 
@@ -262,16 +273,19 @@ def getStockItem(bdf):
     global_fdf = dbs.get_global_finance_data()
 
     df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
-
-    bdf = bdf.reset_index()
     if not df3.empty:  # 若交易数据或财务数据为空，会导致错误。判断以过滤这种情况。
         df3 = df3.reset_index()
-    df4 = pd.merge(bdf, df3, how='left', on='code')
+
+    bdf = bdf.reset_index()
+
+    if not bdf.empty and not df3.empty:
+        bdf = pd.merge(bdf, df3, how='left', on='code')
 
     # 加入机构持股比例
-    gdf = hs.getGroupStockHolderRate()
-    df6 = pd.merge(df4, gdf, how='left', on='code')
-    return df6
+    df5 = hs.getGroupStockHolderRate()
+    if not df3.empty and not df5.empty:
+        bdf = pd.merge(bdf, df5, how='left', on='code')
+    return bdf
 
 #更新基础股票数据
 def freshBasicStockInfo():

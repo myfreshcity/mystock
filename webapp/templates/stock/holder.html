@@ -9,16 +9,12 @@
   <div class="modal-body">
     <div class="container-fluid">
       <div class="row">
-        <div class="row">
-          <div class="col-md-2 col-md-offset-10">
-            <a id="m1_link_next" href="#">下一期</a>
-            {% if current_user.is_authenticated %}
+        {% if current_user.is_authenticated %}
             <a id="m1_link" href='#'>更新数据</a>
             {% endif %}
-            <a id="m1_link_pre" href="#">前一期</a>
-          </div>
-          <table id="data_table" class="display" cellspacing="0" width="90%"></table>
-        </div>
+      </div>
+      <div class="row">
+        <div class="row" id="table_div"></div>
         <div id="value_chart" class="col-md-12"></div>
       </div>
       <div class="row">
@@ -29,158 +25,14 @@
   <div class="modal-footer">
   </div>
 </div>
-
-<script type=text/javascript>
-var holderPage = {
-  report_date:'',
-  forward_dirc:''
+<script type="text/javascript">
+  var $stock = {
+  code:'{{ stock.code|safe }}',
+  name:'{{ stock.name|safe }}'
 }
-//加载完毕自动执行
-$(function(){
-
-    var code = '{{ stock.code|safe }}' // Extract info from data-* attributes
-    // If necessary, you could initiate an AJAX request here (and then do the updating in a callback).
-    // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
-
-    var modal = $(this)
-    modal.find('#holderModalLabel').text('机构持股情况 -' + '{{ title|safe }}'+'-'+code );
-    var valuation_chart = modal.find('.modal-body #valuation_chart');
-    var value_chart = modal.find('.modal-body #value_chart');
-    var holder_data_table = modal.find('.modal-body #data_table');
-
-    modal.find('.modal-body #m1_link').on("click",updateHolderData);
-    modal.find('.modal-body #m1_link_pre').on("click",preData);
-    modal.find('.modal-body #m1_link_next').on("click",nextData);
-
-    var holder_ajax_option =  {
-    url:$SCRIPT_ROOT + '/detail/holderJson',
-    data:{
-             code : code,
-             report_date: holderPage.report_date,
-             forward_dirc: holderPage.forward_dirc
-    },
-    type:'get',
-    cache:false,
-    dataType:'json',
-    success:valuation
-    };
-
-    function updateHolderData(){
-        var aj = $.ajax( {
-        url:$SCRIPT_ROOT + '/setting/updateHolder/',
-        data:{
-                 code : code
-        },
-        type:'get',
-        cache:false,
-        dataType:'json',
-        success:function(result){
-             if(result.msg == true){
-                 $.ajax(holder_ajax_option);
-             }else{
-                console.error(result.msg);
-             }
-            }
-        });
-
-     };
-
-    function  preData(){
-      holderPage.forward_dirc = 'pre';
-      holder_ajax_option.data = {
-             code : code,
-             report_date: holderPage.report_date,
-             forward_dirc: holderPage.forward_dirc
-      };
-      $.ajax(holder_ajax_option);
-    }
-
-    function  nextData(){
-      holderPage.forward_dirc = 'next';
-      holder_ajax_option.data = {
-             code : code,
-             report_date: holderPage.report_date,
-             forward_dirc: holderPage.forward_dirc
-      };
-      $.ajax(holder_ajax_option);
-    }
-
-    $.ajax(holder_ajax_option);
-
-  function valuation(result){
-    var c1_data = {'name':'持股个数',type: 'column',marker: {enabled: false}};
-    c1_data['data'] = result.data.holderSize;
-
-    var c2_data = {'name':'持股比例',type: 'column',marker: {enabled: false}};
-    c2_data['data'] = result.data.holderSum;
-
-    holderPage.report_date = result.data.reportDate
-    modal.find('#holderModalLabel').text('机构持股情况 -' + '{{ stock.name|safe }}'+'-'+holderPage.report_date );
-
-    //显示数据
-    modal.find('.modal-body').show();
-    if(holderPage.modal_datatable){
-      holderPage.modal_datatable.destroy();
-    }
-
-    holderPage.modal_datatable = holder_data_table.DataTable( {
-        paging: false,
-        data: result.data.tableData,
-        "order": [[ 0, "desc" ]],
-        searching: false,
-        columns: [
-            { title: "报告日期"},
-            { title: "流通股东" },
-            { title: "流通股东编码" },
-            { title: "持有比例(%)" },
-            { title: "持有数量" },
-            { title: "持股变动(%)" }
-        ],
-        columnDefs: [
-                  {
-                      "targets": [0],
-                      "width": "12%"
-                  },
-                  {
-                      "targets": [1],
-                      "render": function(data, type, full) {
-                          //return '<a href="#holderTrackModal" >'+data+'</a>';
-                          return '<a href="#holderTrackModal" data-stock="'+code+'" data-holder-name="'+full[1]+'" data-holder-code="'+full[2]+'" data-toggle="modal">'+data+'</a>';
-                      }
-                  },
-                  {
-                    "targets": [2],
-                    "visible": false
-                  }
-        ]
-    } );
-
-    valuation_chart.highcharts({
-        title: {text:  '机构历史持股个数'},
-        xAxis: {categories: []},
-        credits: {enabled: false},
-        series: [c1_data],
-        tooltip:{
-           crosshairs: true,
-           shared: true
-        }
-    });
-
-    value_chart.highcharts({
-        title: {text:  '机构历史持有比例'},
-        xAxis: {categories: []},
-        credits: {enabled: false},
-        series: [c2_data],
-        tooltip:{
-           crosshairs: true,
-           shared: true
-        }
-    });
-
-  }
-
-});
 </script>
+
+<script type="text/javascript" src="{{ url_for('static', filename='stock/holder.js',v=version_no) }}"></script>
 
 {% include 'stock/partion/holder_track.html' %}
 {% include 'stock/partion/add_stock.html' %}
