@@ -6,7 +6,7 @@ from flask import g
 import pandas as pd
 import numpy as np
 from flask import current_app as app
-from webapp.services import db,getHeaders,getXueqiuHeaders,db_service as dbs
+from webapp.services import db,db_service as dbs
 from webapp.models import Stock,Comment,FinanceBasic
 import json,random,time
 import http.cookiejar
@@ -15,7 +15,6 @@ from datetime import datetime
 import urllib2,re,html5lib
 
 group_stockholder_rate = None
-session, headers = getXueqiuHeaders()
 
 
 def getLatestStockHolder():
@@ -100,9 +99,8 @@ def getStockHolderRank():
 
 def getStockHolderFromNet(code):
     import re
-    latest_val = ''
     url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
-    req = urllib2.Request(url=url, headers=headers)
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
     feeddata = session.get(url, headers=headers)
     soup = BeautifulSoup(feeddata.content, "html5lib")
     paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
@@ -133,7 +131,13 @@ def getStockHolderFromNet(code):
                     report_date.append(rdate)
                     holder_name.append(hname)
                     amount.append(t[2].div.string)
-                    rate.append(t[3].div.string)
+                    rateStr = t[3].div.string
+                    # 新浪特殊数据处理
+                    if rateStr:
+                        rateArray = re.findall("^[0-9]*\.?[0-9]{0,2}", rateStr)
+                        rate.append(rateArray[0])
+                    else:
+                        rate.append('1')
                     holder_type.append(t[4].div.string)
                     hcode = re.sub(u"[\–\-\－\：\s+\.\!\/_,$%^*(+\"\')]+|[+——()?【】“”！，。？、~@#￥%……&*（）]+", "", hname)
                     holder_code.append(hcode)

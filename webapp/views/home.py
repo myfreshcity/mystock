@@ -124,35 +124,40 @@ def findHolderJson():
 def holderFindStockJson():
     skey = request.args.get('skey')
 
-    sdata = []
-    data = dts.findStocksByHolder(skey)
+    result = []
+    st_result = dts.findStocksByHolder(skey)
 
     def fixBadData(x):
         import math
         return '-' if math.isnan(x) else round(x,2)
 
-    for index, row in data.iterrows():
-        sdata.append(
-            {'name': row['name'],
-             'code': row.code,
-             'holder_name': row.holder_name,
-             'holder_code': row.holder_code,
-             'hold_length': row.hold_length,
-             'stock_industry': row.industry,
-             'ncode': fn.code_to_ncode(row.code),
-             'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
-             'price': fixBadData(row.close),
-             'rate': fixBadData(row.rate),
-             'mvalue': fixBadData(round(row.hold_amt / (10000 * 10000), 2)),
-             'pe': fixBadData(row.pe),
-             'ps': fixBadData(row.ps),
-             'pcf': fixBadData(row.pcf),
-             'pb': fixBadData(row.pb),
-             'report_type': row.report_date.strftime('%Y-%m-%d')
-             }
-        )
+    for r in st_result:
+        report_date = r['report_date'].strftime('%Y-%m-%d')
+        df = r['data']
+        tableData = []
+        for index, row in df.iterrows():
+            tableData.append(
+                {'name': row['name'],
+                 'code': row.code,
+                 'holder_name': row.holder_name,
+                 'holder_code': row.holder_code,
+                 'hold_length': row.hold_length,
+                 'stock_industry': row.industry,
+                 'ncode': fn.code_to_ncode(row.code),
+                 'pcode': row['code'] + ('01' if row['code'][:2] == '60'else '02'),
+                 'price': fixBadData(row.close),
+                 'rate': fixBadData(row.rate),
+                 'mvalue': fixBadData(round(row.hold_amt / (10000 * 10000), 2)),
+                 'pe': fixBadData(row.pe),
+                 'ps': fixBadData(row.ps),
+                 'pcf': fixBadData(row.pcf),
+                 'pb': fixBadData(row.pb),
+                 'report_type': row.report_date.strftime('%Y-%m-%d')
+                 }
+            )
+        result.append({"r_date": report_date, "data": tableData})
 
-    return jsonify(data={'tableData':sdata})
+    return jsonify(data=result)
 
 @blueprint.route('/test', methods = ['GET'])
 def test():

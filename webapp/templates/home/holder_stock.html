@@ -7,25 +7,8 @@
 {% block body %}
 
 <div class="container-fluid">
-    <table id="example" class="display" cellspacing="0" width="100%">
-        <thead>
-        <tr>
-            <th>报告日期</th>
-            <th>股东</th>
-            <th>股东代码</th>
-            <th>股票代码</th>
-            <th>名称</th>
-            <th>所在行业</th>
-            <th>市现率(PCF)</th>
-            <th>市盈率(PE)</th>
-            <th>市净率(PB)</th>
-            <th>持有市值(亿)</th>
-            <th>比例</th>
-            <th>持有时长</th>
-            <th>操作</th>
-        </tr>
-        </thead>
-    </table>
+    <div class="row" id="table_div"></div>
+    <table id="example" class="display" cellspacing="0" width="100%"></table>
 </div>
 <script type=text/javascript>
 var skey = '{{code|e}}';

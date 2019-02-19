@@ -23,41 +23,47 @@ function getTargetStocks(){
     type:'get',
     cache:false,
     dataType:'json',
-    success:function(result){redrawTable(result.data.tableData);},
+    success:function(res){valuation(res);},
     error: function(XMLHttpRequest, textStatus, errorThrown) {
       console.log(errorThrown.stack);
     }
     });
 }
 
-function redrawTable(resultTData){
+function valuation(res){
+    var result = res.data;
 
- if(list_table){
-      list_table.destroy();
-      $('#backBtn').hide();
- }
+    for(var i = 0; i　< result.length; i++) {
+        var r_date = result[i]['r_date'];
+        var data = result[i]['data'];
+        var $h1=$('<h4>'+r_date+'</h4>');
+        var $table1 = $('<table class="display" cellspacing="0" width="99%" style="margin-bottom: 80px"></table>');
+        render_table($table1,data)
+        $('#table_div').prepend($table1).prepend($h1)
+    }
+}
 
- list_table = $('#example').DataTable({
-    "paging": false,
-    data: resultTData,
-    "order": [],
-    "language": {
-                "url": "https://cdn.datatables.net/plug-ins/1.10.16/i18n/Chinese.json"
-            },
+function render_table(ele,table_data){
+     ele.DataTable({
+        "paging": false,
+        "searching": false,
+        "info": false,
+        data: table_data,
+        "order": [],
     columns: [
-        { "data": 'report_type' },
-        { "data": 'holder_name' },
-        { "data": 'holder_code' },
-        { "data": 'code' },
-        { "data": 'name' },
-        { "data": 'stock_industry' },
-        { "data": 'pcf' },
-        { "data": 'pe' },
-        { "data": 'pb' },
-        { "data": 'mvalue' },
-        { "data": 'rate' },
-        { "data": 'hold_length' },
-        { "data": 'ncode' }
+        { "title": "报告日期", "data": 'report_type' },
+        { "title": "股东", "data": 'holder_name' },
+        { "title": "股东代码", "data": 'holder_code' },
+        { "title": "股票代码", "data": 'code' },
+        { "title": "名称", "data": 'name' },
+        { "title": "所在行业", "data": 'stock_industry' },
+        { "title": "市现率(PCF)", "data": 'pcf' },
+        { "title": "市盈率(PE)", "data": 'pe' },
+        { "title": "市净率(PB)", "data": 'pb' },
+        { "title": "持有市值(亿)", "data": 'mvalue' },
+        { "title": "比例", "data": 'rate' },
+        { "title": "持有时长", "data": 'hold_length' },
+        { "title": "操作", "data": 'ncode' }
     ],
     columnDefs: [
                   {
@@ -97,23 +103,5 @@ function redrawTable(resultTData){
 
 //加载完毕自动执行
 $(function(){
-
-$("input:radio[name='optionsRadiosinline']").change(function (){
-
-var checkVal=$("input:radio[name='optionsRadiosinline']:checked").val();
-    if(checkVal=='option3'){
-    //指定股票
-    //$('#bs_cname').show();
-    $('#bs_cname').prop('disabled', false);
-    //$('#bs_btn').prop('disabled', true);
-    }else{
-    //$('#bs_cname').hide();
-    $('#bs_cname').prop('disabled', true);
-    //$('#bs_btn').prop('disabled', false);
-    }
-});
-
 getTargetStocks();
-
-
 });

@@ -204,14 +204,18 @@ def getPerStockHighPrice(df):
     return pd.DataFrame(st_valus, index=index,columns=['h_cap'])
 
 def findHolder(mkey):
+    today = datetime.now().date()
+    d = today - pd.DateOffset(months=18)
+    submit_date = QuarterEnd().rollback(d)
+
     tdf = pd.read_sql_query(
         "select sh.holder_name,sh.holder_code,sh.holder_type,sh.report_date from stock_holder sh " \
-        "where sh.holder_code like %(mkey)s order by report_date desc", db.engine, \
-        params={'mkey': '%' + mkey + '%'})
+        "where sh.holder_code like %(mkey)s and report_date >= %(submit_date)s order by report_date desc", db.engine, \
+        params={'mkey': '%' + mkey + '%', 'submit_date': submit_date.strftime('%Y-%m-%d')})
     gtdf = tdf.groupby(['holder_code'])
     bdf = gtdf.first()
     bdf['hold_size'] = gtdf.size()
-    bdf = bdf.reset_index()
+    bdf = bdf.reset_index().sort_index(by='report_date',ascending=False)
 
     return bdf
 
@@ -221,7 +225,7 @@ def findStocksByHolder(mkey):
         "select sh.* from stock_holder sh " \
         "where sh.holder_code = %(mkey)s order by report_date desc", db.engine, \
         params={'mkey': mkey})
-    gtdf = tdf.groupby(['code', 'holder_code'])
+    gtdf = tdf.groupby(['code'])
     bdf = gtdf.first()
     bdf['hold_length'] = gtdf.count()['id']
     bdf = bdf.reset_index()
@@ -232,7 +236,12 @@ def findStocksByHolder(mkey):
         df = pd.merge(bdf, df3, how='left', on='code')
         df['hold_amt'] = df['t_cap'] * df['rate'] / 100
 
-    return df
+    result = []
+    grouped = df.groupby(['report_date'])
+    for name, group in grouped:
+        result.append({'report_date': name, 'data': group})
+
+    return result
 
 def getMyStocks(uid,flag,isSingle=False):
     user_id = uid

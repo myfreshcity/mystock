@@ -49,7 +49,7 @@ function redrawTable(resultTData){
  list_table = $('#example').DataTable({
     "paging": false,
     data: resultTData,
-    "ordering": false,
+    "ordering": true,
     searching: false,
     "info": false,
     columns: [
