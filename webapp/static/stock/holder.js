@@ -101,6 +101,7 @@ $(function(){
                 { title: "流通股东编码" },
                 { title: "持有比例(%)" },
                 { title: "持有数量" },
+                { title: "持股变动(%)" },
                 { title: "持股变动(%)" }
             ],
             columnDefs: [
@@ -127,18 +128,24 @@ $(function(){
                                 var_ele = '<i class="glyphicon glyphicon-arrow-down" style="color:#FF0000;"></i>';
                             }else if(data=='+'){
                                 var_ele = '<i class="glyphicon glyphicon-arrow-up" style="color:#008000;"></i>';
+                            }else if(data=='0'){
+                                var_ele = '-';
                             }else{
-                                if(parseFloat(data) > 0){
-                                    var_ele = '<span  style="color:#008000;">'+data+'</span>';
-                                }else if(parseFloat(data) < 0){
+                                if(/^\-+/.test(data) && /^\-+/.test(full[6])){ //同为负数
                                     var_ele = '<span style="color:#FF0000;">'+data+'</span>';
-                                }else{
-                                    var_ele = '-';
-                                }
+                                 }else if(!/^\-+/.test(data) && !/^\-+/.test(full[6])){ //同为正数
+                                    var_ele = '<span  style="color:#008000;">'+data+'</span>';
+                                 }else{
+                                    var_ele = '<span  style="color:#D2691E;">'+data+'('+full[6]+')</span>';
+                                 }
                             }
                             return var_ele;
                         }
-                      }
+                      },
+                       {
+                        "targets": [6],
+                        "visible": false
+                      },
             ]
         } )
   }

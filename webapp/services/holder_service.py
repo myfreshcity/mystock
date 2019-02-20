@@ -226,7 +226,19 @@ def getLatestStockHolder(code):
         elif (v1.item() == v2.item()) or (v3.item() == v4.item()):
             return '0'
         else:
-            return format(v1.item() - v2.item(), ',')
+            return format(v1.item() - v2.item())
+
+    def countAmtVar(x):
+        d1 = m1_df[m1_df['holder_code'] == x]
+        v1 = d1.get('amount_x')
+        v2 = d1.get('amount_y')
+
+        if v1.item() != v1.item():  # 空值判断
+            return '-'
+        elif v2.item() != v2.item():
+            return '+'
+        else:
+            return format(int(v1.item() - v2.item()), ',')
 
     result = []
 
@@ -239,7 +251,8 @@ def getLatestStockHolder(code):
                 'report_date': name,
                 'amount': m1_df['holder_code'].apply(getValue, args=('amount',)),
                 'rate': m1_df['holder_code'].apply(getValue, args=('rate',)),
-                'var': m1_df['holder_code'].apply(countVar)
+                'var': m1_df['holder_code'].apply(countVar),
+                'var_amt': m1_df['holder_code'].apply(countAmtVar)
             })
             result.append({'report_date': name, 'data': m2_df})
 

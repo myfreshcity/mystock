@@ -428,8 +428,9 @@ def holderJson():
                  row['name'],
                  row['code'],
                  row['rate'],
-                 format(row['amount'], ','),
-                 row['var']
+                 format(int(row['amount']), ','),
+                 row['var'],
+                 row['var_amt'],
                  ])
         result.append({"r_date": report_date, "data": tableData})
 
