@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
+
+import requests
 from bs4 import  BeautifulSoup,BeautifulStoneSoup
 from sqlalchemy import *
 from flask import g
@@ -101,6 +103,7 @@ def getStockHolderFromNet(code):
     import re
     url = "http://vip.stock.finance.sina.com.cn/corp/go.php/vCI_CirculateStockHolder/stockid/" + code + ".phtml"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.6) Gecko/20091201 Firefox/3.5.6'}
+    session = requests.session()
     feeddata = session.get(url, headers=headers)
     soup = BeautifulSoup(feeddata.content, "html5lib")
     paper_name = soup.html.body.find(id="CirculateShareholderTable").tbody.find_all('tr')
@@ -211,11 +214,16 @@ def getLatestStockHolder(code):
         d1 = m1_df[m1_df['holder_code'] == x]
         v1 = d1.get('rate_x')
         v2 = d1.get('rate_y')
+        # 补充精度不准问题
+        v3 = d1.get('amount_x')
+        v4 = d1.get('amount_y')
+
+
         if v1.item() != v1.item():  # 空值判断
             return '-'
         elif v2.item() != v2.item():
             return '+'
-        elif v1.item() == v2.item():
+        elif (v1.item() == v2.item()) or (v3.item() == v4.item()):
             return '0'
         else:
             return format(v1.item() - v2.item(), ',')

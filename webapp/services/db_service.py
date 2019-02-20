@@ -115,8 +115,8 @@ def get_global_data():
     df = df3.reset_index()
 
     df['pe'] = df['t_cap'] / (df['jlr_ttm'] * 10000)
-    df['pcf'] = df['t_cap'] / (df['zyysr_ttm'] * 10000)
-    df['ps'] = df['t_cap'] / (df['jyjxjl_ttm'] * 10000)
+    df['ps'] = df['t_cap'] / (df['zyysr_ttm'] * 10000)
+    df['pcf'] = df['t_cap'] / (df['jyjxjl_ttm'] * 10000)
     df['pb'] = df['t_cap'] / (df['gdqy'] * 10000)
 
     return df

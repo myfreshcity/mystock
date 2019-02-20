@@ -53,7 +53,7 @@ function render_table(ele,table_data){
     columns: [
         { "title": "报告日期", "data": 'report_type' },
         { "title": "股东", "data": 'holder_name' },
-        { "title": "股东代码", "data": 'holder_code' },
+        { "title": "持有明细", "data": 'holder_code' },
         { "title": "股票代码", "data": 'code' },
         { "title": "名称", "data": 'name' },
         { "title": "所在行业", "data": 'stock_industry' },
@@ -68,14 +68,13 @@ function render_table(ele,table_data){
     columnDefs: [
                   {
                       "targets": [0],
-                      "width": "10%"
+                      "width": "12%"
                   },
                   {
                       "targets": [2],
-                      "width": "20%",
                       "render": function(data, type, full) {
                           //return '<a href="#holderTrackModal" >'+data+'</a>';
-                          return '<a href="#holderTrackModal" data-stock="'+full.code+'" data-holder-name="'+full.holder_name+'" data-holder-code="'+full.holder_code+'" data-toggle="modal">'+full.holder_name+'</a>';
+                          return '<a href="#holderTrackModal" data-stock="'+full.code+'" data-holder-name="'+full.holder_name+'" data-holder-code="'+full.holder_code+'" data-toggle="modal">'+'查看'+'</a>';
                           //return '<a href="javascript:void(0);" onclick="filterByHolderName('+full.holder_code+')">'+data+'</a>';
                       }
                   },
@@ -92,7 +91,7 @@ function render_table(ele,table_data){
                   {
                       "targets": [12],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/holder/'+full['ncode']+'" target="_blank">详细</a>';
+                          return '<a href="/stock/holder/'+full['ncode']+'" target="_blank">股票详情</a>';
                       }
                   },
         ]

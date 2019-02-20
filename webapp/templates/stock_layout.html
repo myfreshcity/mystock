@@ -52,8 +52,12 @@
        aria-expanded="false">经营 <span class="caret"></span></a>
     <ul class="dropdown-menu">
         <li>
-            <a href="http://soft-f9.eastmoney.com/soft/gp30.php?code={{code[2:]+ ('02' if code[:2] == 'sz' else '01')|e}}"
+            <a href="http://data.eastmoney.com/stockdata/{{code[2:]|e}}.html"
                target="_blank">业务概述(东方财富)</a>
+        </li>
+        <li>
+            <a href="http://stock.jrj.com.cn/share,{{code[2:]|e}},zyyw.shtml"
+               target="_blank">主营业务(金融界)</a>
         </li>
         <li>
             <a href="http://stock.jrj.com.cn/share,{{code[2:]|e}},zgsms.shtml" target="_blank">招股说明书(金融界)</a>
