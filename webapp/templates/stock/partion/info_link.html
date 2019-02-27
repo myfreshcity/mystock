@@ -3,17 +3,16 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="infoModalLabel"></h4>
-        <h6 class="modal-sub-title"></h6>
+        <strong class="modal-title" id="infoModalLabel"></strong>
+        <span class="modal-sub-title"></span>
+        <a href="javascript:void(0);" id="info_fav">收藏</a>
+        <a href="#" id="info_src" target="_blank">查看原文</a>
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
       <div class="modal-body modal-abc">
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-        <button type="button" class="btn btn-primary">收藏</button>
-        <a href="#" id="info_src" target="_blank">查看原文</a>
-        <p class="text-danger" id="flash_msg"></p>
       </div>
     </div>
   </div>
@@ -46,8 +45,8 @@ $(function(){
 
     var modal = $(this)
     modal.find('.modal-title').text(title);
-    modal.find('.modal-sub-title').text(dateTime);
-    modal.find('.modal-footer #info_src').attr('href',url);
+    modal.find('.modal-sub-title').text("("+dateTime+")");
+    modal.find('.modal-header #info_src').attr('href',url);
 
     var holder_ajax_option =  {
       url:$SCRIPT_ROOT + '/detail/linkContent',
@@ -65,7 +64,7 @@ $(function(){
 
 
 
-    modal.find('.modal-footer .btn-primary').on("click",function (event) {
+    modal.find('.modal-header #info_fav').on("click",function (event) {
       var aj = $.ajax( {
       url:$SCRIPT_ROOT + '/detail/addFavoriate',
       data:{
@@ -82,8 +81,7 @@ $(function(){
       if(data.msg==='收藏成功'){
       infoPage.list_table.ajax.reload();
       }
-
-      modal.find('.modal-footer #flash_msg').text(data.msg);
+      toastr.info(data.msg);
        }
       });
 
@@ -96,8 +94,7 @@ $(function(){
   $('#infoModal').on('hidden.bs.modal', function (event) {
     var modal = $(this)
     modal.find('.modal-body').empty();
-    modal.find('.modal-footer #flash_msg').text('');
-    modal.find('.modal-footer .btn-primary').unbind("click");
+    modal.find('.modal-header #info_fav').unbind("click");
   });
 
 });

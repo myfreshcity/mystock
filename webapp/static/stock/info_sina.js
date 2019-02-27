@@ -15,10 +15,11 @@
     if(_sina_table)_sina_table.destroy();
 
     _sina_table = $('#sina_table').DataTable( {
-        paging: true,
+        paging: false,
         data: result.data.tableData,
         order: false,
         searching: false,
+        info:false,
         columns: [
             { title: "操作",data:"url"},
             { title: "标题",data:"title" },

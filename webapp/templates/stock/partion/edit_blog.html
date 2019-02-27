@@ -25,7 +25,10 @@
               </p>
 
             </div>
-            <div><a href="#" target="_blank" id="his-link">查看历史笔记</a></div>
+
+            <!-- List group -->
+            <ul class="list-group modal-list-group" id="comment-list"></ul>
+            <div><a href="#" target="_blank" id="his-link">查看更多>>></a></div>
       </div>
 
     </div>
@@ -34,7 +37,6 @@
 
 <style>
   .modal-list-group {
-    height: 400px;
     margin-top: 10px;
     overflow: auto;
 }
@@ -105,20 +107,46 @@ $(function(){
         modal.modal('hide');
       }
 
+      function queryComment() {
+          var aj = $.ajax( {
+          url:$SCRIPT_ROOT + '/stock/queryComments',
+          data:{
+                   code : recipient,
+                   page : 1
+          },
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(result) {
+             for(var i=0,a;a=result.data[i++];){
+                makeCommentItem(a.pid,a.id,a.date,a.content,a.flag);
+             }
+           }
+          });
+        };
+
+      function makeCommentItem(pid,id,date,content,flag){
+          content =  content.replace(/\n/g,'<br/>');
+
+          var commentItem = $('<li class="list-group-item" id="p-'+pid+'"></li>');
+          modal.find("#comment-list").append(commentItem);
+          var ci = '<h6 class="list-group-item-text" id="'+id+'">'+renderFlag(flag)+content+'</h6>\
+                <p class="list-group-item-heading small text-right">'+date+'</p>';
+
+          commentItem.append($(ci));
+      }
 
       function renderFlag(flag){
           if(flag == '0')
-          return 'bg-danger';
-          else if(flag == '1')
-          return 'bg-success';
+            return '<i class="glyphicon glyphicon-thumbs-down" style="color:#FF0000;"></i>';
           else
-          return '';
+            return '<i class="glyphicon glyphicon-thumbs-up" style="color:#008000;"></i>';
       }
 
 
     //加载执行
    initInputStat();
-   //queryComment();
+   queryComment();
 
     });
 

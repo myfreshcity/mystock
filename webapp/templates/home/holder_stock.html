@@ -7,11 +7,23 @@
 {% block body %}
 
 <div class="container-fluid">
+    <div class="row">
+        <span>{{hname|e}}</span>
+        <a id="m1_link" href='#' class="col-md-4"></a>
+    </div>
     <div class="row" id="table_div"></div>
-    <table id="example" class="display" cellspacing="0" width="100%"></table>
+    <div class="row">
+        <table id="example" class="display" cellspacing="0" width="100%"></table>
+    </div>
 </div>
 <script type=text/javascript>
-var skey = '{{code|e}}';
+
+var skey = '{{hcode|e}}';
+var hname = '{{hname|e}}';
+
+var surl = '';
+var isLogin = '{{ current_user.is_authenticated != False }}';
+
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='home/holder_stock.js',v=version_no) }}"></script>
 

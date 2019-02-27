@@ -12,6 +12,10 @@
     ul li {
       padding: 5px;
     }
+    .holderLink {
+        padding: 10px 10px;
+        white-space: nowrap;
+    }
 </style>
 
 <div class="container-fluid">
@@ -20,29 +24,24 @@
             <form class="form-inline">
                 <input type="text" class="form-control" id="bs_cname" data-provide="typeahead" data-value=""
                                autocomplete="off" placeholder="请输入关键词"/>
-                <button type="button" class="btn btn-default" id="bs_btn" onclick="search()">提交</button>
+                <button type="button" class="btn btn-default" id="bs_btn" onclick="search()">搜索</button>
             </form>
         </div>
-    <div class="row" style="margin:10px 20px;">
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">淡水泉</a>
-        </div>
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">重阳</a>
-        </div>
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">景林</a>
-        </div>
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">凯丰</a>
-        </div>
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">高毅</a>
-        </div>
-        <div class="col-md-1">
-            <a href="javascript:void(0);" onclick="linkSearch(this)">高瓴</a>
-        </div>
+    <div class="row" style="margin:0 10px;">
+        <a href="javascript:void(0);" onclick="linkSearch(this)" class="holderLink">淡水泉</a>
+        <a href="javascript:void(0);" onclick="linkSearch(this)" class="holderLink">重阳</a>
+        <a href="javascript:void(0);" onclick="linkSearch(this)" class="holderLink">景林</a>
+        <a href="javascript:void(0);" onclick="linkSearch(this)" class="holderLink">高毅</a>
+        <a href="javascript:void(0);" onclick="linkSearch(this)" class="holderLink">高瓴</a>
     </div>
+
+    <div class="row" style="margin:10px 10px;">
+        <h5>已关注：</h5>
+        {% for hd in data %}
+        <a href="/holder/{{hd.holder_code|e}}"  target="_blank" class="holderLink">{{ hd.holder_name|e}}</a>
+        {% endfor %}
+    </div>
+
     </div>
 
     <div id="detail-panel">
@@ -55,6 +54,7 @@
 <script type=text/javascript>
 
 var default_stock = '{{code|e}}';
+var isLogin = '{{ current_user.is_authenticated != False }}';
 
 </script>
 

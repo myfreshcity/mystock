@@ -76,6 +76,12 @@ def getGroupStockHolderRate():
         db.engine)
     return df
 
+def queryHolderName(hcode):
+    sql = "select holder_name from stock_holder where holder_code=:code limit 1";
+    resultProxy = db.session.execute(text(sql), {'code': hcode})
+    return resultProxy.scalar()
+
+
 #获得自然人持股排行榜
 def getStockHolderRank():
     gdf = getLatestStockHolder()
@@ -345,10 +351,10 @@ def getStockHolder(code,report_date,direction):
     return (_next_date.strftime('%Y-%m-%d'),m2_df)
 
 #指定股东的持股历史
-def getStockHolderTrack(holder_code):
+def getStockHolderTrack(holder_code,stock_code):
     hdf = pd.read_sql_query("select code,report_date,holder_type,holder_name,rate,amount \
-                                from stock_holder where holder_code=%(code)s", db.engine,\
-                            params={'code': holder_code})
+                                from stock_holder where holder_code=%(hcode)s and code=%(scode)s", db.engine,\
+                            params={'hcode': holder_code,'scode': stock_code})
 
     bdf = dbs.get_global_basic_data().reset_index()
     t3_df = pd.merge(hdf, bdf, on='code')

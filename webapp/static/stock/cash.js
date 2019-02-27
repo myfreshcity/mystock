@@ -77,10 +77,14 @@ function revenue(result){
     $('#revenue_0').highcharts({
         title: {text: '现金变化趋势'},
         chart: {zoomType: 'x'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: [xjye,xjjze_qt,jyjxjl_qt,jlr_qt],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -88,7 +92,10 @@ function revenue(result){
     $('#revenue_1').highcharts({
         chart: {zoomType: 'xy'},
         title: {text: '现金使用情况'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         yAxis: [
         {
         labels: {
@@ -105,6 +112,7 @@ function revenue(result){
         credits: {enabled: false},
         series: [jlrs,jyjxjls,cash_live_rate,cash_produce_rate],
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -113,7 +121,10 @@ function revenue(result){
     $('#revenue_2').highcharts({
         chart: {zoomType: 'xy'},
         title: {text: '现金含量'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         yAxis: [
         {
         labels: {
@@ -127,7 +138,12 @@ function revenue(result){
         }
         ],
         credits: {enabled: false},
-        series: [jlrs,jyjxjls,cash_jlr_rate]
+        series: [jlrs,jyjxjls,cash_jlr_rate],
+        tooltip:{
+           xDateFormat: '%Y-%m-%d',
+           crosshairs: true,
+           shared: true
+        }
     });
 
     //显示数据

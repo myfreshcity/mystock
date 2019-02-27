@@ -77,7 +77,6 @@ def result_list_to_array(data):
              'roe': fixBadData(round(row.jlr_ttm * 100.0 / row.gdqy, 2)),
              'dar': fixBadData(round(row.zfz * 100.0 / (row.zzc), 2)),
              'jlr_rate': fixBadData(round(row['jlr_rate'] * 100.0, 2)),
-             'sh_rate': fixBadData(row['count']),
              'cash_rate': fixBadData(round(row.jyjxjl_ttm * 1.0 / row.jlr_ttm, 2)),  # 现金净利润比
              'report_type': '-' if pd.isnull(row.report_type) else row.report_type
              }
@@ -244,6 +243,7 @@ def revenueJson():
 
     for index, row in df.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
+        _td_stamp = fn.date2timestamp(row['report_type'])
         s_jyjxjl_rate =  round(row['jyjxjl_grow_rate'] * 100, 2)
         s_jlr_rate = round(row['jlr_grow_rate'] * 100, 2)
         s_yylr_rate = round(row['yylr_grow_rate'] * 100, 2)
@@ -260,14 +260,14 @@ def revenueJson():
             row_yylr = row['yylr']
             row_jyjxjl = row['jyjxjl']
 
-        yysr.append([report_type, row['zyysr_ttm']])
-        jlr.append([report_type, row['jlr_ttm']])
-        jyjxjl.append([report_type, row['jyjxjl_ttm']])
+        yysr.append([_td_stamp, row['zyysr_ttm']])
+        jlr.append([_td_stamp, row['jlr_ttm']])
+        jyjxjl.append([_td_stamp, row['jyjxjl_ttm']])
 
-        yysr_rate.append([report_type,s_yysr_rate])
-        jlr_rate.append([report_type, s_jlr_rate])
-        jyjxjl_rate.append([report_type,s_jyjxjl_rate])
-        roe.append([report_type.encode('utf-8'), round(row['roe'], 2)])
+        yysr_rate.append([_td_stamp,s_yysr_rate])
+        jlr_rate.append([_td_stamp, s_jlr_rate])
+        jyjxjl_rate.append([_td_stamp,s_jyjxjl_rate])
+        roe.append([_td_stamp, round(row['roe'], 2)])
 
 
         tableData.append(
@@ -315,27 +315,28 @@ def cashJson():
     for index, row in df.iterrows():
         i = i+1
         report_type = row['report_type'].strftime('%Y-%m-%d')
+        _td_stamp = fn.date2timestamp(row['report_type'])
 
         s_jyjxjl_rate =  round(row['jyjxjl_grow_rate'] * 100, 2)
         s_cash_live_rate = round(row['xjye'] * 100/row['zyysr_ttm'], 2)
         s_cash_produce_rate = round(row['jyjxjl_ttm'] * 100/row['zyysr_ttm'], 2)
 
-        yysr.append([report_type, row['zyysr_ttm']])
-        jlr.append([report_type, row['jlr_ttm']])
-        jyjxjl.append([report_type, row['jyjxjl_ttm']])
+        yysr.append([_td_stamp, row['zyysr_ttm']])
+        jlr.append([_td_stamp, row['jlr_ttm']])
+        jyjxjl.append([_td_stamp, row['jyjxjl_ttm']])
 
-        jyjxjl_rate.append([report_type,s_jyjxjl_rate])
-        cash_live_rate.append([report_type,s_cash_live_rate])
-        cash_produce_rate.append([report_type, s_cash_produce_rate])
-        cash_jlr_rate.append([report_type,
+        jyjxjl_rate.append([_td_stamp,s_jyjxjl_rate])
+        cash_live_rate.append([_td_stamp,s_cash_live_rate])
+        cash_produce_rate.append([_td_stamp, s_cash_produce_rate])
+        cash_jlr_rate.append([_td_stamp,
                               round(row['jyjxjl_ttm'] * 1.0 / row['jlr_ttm'], 2)])
 
         # 只取前10*4条数据图形显示
         if i <= 40:
-            xjye.append([report_type,row['xjye']])
-            xjjze_qt.append([report_type, row['xjjze_qt']])
-            jlr_qt.append([report_type, row['jlr_qt']])
-            jyjxjl_qt.append([report_type, row['jyjxjl_qt']])
+            xjye.append([_td_stamp,row['xjye']])
+            xjjze_qt.append([_td_stamp, row['xjjze_qt']])
+            jlr_qt.append([_td_stamp, row['jlr_qt']])
+            jyjxjl_qt.append([_td_stamp, row['jyjxjl_qt']])
 
         if pType==1:
             row_zyysr = row['zyysr_qt']

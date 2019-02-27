@@ -15,10 +15,11 @@
     if(_qq_table)_qq_table.destroy();
 
     _qq_table = $('#qq_table').DataTable( {
-        paging: true,
+        paging: false,
         data: result.data.tableData.data,
         order: false,
         searching: false,
+        info:false,
         columns: [
             { title: "操作",data:"url"},
             { title: "标题",data:"title" },

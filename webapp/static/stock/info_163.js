@@ -20,6 +20,7 @@ var _163_ajax_option =  {
         data: result.data.tableData,
         ordering: false,
         searching: false,
+        info:false,
         columns: [
             {},{},
             { title: "标题" },

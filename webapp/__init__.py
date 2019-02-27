@@ -15,6 +15,8 @@ from celery import Celery
 from flask_login import current_user
 from flask_principal import identity_loaded, RoleNeed, UserNeed
 
+from webapp.views import holder
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import os
@@ -93,6 +95,7 @@ def config_app(app, config):
 def register_blueprints(app):
     app.logger.info('Register blueprints...')
     app.register_blueprint(home.blueprint,   url_prefix='')
+    app.register_blueprint(holder.blueprint, url_prefix='/holder')
     app.register_blueprint(setting.blueprint,  url_prefix='/setting')
     app.register_blueprint(stock.blueprint, url_prefix='/stock')
     app.register_blueprint(detail.blueprint, url_prefix='/detail')

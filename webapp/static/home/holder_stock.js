@@ -1,6 +1,23 @@
 
 var list_table;
 
+var holder_ajax_option =  {
+      url:$SCRIPT_ROOT + '/holder/isFavoriate',
+      data:{
+               code : skey
+      },
+      type:'get',
+      success:function(data) {
+          if(data.msg===true){
+            $('#m1_link').text('取消关注');
+            surl = $SCRIPT_ROOT + '/holder/removeFavoriate';
+          }else{
+            $('#m1_link').text('加关注');
+            surl = $SCRIPT_ROOT + '/holder/addFavoriate';
+          }
+      }
+    };
+
 function clearSearch(){
     list_table.search('').columns().search('').draw();
     $('#backBtn').hide();
@@ -14,9 +31,10 @@ function filterByHolderName(mkey){
     $('#backBtn').show();
 }
 
+
 function getTargetStocks(){
     $.ajax({
-    url:$SCRIPT_ROOT + '/holderFindStockJson',
+    url:$SCRIPT_ROOT + '/holder/findStockJson',
     data:{
              skey : skey
     },
@@ -103,4 +121,37 @@ function render_table(ele,table_data){
 //加载完毕自动执行
 $(function(){
 getTargetStocks();
+
+if(isLogin=='True'){
+
+    $.ajax(holder_ajax_option);
+
+    $('#m1_link').on("click",function (event) {
+          var aj = $.ajax( {
+          url: surl,
+          data:{
+                   code : skey,
+                   name : hname,
+          },
+          type:'post',
+          cache:false,
+          dataType:'json',
+          success:function(data) {
+              if(data.action==='addFav' && data.msg===true){
+              toastr.info('关注成功');
+              $('#m1_link').text('取消关注');
+              surl = $SCRIPT_ROOT + '/holder/removeFavoriate';
+              }
+
+              if(data.action==='removeFav' && data.msg===true){
+              toastr.info('已取消关注');
+              $('#m1_link').text('加关注');
+              surl = $SCRIPT_ROOT + '/holder/addFavoriate';
+              }
+           }
+          });
+
+        });
+}
+
 });

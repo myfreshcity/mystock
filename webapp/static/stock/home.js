@@ -89,10 +89,14 @@ function revenue(result){
     $('#revenue_0').highcharts({
         chart: {zoomType: 'xy'},
         title: {text: '整体营收TTM'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
         series: yysrs.concat(jlrs).concat(jyjxjls),
         tooltip:{
+           xDateFormat: '%Y-%m-%d',
            crosshairs: true,
            shared: true
         }
@@ -100,30 +104,62 @@ function revenue(result){
     $('#revenue_1').highcharts({
         chart: {zoomType: 'xy',type:'column'},
         title: {text: '营业收入TTM'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         credits: {enabled: false},
-        series: yysrs
+        series: yysrs,
+        tooltip:{
+           xDateFormat: '%Y-%m-%d',
+           crosshairs: true,
+           shared: true
+        }
     });
     $('#revenue_2').highcharts({
         chart: {zoomType: 'xy',type:'column'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         title: {text: '净利润TTM'},
         credits: {enabled: false},
-        series: jlrs
+        series: jlrs,
+        tooltip:{
+           xDateFormat: '%Y-%m-%d',
+           crosshairs: true,
+           shared: true
+        }
     });
     $('#revenue_3').highcharts({
         chart: {zoomType: 'xy',type:'column'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         title: {text: '经营净现金流TTM'},
         credits: {enabled: false},
-        series: jyjxjls
+        series: jyjxjls,
+        tooltip:{
+           xDateFormat: '%Y-%m-%d',
+           crosshairs: true,
+           shared: true
+        }
     });
     $('#revenue_4').highcharts({
         chart: {type: 'column'},
-        xAxis: {categories: []},
+        xAxis: {type: 'datetime',
+            dateTimeLabelFormats: {
+                month: '%Y-%m'
+            }},
         title: {text: '净资产收益率'},
         credits: {enabled: false},
-        series: roe
+        series: roe,
+        tooltip:{
+           xDateFormat: '%Y-%m-%d',
+           crosshairs: true,
+           shared: true
+        }
     });
 
     //显示数据

@@ -9,6 +9,7 @@ import numpy as np
 from flask import current_app as app
 
 from webapp.models.invest_warning import InvestWarning
+from webapp.models.my_holder_favor import MyHolderFavor
 from webapp.services import db
 from webapp.models import *
 from webapp.extensions import cache
@@ -74,7 +75,7 @@ def get_global_basic_data():
 @cache.memoize(timeout=3600*24*7)
 def get_global_trade_data():
     tdf = pd.read_sql_query("select code,trade_date,close,volume,t_cap,m_cap\
-                                    from stock_trade_data order by trade_date desc limit 6000", db.engine) #上市股票不足3000家，取两倍数值
+                                    from stock_trade_data order by trade_date desc limit 20000", db.engine) #上市股票不足3000家，取两倍数值
     global_tdf = tdf.groupby([tdf['code']]).first()
     return global_tdf
 
@@ -82,11 +83,11 @@ def get_global_trade_data():
 @cache.memoize(timeout=3600*24*30)
 def get_global_finance_data():
     fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
-                                        from stock_finance_data order by report_type desc limit 6000", db.engine)
+                                        from stock_finance_data order by report_type desc limit 20000", db.engine)
     fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                                            from xueqiu_finance_cash order by report_type desc limit 6000", db.engine)
+                                            from xueqiu_finance_cash order by report_type desc limit 20000", db.engine)
     fdf3 = pd.read_sql_query("select code,report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                                            from xueqiu_finance_asset order by report_type desc limit 6000", db.engine)
+                                            from xueqiu_finance_asset order by report_type desc limit 20000", db.engine)
 
     def re_defind(fdf):
         fdf = fdf.groupby([fdf['code']]).first()
@@ -376,19 +377,22 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
                     app.logger.error(traceback.format_exc())
                     return 0
 
-    df1 = pd.read_sql_query("select * from stock_finance_data where code=%(name)s order by report_type",
-                           db.engine, params={'name': code},index_col=['report_type'])
+    df1 = pd.read_sql_query("select * from stock_finance_data where code=%(name)s", db.engine, params={'name': code})
+    df1.drop_duplicates(subset='report_type', inplace=True)
 
     df2 = pd.read_sql_query("select report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                            from xueqiu_finance_cash where code=%(name)s order by report_type",
-                            db.engine, params={'name': code}, index_col=['report_type'])
+                            from xueqiu_finance_cash where code=%(name)s",
+                            db.engine, params={'name': code})
+    df2.drop_duplicates(subset='report_type', inplace=True)
 
     df3 = pd.read_sql_query("select report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                            from xueqiu_finance_asset where code=%(name)s order by report_type",
-                            db.engine, params={'name': code}, index_col=['report_type'])
+                            from xueqiu_finance_asset where code=%(name)s",
+                            db.engine, params={'name': code})
+    df3.drop_duplicates(subset='report_type', inplace=True)
 
-    df = pd.concat([df1,df2,df3],join='inner',axis=1)
-    df = df.reset_index()
+    df = pd.merge(df1, df2, how='inner', on='report_type')
+
+    df = pd.merge(df, df3, how='inner', on='report_type')
 
     if pType == 0:
         zyysr_ttm = pd.Series(df['report_type'].apply(pct_change_fix, args=('zyysr',)), name='zyysr_grow_rate')
@@ -558,8 +562,16 @@ def getMyStock(uid,code):
 
 def getMyStockNews(uid,code):
     code = fn.get_code(code)
-    news = db.session.query(MyStockFavor).filter_by(code = code, user_id = uid).order_by(desc(MyStockFavor.pub_date))
+    news = db.session.query(MyStockFavor).filter_by(code = code, user_id = uid).order_by(desc(MyStockFavor.pub_date)).all()
     return news
+
+def getMyHolderFavor(uid):
+    data = db.session.query(MyHolderFavor).filter_by(user_id = uid).order_by(desc(MyHolderFavor.created_time)).all()
+    return data
+
+def isMyHolderFavorExist(uid,hcode):
+    data = db.session.query(MyHolderFavor).filter_by(user_id = uid,holder_code=hcode).first()
+    return True if data else False
 
 def addMystock(uid,cd,cname,flag='1'):
     code = getValidStockInput(cd,cname)
@@ -599,6 +611,17 @@ def getValidStockInput(code,cname):
             if st:
                 return st.code
     return code
+
+
+def addMyHolderFavor(uid,hcode,hname):
+    myfavor = db.session.query(MyHolderFavor).filter_by(holder_code=hcode).first()
+    if not myfavor:
+        myfavor = MyHolderFavor(hcode,hname,uid)
+        db.session.add(myfavor)
+        return True
+    else:
+        return False
+
 
 
 def addMystockFavor(uid,code,title,url,pub_date,src_type):
@@ -652,6 +675,11 @@ def removeMystock(uid,code):
         mystock.flag = '1'
         db.session.flush()
     return msg
+
+def removeMyHolderFavor(uid,hcode):
+    data = db.session.query(MyHolderFavor).filter_by(holder_code=hcode, user_id=uid).first()
+    db.session.delete(data)
+    return db.session.flush()
 
 def removeMystockFavor(fid):
     mystock = db.session.query(MyStockFavor).get(fid)
@@ -734,3 +762,4 @@ def addUser(username,password):
 
 def queryUser(username):
     return db.session.query(User).filter_by(username = username).first()
+

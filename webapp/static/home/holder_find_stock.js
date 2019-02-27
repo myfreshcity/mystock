@@ -26,7 +26,7 @@ function linkSearch(ele){
 function requestServer(msg){
     $('#docTitle').html('');
     $.ajax({
-    url:$SCRIPT_ROOT + '/findHolderJson',
+    url:$SCRIPT_ROOT + '/holder/findHolderJson',
     data:{
              skey : msg
     },

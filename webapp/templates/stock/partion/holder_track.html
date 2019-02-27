@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="holderTrackModalLabel"></h4>
+        <strong class="modal-title" id="holderTrackModalLabel"></strong>
         <input type="hidden" class="form-control" id="sel-code"/>
       </div>
       <div class="modal-body">
@@ -41,19 +41,21 @@ $(function(){
     // Update the modal's content. We'll use jQuery here, but you could use a data binding library or other methods instead.
 
     var modal = $(this)
-    modal.find('.modal-title').text('股东持股历史 -' + holder_name );
+    modal.find('.modal-title').text('' + holder_name );
     var valuation_chart = modal.find('.modal-body #valuation_chart');
     var value_chart = modal.find('.modal-body #value_chart');
     track_modal.ajaxParams = {hcode : holder_code,scode:stock_code};
 
     //显示数据
-    modal.find('.modal-body').show();
+
     if(track_modal.modal_datatable){
       track_modal.modal_datatable.ajax.reload();
     }
     else{
     track_modal.modal_datatable = modal.find('.modal-body #data_table_2').DataTable( {
         paging: false,
+        searching:false,
+        info:false,
         "ajax": {
           url:$SCRIPT_ROOT + '/detail/holderTrackJson',
           type:'get',
@@ -65,7 +67,8 @@ $(function(){
                 });
           },
           "dataSrc": function(res) {
-          track_modal.modal_datatable.search( track_modal.ajaxParams.scode ).draw();
+            modal.find('.modal-body').show();
+            //track_modal.modal_datatable.search( track_modal.ajaxParams.scode ).draw();
             return res.data.tableData;
           }
         },

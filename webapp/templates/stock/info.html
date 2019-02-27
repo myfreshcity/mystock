@@ -2,16 +2,6 @@
 
 {% block body %}
 <div class="container-fluid">
-    {% if current_user.is_authenticated %}
-    <div class="row">
-        <div class="panel panel-default">
-            <!-- Default panel contents -->
-            <div class="panel-heading">我的收藏夹</div>
-            <div class="col-md-2 col-md-offset-10"><a href="#thirdInfoModal" data-stock="{{code[2:]|e}}" data-toggle="modal">添加第三方资讯</a></div>
-            <table id="mynews_table" class="display" cellspacing="0" width="90%"></table>
-        </div>
-    </div>
-    {% endif %}
 
     <div class="row">
         <!-- Nav tabs -->
@@ -19,6 +9,9 @@
             <li role="presentation"><a href="#sina_news" role="tab" data-toggle="tab">新浪新闻</a></li>
             <li role="presentation"><a href="#163_news" role="tab" data-toggle="tab">163新闻</a></li>
             <li role="presentation"><a href="#qq_news" role="tab" data-toggle="tab">腾讯新闻</a></li>
+            {% if current_user.is_authenticated %}
+            <li role="presentation"><a href="#favi_news" role="tab" data-toggle="tab">我的收藏</a></li>
+            {% endif %}
         </ul>
 
         <!-- Tab panes -->
@@ -50,6 +43,10 @@
                     </ul>
                 </nav>
             </div>
+            <div role="tabpanel" class="tab-pane" id="favi_news">
+                <div class="col-md-2 col-md-offset-10"><a href="#thirdInfoModal" data-stock="{{code[2:]|e}}" data-toggle="modal">添加第三方资讯</a></div>
+                <table id="mynews_table" class="display" cellspacing="0" width="90%"></table>
+            </div>
         </div>
     </div>
 
@@ -65,6 +62,7 @@ var infoPage = {
   yeahLoad: false, // 网易
   qqLoad: false,
   sinaLoad: false,
+  list_table: null,
   isLogin:'{{ current_user.is_authenticated != False }}'
 };
 
@@ -96,62 +94,11 @@ function removeFav(id,el) {
 //加载完毕自动执行
 $(function(){
     $('#myTab a:first').tab('show');
-
- infoPage.list_table = $('#mynews_table').DataTable({
-    "order": false,
-    searching: false,
-    paging: false,
-    "ajax": {
-          url:$SCRIPT_ROOT + '/detail/favorList/{{ code|safe }}',
-          type:'get',
-          cache:false,
-          dataType:'json',
-          data:function(data) { // add request parameters before submit
-                $.each(infoPage.ajaxParams, function(key, value) {
-                    data[key] = value;
-                });
-          },
-          "dataSrc": function(res) {
-            return res;
-          }
-        },
-    columns: [
-            { title: "标题",data:"title" },
-            { title: "链接",data:"url" },
-            { title: "日期",data:"pub_date"},
-            { title: "操作",data:"id"}
-        ],
-     columnDefs: [
-              {
-                  "targets": [0],
-                  "render": function(data, type, full) {
-                      if(full.src_type==='other'){
-                      return "<a href='"+full.url+"' target='_blank'>" +full.title+ "</a>&nbsp;"
-                      }else{
-
-                      return "<a data-href='"+full.url+"' data-stock='"+full.code+"' data-toggle='modal' data-title='"
-                        +full.title+"' data-datetime='"+full.pub_date+"' data-src='"+full.src_type+"' href='#infoModal'>"
-                        +full.title+"</a>&nbsp;"
-
-                      }
-                   }
-              },
-              {
-                  "targets": [1],
-                  "visible": false
-              },
-              {
-                  "targets": [3],
-                  "render": function(data, type, full) {
-                      return "<a href='#' onclick='javascript:removeFav(" + data + ",this);return false;'>"+'删除'+"</a>&nbsp;"
-                  }
-              }
-        ]
-    });
 });
 </script>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/info_163.js',v=version_no) }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/info_qq.js',v=version_no) }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='stock/info_sina.js',v=version_no) }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='stock/info_favorite.js',v=version_no) }}"></script>
 
 {% endblock %}

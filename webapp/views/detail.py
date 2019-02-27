@@ -41,46 +41,9 @@ def peJson():
 @blueprint.route('/debetJson', methods=['GET'])
 def debetJson():
     code = request.args.get('code')
-
-    fzlArray = []
-    dqfzArray = []
-    ldbArray = []
-    tableData = []
-
-    valueDf = ds.get_revenue_df(code).head(20)
-    for index, row in valueDf.iterrows():
-        report_type = row['report_type'].strftime('%Y-%m-%d')
-        fzl = round(row.zfz * 100.0 / row.zzc, 2) #负债率
-        dqfz = round(row.ldfz * 100.0 / row.zzc, 2) #短期负债率
-        ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
-
-        fzlArray.append([report_type, fzl])
-        dqfzArray.append([report_type,dqfz])
-        ldbArray.append([report_type, ldb])
-
-        tableData.append(
-            [report_type,
-             round(row['zzc']/10000, 2),
-             round(row['zfz']/10000, 2),
-             #format(row['ldzc'], ','),
-             #format(row['ldfz'], ','),
-             round(row['gdqy']/10000, 2),
-             round(row['ch']/10000, 2),
-             round(row['yszk']/10000, 2),
-             fzl,
-             dqfz,
-             ldb
-             ]
-        )
-
-    return jsonify(data={'fzl':fzlArray,'dqfz': dqfzArray,'ldb': ldbArray, 'tableData':tableData})
-
-
-@blueprint.route('/debetExJson', methods=['GET'])
-def debetExJson():
-    code = request.args.get('code')
     quarter = int(request.args.get('quarter'))
 
+    tableData = []
     chArray = []
     chRateArray = []
     yszkArray = []
@@ -90,19 +53,38 @@ def debetExJson():
     valueDf = ds.get_quarter_stock_revenue(code,quarter)
     for index, row in valueDf.iterrows():
         report_type = row['report_type'].strftime('%Y-%m-%d')
+        _td_stamp = fn.date2timestamp(row['report_type'])
 
         chRate = round(row.ch * 100.0 / row.zyysr_ttm, 2)  # 存货比
         yszkRate = round(row.yszk * 100.0 / row.zyysr_ttm, 2)  # 应收帐款比
 
-        chRateArray.append([report_type, chRate])
-        yszkRateArray.append([report_type, yszkRate])
+        chRateArray.append([_td_stamp, chRate])
+        yszkRateArray.append([_td_stamp, yszkRate])
 
-        chArray.append([report_type, row.ch])
-        yszkArray.append([report_type, row.yszk])
-        zyysrArray.append([report_type, row.zyysr_ttm])
+        chArray.append([_td_stamp, row.ch])
+        yszkArray.append([_td_stamp, row.yszk])
+        zyysrArray.append([_td_stamp, row.zyysr_ttm])
 
+        fzl = round(row.zfz * 100.0 / row.zzc, 2)  # 负债率
+        dqfz = round(row.ldfz * 100.0 / row.zzc, 2)  # 短期负债率
+        ldb = round(row.ldzc / row.ldfz, 2)  # 流动比
 
-    return jsonify(data={'zyysr':zyysrArray,'ch': chArray,'yszk': yszkArray,'chb': chRateArray,'yszkb': yszkRateArray})
+        tableData.append(
+            [report_type,
+             round(row['zzc'] / 10000, 2),
+             round(row['zfz'] / 10000, 2),
+             # format(row['ldzc'], ','),
+             # format(row['ldfz'], ','),
+             round(row['gdqy'] / 10000, 2),
+             round(row['ch'] / 10000, 2),
+             round(row['yszk'] / 10000, 2),
+             fzl,
+             dqfz,
+             ldb
+             ]
+        )
+
+    return jsonify(data={'zyysr':zyysrArray,'ch': chArray,'yszk': yszkArray,'chb': chRateArray,'yszkb': yszkRateArray, 'tableData':tableData})
 
 @blueprint.route('/report/mainJson', methods=['GET'])
 @cache.cached(timeout=3600*24*30, key_prefix=fn.make_cache_key)
@@ -439,9 +421,10 @@ def holderJson():
 @blueprint.route('/holderTrackJson', methods=['GET'])
 def holderTrackJson():
     holder_code = request.args.get('hcode')
+    stock_code = request.args.get('scode')
 
     tableData = []
-    df = hs.getStockHolderTrack(holder_code)
+    df = hs.getStockHolderTrack(holder_code,stock_code)
     for index, row in df.iterrows():
         report_date = row['report_date'].strftime('%Y-%m-%d')
         tableData.append(
