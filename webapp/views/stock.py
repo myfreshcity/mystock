@@ -191,9 +191,10 @@ def valuationJson():
             app.logger.error(row['jlr_ttm'])
             app.logger.error(traceback.format_exc())
 
-        close.append([tdate,rclose])
+
         #pe.append([fn.date2str(row['trade_date']), spe])
         _td_stamp = fn.date2timestamp(row['trade_date'])
+        close.append([_td_stamp, rclose])
         pe.append([_td_stamp,row['fpe']])
         ps.append([_td_stamp, row['fps']])
         pcf.append([_td_stamp, row['fpcf']])

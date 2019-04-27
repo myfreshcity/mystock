@@ -279,21 +279,15 @@ def getStockItem(bdf):
     # 获取交易数据
     global_tdf = dbs.get_global_trade_data()
     # 获取财务数据
-    global_fdf = dbs.get_global_finance_data()
+    global_fdf = dbs.get_global_finance_data_v2()
 
     df3 = pd.concat([global_tdf, global_fdf], axis=1, join='inner')
     if not df3.empty:  # 若交易数据或财务数据为空，会导致错误。判断以过滤这种情况。
         df3 = df3.reset_index()
 
     bdf = bdf.reset_index()
-
     if not bdf.empty and not df3.empty:
         bdf = pd.merge(bdf, df3, how='left', on='code')
-
-    # 加入机构持股比例
-    df5 = hs.getGroupStockHolderRate()
-    if not df3.empty and not df5.empty:
-        bdf = pd.merge(bdf, df5, how='left', on='code')
     return bdf
 
 #更新基础股票数据

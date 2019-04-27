@@ -188,7 +188,7 @@ def updateTradeData(stock):
         i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
         tdf = tdf.set_index(i)
         tdf = tdf.sort_index(ascending=False)
-        gdf = tdf.groupby([pd.TimeGrouper(freq='W')])
+        gdf = tdf.groupby([pd.Grouper(freq='W')])
         agdf = gdf['trade_date'].agg({'max': np.max})
         df1 = tdf.iloc[tdf.index.isin(agdf['max'])]
 

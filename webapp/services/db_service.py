@@ -83,11 +83,11 @@ def get_global_trade_data():
 @cache.memoize(timeout=3600*24*30)
 def get_global_finance_data():
     fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
-                                        from stock_finance_data order by report_type desc limit 20000", db.engine)
+                                        from ntes_finance_main order by report_type desc limit 20000", db.engine)
     fdf2 = pd.read_sql_query("select code,report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                                            from xueqiu_finance_cash order by report_type desc limit 20000", db.engine)
+                                            from ntes_finance_cash order by report_type desc limit 20000", db.engine)
     fdf3 = pd.read_sql_query("select code,report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                                            from xueqiu_finance_asset order by report_type desc limit 20000", db.engine)
+                                            from ntes_finance_asset order by report_type desc limit 20000", db.engine)
 
     def re_defind(fdf):
         fdf = fdf.groupby([fdf['code']]).first()
@@ -96,6 +96,23 @@ def get_global_finance_data():
         return fdf
 
     fdf = pd.concat([re_defind(fdf1), re_defind(fdf2), re_defind(fdf3)], axis=1, join='inner')
+    fdf = fdf.reset_index()
+    fdf.set_index(['code'],inplace=True)
+    return fdf
+
+#所有股票最近财务数据
+@cache.memoize(timeout=3600*24*30)
+def get_global_finance_data_v2():
+    fdf1 = pd.read_sql_query("select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,gdqy,zzc,zfz,ldfz,jlr_rate\
+                                        from ntes_finance_main order by report_type desc limit 20000", db.engine)
+
+    def re_defind(fdf):
+        fdf = fdf.groupby([fdf['code']]).first()
+        fdf = fdf.reset_index()
+        fdf.set_index(['code','report_type'],inplace=True)
+        return fdf
+
+    fdf = re_defind(fdf1)
     fdf = fdf.reset_index()
     fdf.set_index(['code'],inplace=True)
     return fdf
@@ -138,7 +155,7 @@ def get_cash_rate(code):
 # pType 0-按报告期，1-按单季度
 @cache.memoize(timeout=3600*24*30)
 def get_stock_asset(code, quarter=None, pType=0):
-    df = pd.read_sql_query("select * from xueqiu_finance_asset where code=%(name)s order by report_type",
+    df = pd.read_sql_query("select * from ntes_finance_asset where code=%(name)s order by report_type",
                            db.engine, params={'name': code})
 
     f1 = lambda x: round(x, 2)
@@ -223,7 +240,7 @@ def get_stock_asset(code, quarter=None, pType=0):
 # 获取每季度利润信息
 # pType 0-按报告期，1-按单季度
 def get_stock_income(code, quarter=None, pType=0):
-    df = pd.read_sql_query("select * from xueqiu_finance_income where code=%(name)s order by report_type",
+    df = pd.read_sql_query("select * from ntes_finance_income where code=%(name)s order by report_type",
                            db.engine, params={'name': code})
 
     f1 = lambda x: round(x, 2)
@@ -276,7 +293,7 @@ def get_stock_income(code, quarter=None, pType=0):
 # 获取每季度现金流信息
 # pType 0-按报告期，1-按单季度
 def get_stock_cash(code, quarter=None, pType=0):
-    df = pd.read_sql_query("select * from xueqiu_finance_cash where code=%(name)s order by report_type",
+    df = pd.read_sql_query("select * from ntes_finance_cash where code=%(name)s order by report_type",
                            db.engine, params={'name': code})
 
     f1 = lambda x: round(x, 2)
@@ -377,16 +394,16 @@ def get_revenue_df(code,compare_last_period=False,pType=0):
                     app.logger.error(traceback.format_exc())
                     return 0
 
-    df1 = pd.read_sql_query("select * from stock_finance_data where code=%(name)s", db.engine, params={'name': code})
+    df1 = pd.read_sql_query("select * from ntes_finance_main where code=%(name)s", db.engine, params={'name': code})
     df1.drop_duplicates(subset='report_type', inplace=True)
 
     df2 = pd.read_sql_query("select report_type,jy_net,tz_in_gdtz,tz_out_gdtz,xj_net,qm_xj_ye as xjye\
-                            from xueqiu_finance_cash where code=%(name)s",
+                            from ntes_finance_cash where code=%(name)s",
                             db.engine, params={'name': code})
     df2.drop_duplicates(subset='report_type', inplace=True)
 
     df3 = pd.read_sql_query("select report_type,ldzc_yszk,ldzc_yfkx as yszk,ldzc_ch as ch\
-                            from xueqiu_finance_asset where code=%(name)s",
+                            from ntes_finance_asset where code=%(name)s",
                             db.engine, params={'name': code})
     df3.drop_duplicates(subset='report_type', inplace=True)
 
@@ -433,7 +450,7 @@ def getStockValuationN(code,peroid):
     #获取收益数据
     df = pd.read_sql_query(
         "select code,report_type,zyysr,zyysr_ttm,kf_jlr,jlr,jlr_ttm,jyjxjl,jyjxjl_ttm,xjjze,roe,gdqy \
-        from stock_finance_data \
+        from ntes_finance_main \
         where code=%(name)s",
         db.engine, params={'name': code})
     i = df['report_type'].map(lambda x: pd.to_datetime(x))
@@ -441,15 +458,18 @@ def getStockValuationN(code,peroid):
     sdf = df3.sort_index(ascending=False)
 
     # 获取交易数据
+    end_dt = datetime.now() - DateOffset(months=peroid * 12)
+
     tdf = pd.read_sql_query("select "
                             "trade_date,close,volume,t_cap,m_cap "
                             "from stock_trade_data "
-                            "where code=%(name)s ",
-                            db.engine, params={'name': code}).dropna(axis=0)
+                            "where code=%(name)s and trade_date >=%(edt)s",
+                            db.engine, params={'name': code,'edt': end_dt.strftime('%Y-%m-%d')}).dropna(axis=0)
+
     i = tdf['trade_date'].map(lambda x: pd.to_datetime(x))
     tdf = tdf.set_index(i)
     tdf = tdf.sort_index(ascending=False)
-    fm = 'M' if peroid>3 else 'W' #3年以上为月线，3年以下为周线
+    fm = 'M' if peroid > 3 else 'W' #3年以上为月线，3年以下为周线
     gdf = tdf.groupby([pd.TimeGrouper(freq=fm)])
     agdf = gdf['trade_date'].agg({'max': np.max})
     tdf = tdf.iloc[tdf.index.isin(agdf['max'])]
@@ -495,8 +515,6 @@ def getStockValuationN(code,peroid):
     df['pb'] = df['trade_date'].apply(getValuation, args=('gdqy',))
 
     #df.set_index('trade_date')
-    if peroid>0:
-        df = df.head(peroid*12)
     return df
 
 def getStockData(code):
