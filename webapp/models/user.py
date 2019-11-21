@@ -19,7 +19,7 @@ class User(db.Model):
     id = db.Column(db.String(45), primary_key=True)
     username = db.Column(db.String(50))
     password = db.Column(db.String(255))
-    last_login_time = db.Column(db.DateTime, default=datetime.now)
+    last_login = db.Column(db.DateTime, default=datetime.now)
 
     # many to many: user <==> roles
     roles = db.relationship(

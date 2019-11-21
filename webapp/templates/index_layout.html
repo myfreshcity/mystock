@@ -12,6 +12,15 @@
     <link href="{{ url_for('static', filename='styles/style_yx.css',v=version_no) }}" rel="stylesheet" type="text/css">
     <link href="#" rel="Shortcut Icon" type="image/x-icon">
     {% block head %}{% endblock %}
+    <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?df392e4a3e53e53dd682416ef1f89d90";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
 </head>
 
 
@@ -33,10 +42,6 @@
         <a href="/login" class="cta view-pricing click_tracking" data-label="header"
            data-action="expanded_pricing">登录</a>
         {% endif %}
-        <a href="#" class="cta view-pricing click_tracking" data-label="header" data-action="expanded_pricing"
-           style="margin-left:30px;">会员</a>
-
-
         <a href="##" id="header-menu" class="menu click_tracking" data-label="menu" data-action="open_menu"><span
                 class="text">更多</span><span></span></a>
     </div> <!-- end right-panel -->
@@ -71,15 +76,5 @@
         </div>
     </nav>
 </footer>
-<script>
-var _hmt = _hmt || [];
-(function() {
-var hm = document.createElement("script");
-hm.src = "https://hm.baidu.com/hm.js?725bde352447701ccfd5b5b5eed79ea6";
-var s = document.getElementsByTagName("script")[0];
-s.parentNode.insertBefore(hm, s);
-})();
-</script>
-
 </body>
 </html>

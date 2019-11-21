@@ -52,4 +52,6 @@ def getXueqiuHeaders():
     #url = 'https://xueqiu.com/stock/f10/otsholder.json?symbol=SZ000418&page=1&size=4'
     #log = session.get(url, headers=headers)
     #log.content
-    return session,headers
+    return headers
+
+xueqiu_headers = getXueqiuHeaders()

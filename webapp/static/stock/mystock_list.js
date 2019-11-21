@@ -137,7 +137,8 @@ function valuation(result){
                   {
                       "targets": [10],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a> | <a href="#editBlogModal" data-stock="'+full['ncode']+'" data-toggle="modal">笔记</a>';
+                          return '<a href="/stock/info/'+full['ncode']+'" target="_blank">详细</a> | <a href="#editBlogModal" data-stock="'+
+                          full['ncode']+'" data-toggle="modal">笔记</a> | <a href="http://v2.tznote.cc/#/stock/'+full['code']+'/finance/valuation" target="_blank">体验新版</a>';
                       }
                   },
                   {
