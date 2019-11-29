@@ -109,7 +109,7 @@ function render_table(ele,table_data){
                   {
                       "targets": [12],
                       "render": function(data, type, full) {
-                          return '<a href="/stock/holder/'+full['ncode']+'" target="_blank">股票详情</a>';
+                          return '<a href="/stock/holder/'+full['ncode']+'" target="_blank">详情</a> | <a href="http://v2.tznote.cc/#/stock/'+full['code']+'/finance/valuation/" target="_blank">新详情</a>';
                       }
                   },
         ]
