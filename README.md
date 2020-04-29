@@ -1,23 +1,20 @@
-# mystock
+  bbv# mystock
 
 启动程序
  venv/bin/python manage.py runserver -H localhost
 
 更新股东持股数据
- venv/bin/python refresh_stock_holder.py
+ venv/bin/python update_stock_holder.py
 
 更新财务数据
- venv/bin/python refresh_stock_finance.py
+ venv/bin/python update_stock_finance.py
 
 更新交易数据
- venv/bin/python refresh_stock_trade.py
+ venv/bin/python update_stock_trade.py
 
 
 生产环境的启动
  venv/bin/uwsgi --ini uwsgi.ini | tail -f uwsgi.log
-
- 程序终止：
- kill -HUP `cat uwsgi.pid`
  venv/bin/uwsgi --reload uwsgi.pid | tail -f uwsgi.log
 
 
@@ -40,11 +37,6 @@ virtualenvs 配置：
  deactivate
 
 
-环境安装：
-   pip install flask
-   #pip install mysql-connector-python
-   export PATH=$PATH:/usr/local/mysql/bin
-   pip install MySQL-python 
 
 安装依赖
 pip install -r requirements.txt
@@ -60,6 +52,15 @@ Celery 启动命令
 
    stop:
    ps auxww | grep 'celery worker' | awk '{print $2}' | xargs kill -9
+   
+升级后报错No module named 'flask.ext'
+    找到jinja2ext.py，将from flask.ext.cache import make_template_fragment_key改为from flask_cache import make_template_fragment_key   
+
+生产环境调试加载数据
+   from webapp import app, db, config_app, register_blueprints, celery 
+   config_app(app, 'scriptfan.cfg')
+   app.app_context().push()   
+
 
 文档参考：
 
